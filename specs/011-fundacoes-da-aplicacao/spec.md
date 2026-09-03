@@ -566,6 +566,35 @@ qualquer mudança de estado sai com evidência por caminho. 🟡
 
 ### 6.6 Diagnóstico de fundação (interno) — Job: provar a restauração · Campos: instante alvo, duração, o que não volta · Ações: nenhuma na interface — é relatório de ensaio anexado ao `qa-report.md`
 
+## Fora de escopo
+
+- **Idiomas além de português e inglês** — o *Fora* do round 011 é explícito
+  ([`../../docs/produto/rounds.md`](../../docs/produto/rounds.md)). O mecanismo nasce
+  preparado para receber um terceiro (dicionário único, língua-fonte declarada, portão de
+  literal órfão), mas acrescentá-lo é decisão nova — e é justamente por o mecanismo existir
+  que ela deixa de custar o retrofit que a quarta geração pagou com duas de cinco specs.
+- **Migração automática de dados da linhagem** — quem quer, **exporta e importa**: o E1.4
+  avançado lê o arquivo que a pessoa entrega. Uma migração que fosse buscar a base da
+  quarta geração é a proposta da segunda pergunta da visão
+  ([`../../docs/produto/visao.md`](../../docs/produto/visao.md) §7) e continua sendo
+  decisão nova.
+- **Preservar o histórico de conversa com o modelo que o formato legado carrega** — é
+  **descarte declarado** (F1.4.5), não omissão: o dado não entra no banco desta aplicação.
+  Guardá-lo exigiria decidir retenção, base legal e sanitização — decisão nova.
+- **Tradução automática por modelo e ajuda gerada em tempo de execução** — o dicionário e o
+  acervo de documentação embutida são **conteúdo versionado no repositório**. Se um dia
+  houver ajuda gerada, ela nasce ação de catálogo com proposta, nunca saída de LLM colada
+  na tela ([`../../docs/adr/0007-ia-somente-pela-fundacao.md`](../../docs/adr/0007-ia-somente-pela-fundacao.md)).
+- **Persistência, observabilidade e implantação** (E8.1, E8.2, E8.5) — saem no ciclo 003
+  ([`../003-esqueleto-federado/spec.md`](../003-esqueleto-federado/spec.md)) e nenhum
+  requisito deles se repete aqui. A **única** exceção declarada é a unidade de restauração
+  ensaiada (F8.1.3), que existe porque a restauração não estava na DoD do 003.
+- **Preenchimento estruturado de parâmetro por diálogo** (*slot filling*) — o ciclo 006 o
+  declarou "candidato ao ciclo 011" na INT-06 de lá
+  ([`../006-acoes-governadas-e-snapshot/spec.md`](../006-acoes-governadas-e-snapshot/spec.md));
+  esta spec **não o incorpora**, e fica dito aqui para o candidato não virar dívida
+  silenciosa: a entrada continua sendo decisão nova.
+
 ## Entregáveis
 
 - Mecanismo de i18n no cliente com resolução de idioma efetivo, dicionários `pt`/`en`

@@ -512,6 +512,33 @@ renomear. 🟡
 
 ### 6.6 Histórico e reverter — Job: recuperar o que já gravou · Campos: eventos por data · Ações: "Reverter <campo> para <valor>" (ação de domínio, evento compensatório)
 
+## Fora de escopo
+
+- **Toda semântica da TOC** — UDE, premissa, injeção, restrição, as três premissas da
+  árvore de Estratégia & Táticas. A RN-04 diz o que o núcleo conhece: grafo dirigido com
+  nós tipáveis e arestas causais. A semântica é de M2 em diante, e é isso que impede a
+  sétima cópia de canvas. O *Fora* do round 004 usa a mesma frase
+  ([`../../docs/produto/rounds.md`](../../docs/produto/rounds.md)).
+- **Importação dos formatos exportados pela linhagem TOC-Builder** (E1.4 avançado) — aqui
+  entra só o JSON canônico próprio, versionado e determinístico; ler o formato da quarta
+  geração é adaptador de formato legado, ciclo 011
+  ([`../011-fundacoes-da-aplicacao/spec.md`](../011-fundacoes-da-aplicacao/spec.md)).
+- **Desfazer que sobrevive ao recarregamento, e histórico de versões do projeto** — a
+  pilha é **de sessão** e morre no recarregamento, padrão herdado pronto da irmã
+  `gestaodeprioridades`; o que já gravou volta por ação de domínio nomeada, com traço
+  somente-acréscimo. Um histórico versionado do projeto é modelagem nova, decisão nova.
+- **Colaboração simultânea de várias pessoas no mesmo projeto** — depende da resposta à
+  primeira pergunta do Product Steward, que muda o E1.1 e precisa estar respondida antes
+  de esta spec congelar ([`../../docs/produto/visao.md`](../../docs/produto/visao.md) §7;
+  a dúvida está no Clarify abaixo). Enquanto ela não vier, projeto pertence a um par
+  (inquilino, usuário).
+- **Assistência do modelo sobre o canvas** — o catálogo governado só existe no ciclo 006;
+  qualquer atalho antes disso reeditaria o defeito D-01, que o ADR 0007 mata
+  ([`../../docs/adr/0007-ia-somente-pela-fundacao.md`](../../docs/adr/0007-ia-somente-pela-fundacao.md)).
+- **Exclusão definitiva e expurgo da lixeira** — a exclusão deste ciclo é suave e
+  reversível (E1.1); política de retenção, expurgo e o direito de apagar de vez são
+  decisão nova, com o seu próprio ADR.
+
 ## Entregáveis
 
 - Domínio Python puro do agregado Projeto (nós, arestas, invariantes, eventos) com testes

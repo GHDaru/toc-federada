@@ -567,6 +567,34 @@ raiz candidata · Ações: gerar, focar item no canvas, exportar com o projeto.
 Campos: propostas pendentes por ação de origem · Ações: aceitar/recusar por item,
 aceitar em lote (lote de propostas, não atalho).
 
+## Fora de escopo
+
+- **O épico E2.3 inteiro — assistência via catálogo** (sugerir UDEs, causas e relações,
+  validação assistida de julgamento, análise interpretativa da árvore). É a decisão 4 dos
+  rounds: nenhuma ferramenta ganha assistência antes de o catálogo `toc.*` e a FSM de
+  proposta existirem, o que acontece no ciclo 006
+  ([`../006-acoes-governadas-e-snapshot/spec.md`](../006-acoes-governadas-e-snapshot/spec.md)).
+  Aqui ficam os **contratos** INT-02..INT-06, que aquele ciclo consome como primeiro
+  cliente — nenhuma linha de execução.
+- **Transformar em função de domínio os critérios de UDE que são julgamento** — das 11
+  características da linhagem, as indecidíveis ficam declaradas como parecer (do humano ou
+  da fundação), nunca como regra que aprova ou reprova. É o que o D-12 mede e o que separa
+  esta ARA do prompt que ela aposenta.
+- **Promover o UDE para a Nuvem de Conflito e semear a árvore de futuro** — o encadeamento
+  é do ciclo 008 (E4.4); esta spec produz UDEs validados e para aí
+  ([`../008-arvores-de-futuro-e-implementacao/spec.md`](../008-arvores-de-futuro-e-implementacao/spec.md)).
+- **Relatório de análise assistida da árvore** (elos fracos, causa raiz sugerida) — é o
+  item que o corte de apetite do round 005 solta primeiro; fica a análise **estrutural**,
+  que é leitura pura do grafo, e a marcação manual dos elos
+  ([`../../docs/produto/rounds.md`](../../docs/produto/rounds.md), round 005).
+- **Importação das árvores da linhagem TOC-Builder** — ciclo 011, E1.4 avançado; a base
+  deste ciclo é sintética, da "Instituição Horizonte"
+  ([`../../docs/adr/0006-base-sintetica-desde-o-dia-1.md`](../../docs/adr/0006-base-sintetica-desde-o-dia-1.md)).
+- **Qualquer chamada a provedor de modelo a partir do cliente** — os 8 prompts eram dado
+  do navegador e a chave era inicializada lá; o ADR 0007 fecha essa porta. O texto de
+  prompt que sobrar é insumo do servidor, nunca do cliente
+  ([`../../docs/adr/0007-ia-somente-pela-fundacao.md`](../../docs/adr/0007-ia-somente-pela-fundacao.md)).
+
 ## Entregáveis
 
 - Domínio Python puro do M2: extensão ARA do agregado, ValidacaoFormal (função pura +

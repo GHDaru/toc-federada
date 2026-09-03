@@ -45,6 +45,8 @@ e nenhum dono.
 
 | Nº | Destino | Assunto | Estado |
 |---|---|---|---|
-| — | — | nenhuma mensagem ainda | — |
+| [001](001-para-daruskills-defeitos-do-gerador-de-site.md) | `GHDaru/daruskills` | sete achados no gerador `spec-to-code-docs` | aberta |
+| [002](002-para-maestro-pisos-absolutos-de-ciclo.md) | `GHDaru/maestro` | pisos de retroatividade absolutos reprovam repositório recém-instalado | aberta |
 
-> A primeira mensagem que nascer substitui a linha acima e entra com número `001`.
+> Toda mensagem nova entra no fim da tabela, com o próximo número livre. O estado muda
+> conforme o destino responde: aberta → respondida → resolvida, ou retirada.

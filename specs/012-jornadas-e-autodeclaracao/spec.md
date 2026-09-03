@@ -449,6 +449,29 @@ não redigida de novo. 🟡
 
 ### 6.5 Site de produto — Job: apresentar o produto para fora com rastreabilidade · Campos: módulos, ciclos, requisitos, fontes, nota de honestidade · Ações: navegar nos dois sentidos da rastreabilidade
 
+## Fora de escopo
+
+- **Qualquer funcionalidade nova** — "round de fechamento não esconde feature" é o *Fora*
+  do round 012 ([`../../docs/produto/rounds.md`](../../docs/produto/rounds.md)). Achado que
+  exija código vira ciclo próprio com dívida datada, nunca emenda deste.
+- **Corrigir o que a medição encontrar** — corolário do item acima, e o mais tentador de
+  todos: um veredito **NÃO APTO** é resultado legítimo deste ciclo (a própria fundação saiu
+  8 de 11 checks na primeira medição, F-07). O ciclo registra o veredito e a dívida; a
+  correção é outro ciclo.
+- **Autodeclaração do lado hospedeiro do Anexo B** — metade das obrigações não é nossa. O
+  §B.12.1 obriga a declarar **por lado** justamente para isso, e o nosso lado é o da
+  aplicação ([`../../docs/adr/0003-federacao-aph-nivel-2-embedded.md`](../../docs/adr/0003-federacao-aph-nivel-2-embedded.md)).
+- **Autodeclaração de Nível 3 (Federado)** — fora do alvo do ADR 0003, experimental na
+  norma e papel de plataforma. O que a versão 1 não faz é dito com a porta de volta pela
+  FT-07, e é lá que este limite aparece na entrega, não como conformidade calada.
+- **Escrever uma suíte executável para o Nível 2 ou para o lado aplicação do Anexo B** — a
+  norma declara que uma suíte que fingisse cobri-lo seria pior que a sua ausência (F-02), e
+  o normativo é do `GHDaru/protocolos`, leitura apenas (P1). Lacuna encontrada lá vira
+  `mensagens/NNN-para-protocolos-<assunto>.md`, nunca commit nosso.
+- **Certificação por terceiro ou selo de conformidade** — a entrega é **autodeclaração com
+  evidência**, e o ADR 0003 já registrou que ela é estruturalmente mais fraca que um portão
+  automático. Buscar certificação externa é decisão nova.
+
 ## Entregáveis
 
 - As seis jornadas com capturas regeradas do build atual, mais a **jornada de travessia** de

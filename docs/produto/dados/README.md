@@ -24,13 +24,21 @@ oficina real de fato são. Sem uma base, "a regra de negócio central vive num p
 (defeito D-08) é observação de arquitetura; com ela, vira número, e o número vira critério
 de aceite do épico E2.1 na spec 005 (defeito D-12).
 
-Dois arquivos:
+Dois arquivos e **duas** medições, que não devem ser confundidas:
 
 - [`analise-horizonte.json`](analise-horizonte.json) — a base, versionada (`versao`,
   `data`, `sintetica`).
 - [`medir-base.py`](medir-base.py) — valida a estrutura, aplica os critérios formais de
   UDE e imprime as contagens. **Nenhum número desta pasta ou da visão é digitado à mão**
   (regra R1 do [`../../../CLAUDE.md`](../../../CLAUDE.md)).
+
+| Medição | O que é | O que ela prova | O que ela **não** prova |
+|---|---|---|---|
+| **Número autoral** | as oito checagens sobre os doze UDEs da Instituição Horizonte | que as checagens disparam sobre as patologias que a base traz | nada sobre a *correção* das checagens: base e checagens têm o mesmo autor |
+| **Número de controle** | as mesmas oito checagens sobre nove enunciados de UDE colhidos da linhagem TOC-Builder, rotulados **pela fonte** | onde as checagens erram contra um gabarito alheio — e elas erram: um falso negativo | prevalência: nove enunciados didáticos não são uma oficina |
+
+A segunda existe porque a primeira, sozinha, é circular — é o que as duas seções
+"Por que o 3 de 12 não valida checagem nenhuma" e "O conjunto de controle" explicam.
 
 ## Ela é sintética por decisão, não por acaso
 
@@ -132,22 +140,205 @@ $ python3 docs/produto/dados/medir-base.py
   U-12  REPROVA  Alta evasão
             └ CD-1 não é frase completa (maiúscula inicial, ponto final, ≥4 palavras)
 
-  UDEs medidos: 12  ·  passam nos 8 critérios decidíveis: 3 (U-01, U-02, U-03)  ·  reprovam: 9
-  divergências entre o esperado na base e o medido: 0
+  NÚMERO AUTORAL — UDEs medidos: 12  ·  passam nos 8 critérios decidíveis: 3 (U-01, U-02, U-03)  ·  reprovam: 9
+  divergências entre o esperado na base e o medido: 0 — isto é acordo do autor consigo mesmo, não evidência: quem escreveu os enunciados
+    escreveu as checagens. O que vale como evidência é o controle abaixo.
   fora do alcance de qualquer função pura (exigem julgamento):
     característica 1 — é queixa sobre um problema contínuo que limita o desempenho
     característica 4 — está dentro da área de responsabilidade ou influência
     característica 5 — algo pode ser feito a respeito
     característica 7 — não é uma causa especulada
 
-✓ base válida (16 nós, 16 arestas, nuvem de 5 entidades e 7 premissas) e veredito dos critérios bate com o documentado.
+── Conjunto de controle · enunciados NÃO escritos aqui ──
+  enunciados: 9  ·  colhidos de 2 arquivo(s) da linhagem TOC-Builder, anteriores a estas checagens:
+    tocbuilderv3/components/CanvasWelcome.tsx
+    tocbuilderv3/constants.ts
+  os oito de constants.ts aparecem com o mesmo texto nas quatro gerações:
+    TOC-Builder/constants.ts:158,159,184,185,193,194
+    TOC-Builder-V2/constants.ts:129,130,155,156,164,165
+    TOC-Builder-APP/constants.ts:129,130,155,156,164,165
+    tocbuilderv3/constants.ts:136,137,162,163,171,172
+  rótulo de cada enunciado = o que a FONTE diz dele; nenhum resultado esperado foi declarado aqui
+
+  K-01  PASSA   [fonte: bom]  Nosso desempenho de entrega no prazo é de 60%
+            fonte: tocbuilderv3/constants.ts:136 — UDE de "existência de lacuna" — o tipo que o prompt manda PREFERIR
+            ⚠ literal (sem ponto final) REPROVA — só a CD-1, por pontuação
+  K-02  PASSA   [fonte: nao_preferido]  Recursos frequentemente não estão disponíveis
+            fonte: tocbuilderv3/constants.ts:137 — UDE de "dificuldade em fechar a lacuna" — aceito, mas preterido
+            ⚠ literal (sem ponto final) REPROVA — só a CD-1, por pontuação
+  K-03  PASSA   [fonte: ruim]  Falta de treinamento causa erros.
+            fonte: tocbuilderv3/constants.ts:162 — Exemplo Ruim: UDE + Causa
+  K-04  PASSA   [fonte: bom]  A taxa de erros no processo X é de 15%.
+            fonte: tocbuilderv3/constants.ts:162 — Bom UDE — a correção que a fonte propõe para K-03
+  K-05  REPROVA  [fonte: ruim]  Precisamos de um novo software para gerenciar tarefas.
+            fonte: tocbuilderv3/constants.ts:163 — Exemplo Ruim: Solução
+            └ CD-5 solução disfarçada de efeito: "precisamos de"
+  K-06  PASSA   [fonte: bom]  Tarefas frequentemente ultrapassam o prazo.
+            fonte: tocbuilderv3/constants.ts:163 — Bom UDE — a correção que a fonte propõe para K-05
+  K-07  PASSA   [fonte: bom]  O tempo médio de ciclo do pedido é de 10 dias.
+            fonte: tocbuilderv3/constants.ts:171 — Exemplo de Lacuna (Preferível como UDE)
+  K-08  PASSA   [fonte: nao_preferido]  Há muitos gargalos no processo de aprovação.
+            fonte: tocbuilderv3/constants.ts:172 — Exemplo de Dificuldade (Pode ser uma causa)
+  K-09  PASSA   [fonte: sem_rotulo]  O churn de clientes está alto.
+            fonte: tocbuilderv3/components/CanvasWelcome.tsx:11 — texto de exemplo oferecido na tela de boas-vindas da ARA
+
+  NÚMERO DE CONTROLE — enunciados: 9  ·  passam (texto normalizado): 8  ·  passam (texto literal, como citado): 6
+  rotulados pela fonte como bom/ruim: 6  ·  concordância: 5 (K-01, K-04, K-05, K-06, K-07)
+  FALSO POSITIVO (a fonte diz bom, a checagem reprova): 0 (—)
+  FALSO NEGATIVO (a fonte diz ruim, a checagem aprova): 1 (K-03)
+  sem veredito possível (a fonte não rotula bom/ruim): 3 (K-02, K-08, K-09)
+
+── Autoral × controle ──
+  autoral:  3/12 passam (25%) — base escrita para exercitar as checagens
+  controle: 8/9 passam (89%) — enunciados escritos como material didático, a maioria para ser exemplar
+  as duas taxas medem coisas diferentes e NENHUMA estima prevalência de oficina; a amostra de
+  controle tem 9 enunciados e é pequena porque é tudo o que a linhagem escreveu.
+
+✓ base válida (16 nós, 16 arestas, nuvem de 5 entidades e 7 premissas); veredito autoral bate com o documentado e o controle de 9 enunciados
+  externos foi medido: 0 falso(s) positivo(s), 1 falso(s) negativo(s).
 $ echo "exit=$?"
 exit=0
 ```
 
 **Doze UDEs escritos como um facilitador humano escreve; três passam nos oito critérios
-decidíveis.** É esse 3 de 12 que o defeito D-12 da visão publica e que a spec 005 herda
-como critério de aceite executável.
+decidíveis.** Esse 3 de 12 é o **número autoral**, e ele responde a uma pergunta estreita:
+*as oito checagens de fato disparam sobre as patologias que a base traz?* Disparam. O que
+ele **não** responde está na próxima seção.
+
+## Por que o 3 de 12 não valida checagem nenhuma
+
+Quem escreveu os doze enunciados da Instituição Horizonte é quem escreveu as oito
+checagens, e escreveu-os de propósito "com as patologias típicas de oficina" — as mesmas
+que as checagens procuram. A linha
+
+```console
+$ python3 docs/produto/dados/medir-base.py | grep "divergências entre o esperado"
+  divergências entre o esperado na base e o medido: 0 — isto é acordo do autor consigo mesmo, não evidência: quem escreveu os enunciados
+```
+
+prova que o esperado e o medido coincidem — o que é **tautologia**, não evidência. Uma
+base autoral **demonstra** as checagens; ela não pode **validá-las**, porque um erro da
+checagem e um erro do enunciado se cancelam sem deixar rastro. A tautologia foi apontada
+pela revisão independente do ciclo 001 e é a origem desta seção e do conjunto de controle.
+
+## O conjunto de controle — enunciados que não escrevemos
+
+Para que as checagens possam **errar**, é preciso medi-las contra enunciados de UDE que
+existiam **antes e fora** deste repositório, rotulados por outra pessoa. Eles existem: a
+linhagem TOC-Builder escreveu exemplos didáticos de UDE dentro do próprio texto de prompt
+e numa tela, ao longo das quatro gerações — todas anteriores a estas checagens — e
+**rotulou seis deles** explicitamente como "Bom UDE" ou "Exemplo Ruim". É esse rótulo
+alheio — nunca o nosso — que serve de gabarito; os três restantes ficam sem veredito, e a
+seção de resultado diz quais são e por quê.
+
+O conjunto vive em `CONTROLE`, dentro do
+[`medir-base.py`](medir-base.py), com três regras que preservam a independência:
+
+1. **Nenhum enunciado foi redigido, corrigido ou parafraseado aqui** — são cópias
+   literais, cada uma com caminho e linha.
+2. **Nenhum item declara resultado esperado.** Não há campo `esperado_reprovado` no
+   controle: se houvesse, a tautologia voltaria por outra porta.
+3. **O rótulo é o da fonte.** Onde a fonte não rotula, o item fica "sem rótulo" e **não
+   entra** na conta de concordância.
+
+### Procedência, item a item
+
+| # | Enunciado (cópia literal) | Origem | Rótulo escrito pela fonte |
+|---|---|---|---|
+| K-01 | "Nosso desempenho de entrega no prazo é de 60%" | `tocbuilderv3/constants.ts:136` | UDE de "existência de lacuna" — o tipo que o prompt manda PREFERIR |
+| K-02 | "Recursos frequentemente não estão disponíveis" | `tocbuilderv3/constants.ts:137` | UDE de "dificuldade em fechar a lacuna" — aceito, mas preterido |
+| K-03 | "Falta de treinamento causa erros." | `tocbuilderv3/constants.ts:162` | **Exemplo Ruim** (UDE + Causa) |
+| K-04 | "A taxa de erros no processo X é de 15%." | `tocbuilderv3/constants.ts:162` | **Bom UDE** (a correção que a fonte propõe para K-03) |
+| K-05 | "Precisamos de um novo software para gerenciar tarefas." | `tocbuilderv3/constants.ts:163` | **Exemplo Ruim** (Solução) |
+| K-06 | "Tarefas frequentemente ultrapassam o prazo." | `tocbuilderv3/constants.ts:163` | **Bom UDE** (a correção que a fonte propõe para K-05) |
+| K-07 | "O tempo médio de ciclo do pedido é de 10 dias." | `tocbuilderv3/constants.ts:171` | Exemplo de Lacuna (Preferível como UDE) |
+| K-08 | "Há muitos gargalos no processo de aprovação." | `tocbuilderv3/constants.ts:172` | Exemplo de Dificuldade (Pode ser uma causa) |
+| K-09 | "O churn de clientes está alto." | `tocbuilderv3/components/CanvasWelcome.tsx:11` | *sem rótulo* — texto de exemplo oferecido na tela de boas-vindas |
+
+Os oito de `constants.ts` aparecem com **o mesmo texto** nas quatro gerações — o script
+imprime os espelhos com linha, e o comando que os encontrou foi:
+
+```console
+$ grep -rn "Exemplo Ruim\|Exemplo de Lacuna\|Exemplo de Dificuldade\|existência de lacuna" /home/user/TOC-Builder/constants.ts /home/user/TOC-Builder-V2/constants.ts /home/user/TOC-Builder-APP/constants.ts /home/user/tocbuilderv3/constants.ts | wc -l
+24
+```
+
+### Nove. É pouco, e é tudo o que existe
+
+**São nove enunciados**, e a honestidade sobre esse número é parte do resultado. Nove
+porque foi o que a busca encontrou, não porque nove bastasse:
+
+- as quatro gerações da linhagem repetem os **mesmos oito** enunciados de `constants.ts`;
+- a tela de boas-vindas contribui **um**;
+- as skills locais de domínio (`toc-evaporating-cloud`, `toc-prt`) foram lidas e **não
+  trazem enunciado de UDE nenhum** — zero, e zero é o número que entra aqui:
+
+  ```console
+  $ grep -c -i "efeito indesej\|UDE" /root/.claude/skills/synced/*/toc-evaporating-cloud/SKILL.md /root/.claude/skills/synced/*/toc-prt/SKILL.md
+  /root/.claude/skills/synced/b6e1be5c-669c-482c-9514-0127da476f91_2985a601-e1f3-4a1c-b194-a365a60ae8c4/toc-evaporating-cloud/SKILL.md:0
+  /root/.claude/skills/synced/b6e1be5c-669c-482c-9514-0127da476f91_2985a601-e1f3-4a1c-b194-a365a60ae8c4/toc-prt/SKILL.md:0
+  ```
+
+O que foi **deliberadamente deixado de fora**, para não engordar a amostra com o que não é
+UDE: os textos de espaço reservado de formulário (`locales/pt.ts:157` e `:333` descrevem um
+**projeto**, não um efeito) e as justificativas de aresta do exemplo de prompt
+(`constants.ts:105-106` são `reason=` de conexão causal). Inventar enunciado para chegar a
+vinte reintroduziria exatamente a autoria que o controle existe para remover.
+
+### O resultado, inclusive o desfavorável
+
+```console
+$ python3 docs/produto/dados/medir-base.py | grep -E "^  (NÚMERO|rotulados|FALSO|sem veredito|autoral:|controle:)"
+  NÚMERO AUTORAL — UDEs medidos: 12  ·  passam nos 8 critérios decidíveis: 3 (U-01, U-02, U-03)  ·  reprovam: 9
+  NÚMERO DE CONTROLE — enunciados: 9  ·  passam (texto normalizado): 8  ·  passam (texto literal, como citado): 6
+  rotulados pela fonte como bom/ruim: 6  ·  concordância: 5 (K-01, K-04, K-05, K-06, K-07)
+  FALSO POSITIVO (a fonte diz bom, a checagem reprova): 0 (—)
+  FALSO NEGATIVO (a fonte diz ruim, a checagem aprova): 1 (K-03)
+  sem veredito possível (a fonte não rotula bom/ruim): 3 (K-02, K-08, K-09)
+  autoral:  3/12 passam (25%) — base escrita para exercitar as checagens
+  controle: 8/9 passam (89%) — enunciados escritos como material didático, a maioria para ser exemplar
+```
+
+Três divergências registradas, nenhuma apagada:
+
+**Divergência 1 — falso negativo em K-03, e é o achado do exercício.** A fonte rotula
+"Falta de treinamento causa erros." como **Exemplo Ruim**, porque o enunciado traz a
+própria causa dentro da verbalização (característica 10). As oito checagens **aprovam**.
+A causa raiz é concreta e corrigível: a CD-7 procura **conectivos** (`porque`, `devido a`,
+`já que`…) e não procura o **verbo causal** — `causa`, `leva a`, `resulta em`, `provoca`,
+`gera`. Os dois enunciados de `constants.ts:105-106`, que a própria linhagem escreveu como
+justificativa de relação causal, usam justamente "levam a" e "resulta em". Isto vira
+requisito de teste do épico E2.1 na spec 005: **o léxico da CD-7 tem de cobrir verbo
+causal, e K-03 é o caso que hoje falha.** Sem o controle, esse buraco seguiria invisível —
+a base autoral não tinha um único enunciado com verbo causal, porque quem a escreveu
+tinha na cabeça a mesma lista de conectivos da CD-7.
+
+**Divergência 2 — a CD-1 depende de pontuação, e isso aparece em K-01 e K-02.** Citados
+literalmente, os dois vêm sem ponto final (estão dentro de parênteses num texto corrido) e
+a CD-1 os reprova — 6 passam no texto literal contra 8 no normalizado. Parte disso é
+artefato de citação, e por isso o script imprime **as duas contas** e marca a linha
+`⚠ literal (sem ponto final) REPROVA — só a CD-1, por pontuação`; normalizar em silêncio
+esconderia o resto, que é achado de verdade: **num produto, o facilitador que esquece o
+ponto final é reprovado pelo motivo errado.** Requisito para a spec 005: a CD-1 sinaliza
+pontuação como aviso de forma, separado das checagens de conteúdo.
+
+**Divergência 3 — três dos nove não têm veredito possível.** K-02, K-08 e K-09 não são
+rotulados bom/ruim pela fonte: os dois primeiros são "dificuldade em fechar a lacuna",
+que o prompt aceita mas prefere não usar, e o terceiro é texto de tela. As oito checagens
+aprovam os três e **não têm como distinguir** lacuna de dificuldade — essa distinção mora
+na característica 1, uma das quatro declaradas indecidíveis. O controle confirma a
+fronteira em vez de a contradizer.
+
+### O que o controle permite, e o que continua não permitindo
+
+**Permite** dizer, com gabarito alheio: das seis afirmações que a linhagem rotulou,
+as checagens concordam com cinco e erram uma, e o erro é por omissão de léxico, não por
+excesso de rigor — zero falso positivo em nove enunciados. **Não permite** dizer nada
+sobre prevalência: 25% de aprovação na base autoral e 89% no controle **não são medidas
+do mesmo fenômeno** — a base foi escrita para reprovar, o controle foi escrito para
+ensinar, e nenhum dos dois foi colhido de uma oficina. Com nove enunciados e seis
+rotulados, um único caso a mais move a taxa em mais de dez pontos. É o que a lacuna L-03
+da visão passa a declarar.
 
 ## O que este arquivo não decide
 

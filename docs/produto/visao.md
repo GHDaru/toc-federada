@@ -53,8 +53,8 @@ O problema acima é fácil de descrever e difícil de medir, e é aí que quatro
 pararam: nenhuma delas definiu **o que é uma análise boa**. Esta define, e a definição é
 executável antes de existir uma linha de produto. Uma análise TOC é aceitável quando as
 quatro condições abaixo valem ao mesmo tempo — as quatro são verificadas hoje, por função
-pura, sobre a base sintética da Instituição Horizonte
-([`dados/README.md`](dados/README.md)):
+pura, sobre a base sintética da Instituição Horizonte e, a primeira delas, também sobre um
+conjunto de controle que não escrevemos ([`dados/README.md`](dados/README.md)):
 
 1. **Todo UDE passa nos critérios formais decidíveis** — frase completa, tempo presente,
    estado e não ação, sem culpar pessoa, sem solução disfarçada, uma entidade só, sem a
@@ -67,10 +67,21 @@ pura, sobre a base sintética da Instituição Horizonte
 4. **Cada efeito indesejável está ligado à árvore** — UDE órfão é queixa solta, não
    sintoma de nada.
 
-E a régua tem um número de partida, medido e não declarado: **dos doze UDEs escritos como
-um facilitador humano os escreve, três passam** (§6, D-12). É essa distância — 3 de 12 —
-que a ferramenta existe para fechar, e é ela que vira critério de aceite do módulo M2 na
-spec 005, em vez de "a validação funciona bem".
+E a régua tem números de partida, medidos e não declarados — **dois**, que não medem a
+mesma coisa e por isso nunca aparecem juntos como se fossem um só (§6, D-12):
+
+- **número autoral — 3 de 12.** Dos doze UDEs da base sintética da Instituição Horizonte,
+  escritos como um facilitador humano os escreve, três passam nas oito checagens. Ele
+  prova que as checagens **disparam**; não prova que estão certas, porque quem escreveu os
+  enunciados escreveu as checagens.
+- **número de controle — 8 de 9, com 1 falso negativo.** As mesmas oito checagens
+  aplicadas a nove enunciados de UDE que a linhagem TOC-Builder escreveu quatro gerações
+  antes delas, **rotulados pela própria linhagem** como bons ou ruins. Aí as checagens
+  podem errar — e erram uma: aprovam um enunciado que a fonte rotula como ruim.
+
+É o segundo que vira critério de aceite do módulo M2 na spec 005, em vez de "a validação
+funciona bem": o caso que hoje falha (K-03) entra como teste que precisa passar. O
+primeiro segue como conjunto de exercício, com o nome correto.
 
 ## 2. O que a Teoria das Restrições oferece — os processos de pensamento
 
@@ -392,37 +403,73 @@ Nenhuma referência cruzada entre projetos de ferramentas diferentes no modelo d
 injeção da NC não semeia nada. O encadeamento, que é o valor central dos processos de
 pensamento (§2), é o épico E4.4 do M4.
 
-**D-12 · Os critérios de UDE só existem como texto de prompt porque nunca foram medidos:
-aplicados como função pura à base sintética do domínio, reprovam 9 dos 12 UDEs — e 4 das
-11 características não são decidíveis por função alguma.** 🟢
+**D-12 · Os critérios de UDE só existem como texto de prompt porque nunca foram medidos.
+Medidos agora, em dois conjuntos: reprovam 9 dos 12 UDEs da base autoral (exercício) e,
+contra nove enunciados rotulados pela própria linhagem (controle), acertam 5 dos 6 casos
+com gabarito — o sexto é um falso negativo com causa nomeada.** 🟢
 
 O D-08 diz *onde* a regra de negócio mora (num prompt). Faltava o número que transforma
-isso em critério de aceite: **quantos UDEs escritos como um facilitador humano os escreve
-de fato passam nos critérios formais**. A base sintética da Instituição Horizonte
+isso em critério de aceite. A base sintética da Instituição Horizonte
 ([`dados/README.md`](dados/README.md), exigida pelo ADR 0006) foi construída para
 responder — doze UDEs redigidos com as patologias típicas de oficina (ação em vez de
 estado, causa embutida, solução disfarçada, juízo sobre pessoas) — e o script mede:
 
 ```console
-$ python3 docs/produto/dados/medir-base.py | grep -E "^  (ARA:|Nuvem|características|UDEs medidos|divergências|validação)"
+$ python3 docs/produto/dados/medir-base.py | grep -E "^  (ARA:|Nuvem|características|NÚMERO AUTORAL|validação)"
   ARA: 16 nós (12 UDEs, 4 causas) · 16 arestas causais
   Nuvem de Conflito: 5 entidades · 7 arestas com premissa · 2 injeções
   validação estrutural: 0 falha(s)
   características do prompt: 11  ·  decidíveis por função pura: 8 checagens cobrindo 7  ·  dependentes de julgamento: 4
-  UDEs medidos: 12  ·  passam nos 8 critérios decidíveis: 3 (U-01, U-02, U-03)  ·  reprovam: 9
-  divergências entre o esperado na base e o medido: 0
+  NÚMERO AUTORAL — UDEs medidos: 12  ·  passam nos 8 critérios decidíveis: 3 (U-01, U-02, U-03)  ·  reprovam: 9
 ```
 
-Três de doze 🟢. As oito checagens traduzem **sete** das onze características de
+Três de doze 🟢 — e este é o **número autoral**, que prova menos do que parece. A base
+foi escrita pelo mesmo autor das checagens e escrita *para* trazer as patologias que elas
+procuram; a linha "divergências entre o esperado na base e o medido: 0" só diz que o
+esperado e o medido coincidem, o que é tautologia. Uma base autoral **demonstra** as
+checagens, não as **valida**: erro de checagem e erro de enunciado se cancelam sem deixar
+rastro. O apontamento é da revisão independente do ciclo 001.
+
+O que valida é um **conjunto de controle**: enunciados de UDE que existiam antes e fora
+deste repositório, com rótulo escrito por outra pessoa. A linhagem TOC-Builder deixou
+nove — oito dentro do próprio texto de prompt, repetidos nas quatro gerações, e um na tela
+de boas-vindas —, e o prompt diz com todas as letras quais são "Bom UDE" e quais são
+"Exemplo Ruim". Nenhum foi redigido, corrigido ou parafraseado aqui, e nenhum declara
+resultado esperado:
+
+```console
+$ python3 docs/produto/dados/medir-base.py | grep -E "^  (NÚMERO DE CONTROLE|rotulados|FALSO|sem veredito)"
+  NÚMERO DE CONTROLE — enunciados: 9  ·  passam (texto normalizado): 8  ·  passam (texto literal, como citado): 6
+  rotulados pela fonte como bom/ruim: 6  ·  concordância: 5 (K-01, K-04, K-05, K-06, K-07)
+  FALSO POSITIVO (a fonte diz bom, a checagem reprova): 0 (—)
+  FALSO NEGATIVO (a fonte diz ruim, a checagem aprova): 1 (K-03)
+  sem veredito possível (a fonte não rotula bom/ruim): 3 (K-02, K-08, K-09)
+```
+
+**Zero falso positivo e um falso negativo** 🟢, com causa raiz nomeada: a fonte rotula
+"Falta de treinamento causa erros." (`tocbuilderv3/constants.ts:162`) como Exemplo Ruim
+porque o enunciado traz a própria causa (característica 10), e a checagem CD-7 aprova
+porque procura **conectivos** (`porque`, `devido a`, `já que`) e não procura o **verbo
+causal** (`causa`, `leva a`, `resulta em`). A base autoral não continha um só enunciado
+com verbo causal — quem a escreveu tinha na cabeça a mesma lista da CD-7. É exatamente o
+tipo de buraco que só um gabarito alheio encontra. O detalhe das três divergências,
+inclusive a dependência da CD-1 de pontuação, está em
+[`dados/README.md`](dados/README.md).
+
+As oito checagens traduzem **sete** das onze características de
 `tocbuilderv3/constants.ts:122-133` (a característica 2 vira duas: frase completa e tempo
 presente); as quatro restantes — 1 (queixa sobre problema contínuo), 4 (área de
 responsabilidade), 5 (algo pode ser feito) e 7 (não é causa especulada) — dependem de
-julgamento sobre o sistema analisado e **nenhuma função pura as decide** 🔴 L-03.
+julgamento sobre o sistema analisado e **nenhuma função pura as decide** 🔴 L-03. O
+controle confirma a fronteira em vez de a contradizer: os três enunciados sem veredito são
+justamente os que a fonte separa por "lacuna × dificuldade", distinção que mora na
+característica 1.
 
-É essa divisão que o épico E2.1 (spec 005) implementa, e o número é o critério de aceite:
-o mesmo conjunto de doze UDEs, submetido ao domínio puro sem rede e sem modelo, tem de
-devolver os mesmos 9 reprovados com o mesmo motivo por UDE — o que hoje só acontece por
-chamada ao provedor. Destino declarado em [`rounds.md`](rounds.md), round 005.
+É essa divisão que o épico E2.1 (spec 005) implementa, e os dois números são o critério de
+aceite, com papéis distintos: o domínio puro, sem rede e sem modelo, tem de devolver os
+mesmos 9 reprovados da base autoral com o mesmo motivo por UDE **e** tem de fechar o falso
+negativo K-03 — que hoje falha e é o caso de teste que nasce vermelho (P4). Destino
+declarado em [`rounds.md`](rounds.md), round 005.
 
 ## 7. Perguntas ao Product Steward — mantidas, com resposta proposta
 
@@ -471,7 +518,7 @@ spec do ciclo que as fecha.
 |---|---|---|---|---|
 | 🔴 **L-01** | **Nenhum usuário real foi medido em quatro gerações.** Zero instrumentação (§3.2, saída colada) — nenhuma sessão, nenhuma análise concluída, nenhum abandono contado. Tudo o que se afirma sobre utilidade é inferência a partir de código. | O valor da ARA e da NC observado no código e no `tocbuilderv3/APLICATION_PURPOSE.md` se sustenta em uso real. | médio | ciclo 003 (observabilidade de nascença, P5) mede a primeira sessão; ciclo 012 fecha com jornada avaliada. |
 | 🔴 **L-02** | **ARF, APR e AT nunca tiveram nem tela para herdar.** Quatro gerações de botão cinza (§6, D-04): não há componente anterior, modelo de dados, vocabulário de interface nem exemplo de uso — só a navegação desabilitada. | O conteúdo técnico das skills de domínio (`toc-prt` para a APR) e a literatura da TOC bastam para especificar o M4 sem protótipo prévio. | **alto** — é o único módulo sem nenhuma linha de linhagem atrás dele | ciclo 002 (protótipo de interfaces) tira a primeira tela do papel; round 008 entrega o módulo. |
-| 🔴 **L-03** | **Não existe base medida do domínio.** A única base é a sintética da Instituição Horizonte ([`dados/README.md`](dados/README.md)) — escrita por nós, não colhida de oficina. Sobre ela, 4 das 11 características de UDE não são decidíveis por função alguma (§6, D-12). | Os doze UDEs sintéticos, redigidos com as patologias típicas de oficina, aproximam a distribuição real o bastante para servir de critério de aceite do E2.1. | médio | ciclo 005 (validação como domínio puro) usa a base como critério; a base real só existe depois de uso medido — depende de L-01, e por decisão do ADR 0006 nunca será dado de pessoa real. |
+| 🔴 **L-03** | **Uma base autoral demonstra as checagens; não as valida.** A base da Instituição Horizonte ([`dados/README.md`](dados/README.md)) foi escrita pelo mesmo autor das oito checagens e escrita *para* trazer as patologias que elas procuram — o 3 de 12 mede o acordo do autor consigo mesmo, e "divergências: 0" é tautologia. O conjunto de controle da linhagem tira a circularidade da conta e já pegou um falso negativo (K-03, §6 D-12), mas **são nove enunciados, seis com rótulo**: amostra pequena demais para estimar taxa de erro, e didática, não colhida de oficina. Sobre qualquer um dos dois conjuntos, 4 das 11 características seguem indecidíveis por função pura. | O controle de nove enunciados basta para **encontrar** defeito nas checagens (encontrou um), e não se assume que baste para **descartar** a existência de outros: um único caso a mais move a taxa em mais de dez pontos. | médio | **Não fecha neste projeto, e a visão declara isso em vez de datar um fechamento falso.** O que fecharia de verdade é um corpus de efeitos indesejáveis colhidos de oficina real, escritos por facilitador humano e rotulados por outro facilitador — que **não existe e não pode existir aqui**: enunciado de trabalho de pessoa real é dado de pessoa real, e o ADR 0006 o proíbe em fixture, spec e exemplo sem consentimento, que este repositório aberto não tem como obter. O ciclo 005 avança o que é possível — amplia o controle se a linhagem ou a literatura pública derem mais enunciados rotulados por terceiros, e transforma cada divergência em teste. |
 
 Três lacunas, três destinos. O que **não** é lacuna, e por isso não aparece aqui: tudo que
 o §6 mede com saída colada (é fato, não incerteza) e tudo que o §7 pergunta ao Product
@@ -485,7 +532,7 @@ não muda a conta):
 $ python3 -c "t=open('docs/produto/visao.md',encoding='utf-8').read(); \
 print(' · '.join(f'{n}: {t.count(chr(c))}' for n,c in \
 (('CONFIRMADO',0x1F7E2),('PLANEJADO',0x1F7E1),('LACUNA',0x1F534))))"
-CONFIRMADO: 44 · PLANEJADO: 9 · LACUNA: 8
+CONFIRMADO: 45 · PLANEJADO: 9 · LACUNA: 8
 ```
 
 Os três níveis da legenda aparecem no corpo. As três lacunas estão marcadas onde nascem —

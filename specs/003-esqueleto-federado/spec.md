@@ -509,6 +509,38 @@ estado + uma frase + ação (RI-01, RI-02).
 6. Resposta `active: true` vira Principal; lista de projetos do tenant renderiza.
 7. Traço OTel único cobre 2→6; grant descartado.
 
+## Fora de escopo
+
+- **Catálogo `toc.*`, máquina de estados de proposta, registro de telas com snapshot
+  sanitizado e o wire do padrão** (épicos E7.3–E7.6) — é o recorte declarado acima:
+  saem no ciclo 006 ([`../006-acoes-governadas-e-snapshot/spec.md`](../006-acoes-governadas-e-snapshot/spec.md)),
+  e nenhum requisito deles nasce aqui.
+- **Qualquer ferramenta dos processos de pensamento** — este ciclo lista projetos
+  sintéticos e nada mais; a primeira ferramenta é o núcleo de diagramas do ciclo 004
+  ([`../004-nucleo-de-diagramas/spec.md`](../004-nucleo-de-diagramas/spec.md)). O round
+  003 diz o mesmo por outras palavras: "qualquer ferramenta" está no campo *Fora*
+  ([`../../docs/produto/rounds.md`](../../docs/produto/rounds.md), round 003).
+- **Qualquer escrita vinda do hospedeiro** — a RN-01 fixa o ciclo como somente leitura;
+  mutação só existe depois da máquina de estados de proposta (ciclo 006). Está também no
+  *Fora* do round 003.
+- **Servidor de contexto para modelo (Model Context Protocol) e o Nível 3 (Federado) do
+  padrão APH** — o alvo declarado é **Nível 2 (Operador)**, e o Nível 3 é experimental na
+  norma e papel de **plataforma**, que aqui é a fundação, não esta aplicação
+  ([`../../docs/adr/0003-federacao-aph-nivel-2-embedded.md`](../../docs/adr/0003-federacao-aph-nivel-2-embedded.md),
+  alternativa descartada com as 7 caixas medidas). Entrada futura é decisão nova.
+- **`mode: internal`** — o schema de manifesto o declara fora do Anexo B (sem fronteira de
+  origem não há contrato a cumprir) e ele exigiria escrever dentro da fundação, o que o P1
+  proíbe. Descartado com número no mesmo ADR 0003.
+- **Modo anônimo do §B.3.1** (conteúdo público sem dado de usuário) — sem conteúdo público
+  neste ciclo, fica o estado "sem canal" da RF-18; a decisão está proposta para o ciclo
+  011 e vive na `[DÚVIDA] 2` do Clarify abaixo.
+- **Internacionalização consolidada com portão de literal órfão e documentação embutida**
+  (E8.3, E8.4) — ciclo 011
+  ([`../011-fundacoes-da-aplicacao/spec.md`](../011-fundacoes-da-aplicacao/spec.md)).
+- **Assistência de IA de qualquer natureza** — este ciclo não fala com provedor de modelo
+  nenhum, nem por biblioteca embutida: a assistência entra pelo catálogo governado do
+  ciclo 006 ([`../../docs/adr/0007-ia-somente-pela-fundacao.md`](../../docs/adr/0007-ia-somente-pela-fundacao.md)).
+
 ## Entregáveis
 
 - Serviço FastAPI mínimo: admissão fail-fast, porta de identidade + adaptador de

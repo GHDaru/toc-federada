@@ -468,6 +468,31 @@ Ações: manter, revogar — cada uma com justificativa; concluir quando zerar p
 com restrição, datas e desfecho; ciclo fechado somente leitura · Ações: abrir ciclo
 fechado, comparar restrições entre ciclos.
 
+## Fora de escopo
+
+- **Tambor-pulmão-corda (DBR), gestão de pulmões e contabilidade de ganho** — fora da v1
+  inteira pelo ADR 0005
+  ([`../../docs/adr/0005-escopo-do-dominio-v1.md`](../../docs/adr/0005-escopo-do-dominio-v1.md)),
+  que traz a medição colada: o grep de `tambor|drum|pulmão|buffer|focaliza|throughput`
+  sobre os nove diretórios da linhagem devolve **0 ocorrências em todos os nove** (F-01).
+  O roadmap fixa como pré-condição deste ciclo que aquele ADR esteja **inalterado**;
+  entrada futura exige ADR que o suceda.
+- **Métricas de desempenho da restrição** — taxa de utilização, fila acumulada, tempo de
+  atravessamento. Mesmo corte, e pelo mesmo motivo estrutural: nenhum dos oito módulos
+  planejados coleta dado de fluxo produtivo. A v1 registra **qual é** a restrição e **em
+  que passo** o ciclo está; não mede o que passa por ela.
+- **Sugestão assistida de qual ferramenta usar no passo** — é o item que o corte de apetite
+  do round 009 solta primeiro ([`../../docs/produto/rounds.md`](../../docs/produto/rounds.md));
+  fica a jornada guiada estática. A única assistência deste módulo é a sugestão de
+  restrição a partir da ARA, e ela nasce `action_proposal`.
+- **Reimplementar ARA, NC ou as árvores de futuro dentro da jornada** — a jornada
+  **referencia** projetos dessas ferramentas e herda o estado do passo anterior; um
+  segundo editor aqui seria a sétima cópia que o núcleo M1 existe para impedir.
+- **Apagar ou sobrescrever o ciclo anterior ao recomeçar** — o quinto passo abre um ciclo
+  novo apontando a nova restrição **sem apagar** o anterior: histórico é apêndice, nunca
+  sobrescrita (round 009). "Reiniciar do zero" não é operação deste módulo, e um
+  expurgo de histórico seria decisão nova.
+
 ## Entregáveis
 
 - Domínio Python puro do M6: agregado AnaliseDeFocalizacao, CicloDeFocalizacao com os

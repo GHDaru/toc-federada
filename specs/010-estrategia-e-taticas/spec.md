@@ -439,6 +439,33 @@ mesmas da ficha, em tabela (paridade RF-19).
 Campos: contagens por status, pendências lógicas com salto, progresso · Ações: filtrar
 por status, saltar ao passo pendente.
 
+## Fora de escopo
+
+- **Qualquer vínculo automático com APR/AT** — a ponte lógica entre o plano e a
+  implementação existe e está dita no "O quê e por quê", mas automatizá-la é **candidato a
+  evolução, decisão nova**, pelo *Fora* do round 010
+  ([`../../docs/produto/rounds.md`](../../docs/produto/rounds.md)). Este ciclo entrega a
+  ferramenta completa e autônoma sobre o núcleo M1.
+- **Assistência de IA sobre a árvore** — nenhuma ação `toc.*` nasce neste ciclo, e a INT-04
+  declara isso explicitamente para ninguém procurar. O round 010 não pede assistência para
+  a S&T; quando ela entrar, é decisão nova sob o ADR 0007
+  ([`../../docs/adr/0007-ia-somente-pela-fundacao.md`](../../docs/adr/0007-ia-somente-pela-fundacao.md)).
+- **Numeração digitada à mão** — não é escopo adiado, é defeito da linhagem que não
+  atravessa (F-05): o número é **derivado** da posição na árvore e renumera a subárvore a
+  cada mudança. Oferecer numeração manual junto seria manter vivo o defeito que este ciclo
+  existe para corrigir.
+- **Importação das árvores S&T da quarta geração** — a INT-03 já a delega: o adaptador de
+  formato legado é o E1.4 avançado, ciclo 011
+  ([`../011-fundacoes-da-aplicacao/spec.md`](../011-fundacoes-da-aplicacao/spec.md)). Aqui
+  entra só o JSON canônico do núcleo.
+- **Exportar a árvore para formato de apresentação** — slide, planilha, documento de texto.
+  A S&T é a ferramenta de comunicação do plano e a demanda é previsível; ainda assim a
+  exportação deste ciclo é o JSON canônico do M1, e cada formato novo é decisão nova, com
+  o seu custo de manutenção declarado.
+- **Prazo, responsável e percentual de conclusão por passo** — o E5.2 entrega os quatro
+  valores de status herdados da linhagem e nada além. Acompanhar quem faz o quê e quando é
+  o produto da irmã `gestaodeprioridades`, não esta v1.
+
 ## Entregáveis
 
 - Domínio Python puro do M5: agregado ArvoreSnT, PassoSnT com posição estrutural,

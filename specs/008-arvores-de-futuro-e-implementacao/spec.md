@@ -748,6 +748,34 @@ elo pendente.
 autoria · Campos: propostas pendentes por ação de origem · Ações: aceitar/recusar por
 item.
 
+## Fora de escopo
+
+- **Tratamento assistido de ramos negativos da ARF** — fica a **marcação manual** (F4.1.3),
+  por pré-condição do roadmap e pelo *Fora* do round 008
+  ([`../../docs/produto/rounds.md`](../../docs/produto/rounds.md)); poda assistida é
+  decisão nova, com o seu próprio contrato de ação.
+- **Estratégia & Táticas** — é o módulo M5, ciclo 010
+  ([`../010-estrategia-e-taticas/spec.md`](../010-estrategia-e-taticas/spec.md)). A APR e a
+  AT terminam no passo de transição; comunicar o plano em árvore hierárquica é a outra
+  ferramenta, e o vínculo automático entre as duas está fora **também lá**.
+- **A jornada dos cinco passos de focalização** — é o M6, ciclo 009
+  ([`../009-focalizacao/spec.md`](../009-focalizacao/spec.md)). Este ciclo entrega as
+  ferramentas que aquela jornada costura; a costura em si, não.
+- **Gestão de execução a partir da AT** — prazo, responsável, calendário, percentual de
+  conclusão. A AT registra a tripla ação · necessidade · resultado esperado e o status por
+  passo; priorizar e acompanhar o trabalho de pessoas é o produto da irmã
+  `gestaodeprioridades`, não esta v1. Entrada aqui seria escopo novo por ADR.
+- **Tambor-pulmão-corda e gestão de pulmões sobre os objetivos intermediários da APR** —
+  fora da v1 inteira por decisão com medição colada: o grep de
+  `tambor|drum|pulmão|buffer|focaliza|throughput` sobre os nove diretórios da linhagem
+  devolve **0** em todos os nove
+  ([`../../docs/adr/0005-escopo-do-dominio-v1.md`](../../docs/adr/0005-escopo-do-dominio-v1.md)).
+  Entrada futura exige ADR que suceda o 0005.
+- **Importação de ARF, APR ou AT da linhagem** — não existe formato legado a ler: as
+  quatro gerações entregaram item de menu desabilitado, zero componentes, zero prompts e
+  zero linhas de domínio (F-01, F-05, F-06, F-07). O E1.4 avançado do ciclo 011 lê o que a
+  linhagem de fato produziu, que não inclui estas três árvores.
+
 ## Entregáveis
 
 - Domínio Python puro do M4: extensões ARF/APR/AT do agregado Projeto, EspelhoDeUde,

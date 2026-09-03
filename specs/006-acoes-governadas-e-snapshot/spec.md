@@ -631,6 +631,34 @@ propostas pendentes.
 6. Tela 6.2 mostra o desfecho por alvo; `ghd.action_result` avisa o hospedeiro
    (palpite de UI); árvore mostra os 7 nós novos.
 
+## Fora de escopo
+
+Os três primeiros itens já estão declarados na INT-06 acima, "o que este ciclo NÃO
+integra"; repetem-se aqui porque exclusão que só vive numa integração não é lida por quem
+procura escopo.
+
+- **Projeção como servidor de contexto para modelo (Model Context Protocol) sem interface**
+  (APH-9.3) — decisão futura, **fora do alvo Nível 2 (Operador)** fixado no ADR 0003
+  ([`../../docs/adr/0003-federacao-aph-nivel-2-embedded.md`](../../docs/adr/0003-federacao-aph-nivel-2-embedded.md)).
+- **Preenchimento estruturado de parâmetro por diálogo** (*slot filling*, APH-6.4) —
+  candidato ao ciclo 011; aqui a ação chega com os parâmetros completos ou é recusada.
+- **Fila de aprovação por classe de risco** (APH-5.7) — enquanto existir uma classe
+  mutadora só, uma fila por classe seria estrutura sem função (a poda do princípio VII).
+- **O Nível 3 (Federado) do padrão APH** — as 7 caixas adicionais são papel de
+  **plataforma**, e a plataforma é a fundação; o ADR 0003 descartou mirá-lo com a medição
+  colada, e o Nível 3 é declarado experimental na norma.
+- **A porta única de modelo** (APH-8.1) — é da fundação **por desenho**: esta aplicação se
+  descreve (snapshot e catálogo) e governa (FSM e traço), e quem fala com modelo é a
+  fundação (ADR 0007). A matriz de aderência registra isso como **delegação declarada**,
+  nunca como conformidade nossa
+  ([`../../docs/integracao/aderencia-aph.md`](../../docs/integracao/aderencia-aph.md)).
+- **As ações `toc.*` da Nuvem de Conflito e das árvores de futuro** — nascem com os
+  módulos respectivos (ciclos 007 e 008) **sobre esta mesma** FSM, por re-admissão de
+  manifesto (RF-03). Construí-las aqui seria adivinhar o domínio antes da spec dele.
+- **Identidade, admissão e embarque** (E7.1, E7.2) — saem no ciclo 003; é o recorte
+  declarado acima, e nenhum requisito deles se repete aqui
+  ([`../003-esqueleto-federado/spec.md`](../003-esqueleto-federado/spec.md)).
+
 ## Entregáveis
 
 - Catálogo `toc.*` (fonte única `ActionSpec` → manifesto, catálogo servido, tools) +

@@ -31,23 +31,47 @@
 | **011** | Fundações da aplicação | E8.3 consolidada, E8.4, E1.4 avançado | plena |
 | **012** | Jornadas e autodeclaração | jornadas consolidadas, matriz de aderência APH, autodeclaração Nível 2 em ADR, site atualizado | plena |
 
-## Ciclo 001 — Fundação e planejamento (em andamento)
+## Ciclo 001 — Fundação e planejamento (entregue — aguardando o gate humano)
 
 Acertar a herança antes de qualquer outra coisa: a linhagem lida e **medida** (não
 lembrada), a constituição do projeto, as decisões estruturais em ADR com alternativas
 numeradas, o mapa de módulos, os rounds e as 12 specs — para que nenhuma geração 5ª
 comece do zero de novo (defeito D-10 da [`produto/visao.md`](produto/visao.md)).
 
-- Portão humano: o Product Steward ratifica constituição, os 8 ADRs e as respostas às
-  cinco perguntas da [`produto/visao.md`](produto/visao.md) §7 (ou o adiamento explícito
-  de cada uma).
-- Portão de revisão: revisão independente em contexto fresco sobre o corpus inteiro,
-  com as contas reconferidas (regra R1 — toda medição citada re-executa).
-- Portões executáveis: `scripts/check-install.sh`, `scripts/check-links.sh` e
-  `scripts/check-caminhos.sh` verdes, **com o tamanho do que examinaram na saída**
-  (regra R2).
-- Portão de honestidade: nenhum selo 🟢 sem `arquivo:linha`; nenhuma contagem sem a
-  saída colada.
+**Estado em 2026-09-03: o corpus está entregue e os portões rodaram; a aprovação não
+existe ainda.** A evidência completa — comando, código de saída e denominador de cada
+portão — está em
+[`../specs/001-fundacao-e-planejamento/qa-report.md`](../specs/001-fundacao-e-planejamento/qa-report.md).
+Foram **17 verificações distintas: 15 verdes e 2 vermelhas**, as duas diagnosticadas com
+causa raiz e **nenhuma afrouxada**. O ciclo **não está promovido**: enquanto o Product
+Steward não assinar, ele está entregue, não aprovado — e nada do ciclo 002 começa.
+
+- Portão humano — **ABERTO, indelegável**: o Product Steward ratifica a constituição, os
+  8 ADRs e as respostas às cinco perguntas da
+  [`produto/visao.md`](produto/visao.md) §7 (ou o adiamento explícito de cada uma), decide
+  os dois achados vermelhos e autoriza a promoção `dev` → `main`.
+- Portão de revisão — **cumprido**: a revisão independente foi um **gauntlet de crítica às
+  cegas**, 10 peças julgadas por críticos em contexto fresco contra dois corpora externos
+  (o da irmã `gestaodeprioridades` e o do PROJETO_ECS). Placar: 9 vitórias na primeira
+  rodada, **uma derrota real** — a visão de produto, por circularidade da base autoral —,
+  retrabalho dirigido pela lacuna nomeada e vitória no rejulgamento: **10/10**. Os achados
+  que ficaram abertos estão listados no `qa-report.md` §5, não foram apagados.
+- Portões executáveis — **verdes, com o denominador na saída** (regra R2):
+  `scripts/check-install.sh` (7 camadas, 6 skills) · `scripts/check-links.sh`
+  (`checked: 337`) · `scripts/check-caminhos.sh` (74 arquivos, 572 caminhos) ·
+  `scripts/check-specs.sh` (12 ciclos, 628 verificações) · `scripts/check-rounds.sh`
+  (11 rounds, 77 conferências) · `scripts/check-adrs-sucessao.sh` (8 ADRs, 32
+  verificações) · `scripts/tests/run-sabotagem.sh` (4 bases aceitas, 23 sabotagens
+  reprovadas) · `python3 docs/produto/dados/medir-base.py` (base sintética válida).
+- Portões executáveis — **vermelhos, declarados em vez de contornados**:
+  `scripts/check-conformance.sh 001` sai 1 por causa **externa** (os pisos do script são
+  números absolutos de ciclo do repositório canônico do método, e um repositório que
+  começa em 001 nunca os alcança — P1 impede consertar lá, então foi relatado e parado);
+  e a **linha 11 da DoD** conta 1 onde espera 0, porque casa o *caminho* citado no bloco
+  de evidência do ADR 0006 — um comando que imprime só contagens — e não conteúdo
+  vazado. Os dois aguardam decisão no gate humano.
+- Portão de honestidade — **cumprido**: nenhum selo 🟢 sem `arquivo:linha`; nenhuma
+  contagem sem a saída colada; nenhuma caixa marcada sem a evidência escrita ao lado.
 
 ### O que o ciclo 001 não pode começar sem
 

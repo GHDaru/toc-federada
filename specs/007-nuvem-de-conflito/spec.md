@@ -582,6 +582,31 @@ injeção ↔ premissa, filtrar por status.
 premissas × injeções, progresso de completude · Ações: as mesmas da ficha de aresta,
 em tabela (paridade RI-10).
 
+## Fora de escopo
+
+- **Semear a ARF a partir da injeção escolhida** — a costura existe como dado nesta spec
+  (INT-06, com ReferenciaDeSemeadura criada vazia), mas a **execução é do ciclo 008**,
+  no épico do encadeamento; o mesmo vale para promover o UDE da ARA para cá (INT-05). O
+  *Fora* do round 007 diz exatamente isto
+  ([`../../docs/produto/rounds.md`](../../docs/produto/rounds.md)).
+- **Gerar a nuvem a partir de áudio ou transcrição de reunião** — a entrada da geração
+  assistida deste ciclo é **narrativa em texto**. Áudio traria captura, transcrição e
+  consentimento de gravação, que são um módulo, não um parâmetro: decisão nova.
+- **Montar a nuvem por análise de texto livre da resposta do modelo** — não é corte de
+  apetite, é defeito medido que não atravessa: o parser por expressão regular da linhagem
+  devolvia `null` inteiro a qualquer variação de formato (F-03, F-04). Aqui a ação devolve
+  resultado estruturado validado por schema, ou recusa.
+- **Biblioteca de nuvens prontas ou catálogo de conflitos genéricos** — nenhuma geração da
+  linhagem esboçou isso e não há demanda medida; incluir modelos de conflito é decisão
+  nova, e ela colide com a regra de que a nuvem é do dilema de quem a escreve.
+- **Derivar injeções automaticamente das cinco separações TRIZ** — a skill
+  `toc-evaporating-cloud` é fonte técnica de **apoio à formulação** (F-10), e é assim que
+  entra: as separações orientam a pessoa. Transformá-las em gerador é decisão nova.
+- **Qualquer chamada a provedor de modelo a partir do navegador** — o prompt de 75 linhas
+  no cliente, servido pelo SDK com a chave no navegador, é o defeito D-01 que o ADR 0007
+  mata ([`../../docs/adr/0007-ia-somente-pela-fundacao.md`](../../docs/adr/0007-ia-somente-pela-fundacao.md));
+  a geração assistida passa pelo catálogo do ciclo 006.
+
 ## Entregáveis
 
 - Domínio Python puro do M3: agregado NuvemDeConflito com topologia fixa, Premissa,
