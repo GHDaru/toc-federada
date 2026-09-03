@@ -123,34 +123,34 @@
       <div class="tl-item fix">
         <div class="tl-card">
           <div class="tl-top"><span class="tl-num">001</span><span class="tl-title">Fundação e planejamento</span><span class="tl-mod"></span></div>
-          <p class="tl-desc">este corpus: método instalado, constituição, visão medida da linhagem, 8 ADRs, 12 specs, roadmap, site de produto</p>
+          <p class="tl-desc">Este corpus: método instalado, constituição, visão medida da linhagem, 8 ADRs, 12 specs, roadmap, site de produto</p>
           <div class="tl-meta"><span class="pill wip">em curso</span><span class="pill muted">raia plena</span><span class="pill muted">12 RF · 0 RI · 5 RNF</span><span class="artifacts"><a href="../../specs/001-fundacao-e-planejamento/spec.md">spec.md</a><a href="../../specs/001-fundacao-e-planejamento/plan.md">plan.md</a><a href="../../specs/001-fundacao-e-planejamento/qa-report.md">qa-report.md</a><a href="../../specs/001-fundacao-e-planejamento/tasks.md">tasks.md</a></span></div>
           <p class="sublabel">Portões deste ciclo (4)</p>
-          <ul class="gatelist"><li>Portão humano: o Product Steward ratifica constituição, os 8 ADRs e as respostas às cinco perguntas da [<code>produto/visao.md</code>](produto/visao.md) §7 (ou o adiamento explícito de cada uma).</li><li>Portão de revisão: revisão independente em contexto fresco sobre o corpus inteiro, com as contas reconferidas (regra R1 — toda medição citada re-executa).</li><li>Portões executáveis: <code>scripts/check-install.sh</code>, <code>scripts/check-links.sh</code> e <code>scripts/check-caminhos.sh</code> verdes, com o tamanho do que examinaram na saída (regra R2).</li><li>Portão de honestidade: nenhum selo 🟢 sem <code>arquivo:linha</code>; nenhuma contagem sem a saída colada.</li></ul>
+          <ul class="gatelist"><li>Portão humano: o Product Steward ratifica constituição, os 8 ADRs e as respostas às cinco perguntas da <code>docs/produto/visao.md</code> §7 (ou o adiamento explícito de cada uma).</li><li>Portão de revisão: revisão independente em contexto fresco sobre o corpus inteiro, com as contas reconferidas (regra R1 — toda medição citada re-executa).</li><li>Portões executáveis: <code>scripts/check-install.sh</code>, <code>scripts/check-links.sh</code> e <code>scripts/check-caminhos.sh</code> verdes, com o tamanho do que examinaram na saída (regra R2).</li><li>Portão de honestidade: nenhum selo 🟢 sem <code>arquivo:linha</code>; nenhuma contagem sem a saída colada.</li></ul>
           <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
-          <ul class="entrylist"><li>O método Maestro instalado pelo instalador oficial e verificado (<code>scripts/check-install.sh</code>) — feito, é a condição em que este repositório nasceu.</li><li>A linhagem inteira legível na sessão (as quatro gerações e os cinco natimortos) — feito, contagem colada na [<code>produto/visao.md</code>](produto/visao.md) §3.</li></ul>
+          <ul class="entrylist"><li>O método Maestro instalado pelo instalador oficial e verificado (<code>scripts/check-install.sh</code>) — feito, é a condição em que este repositório nasceu.</li><li>A linhagem inteira legível na sessão (as quatro gerações e os cinco natimortos) — feito, contagem colada na <code>docs/produto/visao.md</code> §3.</li></ul>
         </div>
       </div>
       <div class="tl-item ">
         <div class="tl-card">
           <div class="tl-top"><span class="tl-num">002</span><span class="tl-title">Protótipo de interfaces</span><span class="tl-mod"></span></div>
-          <p class="tl-desc">protótipo descartável + <code>ux-design.md</code> + jornadas com capturas geradas por script</p>
+          <p class="tl-desc">Protótipo descartável + <code>ux-design.md</code> + jornadas com capturas geradas por script</p>
           <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">9 RF · 14 RI · 5 RNF</span><span class="artifacts"><a href="../../specs/002-prototipo-de-interfaces/spec.md">spec.md</a><a href="../../specs/002-prototipo-de-interfaces/plan.md">plan.md</a><a href="../../specs/002-prototipo-de-interfaces/qa-report.md">qa-report.md</a><a href="../../specs/002-prototipo-de-interfaces/tasks.md">tasks.md</a></span></div>
           <p class="sublabel">Portões deste ciclo (3)</p>
           <ul class="gatelist"><li>Portão humano: o Product Steward aprova o corte de telas (o que da densidade do canvas + vista tabular sobrevive num iframe estreito).</li><li>Portão executável: capturas regeneram byte-idênticas ao rodar o script de novo; <code>scripts/check-caminhos.sh</code> verde sobre as jornadas.</li><li>Portão de revisão: avaliação heurística datada por jornada, no mesmo pull request.</li></ul>
           <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
-          <ul class="entrylist"><li>O gate humano do ciclo 001 fechado — em particular a pergunta 1 da [<code>produto/visao.md</code>](produto/visao.md) §7 (colaboração por projeto ou isolamento por usuário) respondida, porque ela muda as telas de projeto do E1.1.</li><li>As specs dos módulos M1–M3 aprovadas ao menos em rascunho ratificado (os requisitos de interface saem delas).</li></ul>
+          <ul class="entrylist"><li>O gate humano do ciclo 001 fechado — em particular a pergunta 1 da <code>docs/produto/visao.md</code> §7 (colaboração por projeto ou isolamento por usuário) respondida, porque ela muda as telas de projeto do E1.1.</li><li>As specs dos módulos M1–M3 aprovadas ao menos em rascunho ratificado (os requisitos de interface saem delas).</li></ul>
         </div>
       </div>
       <div class="tl-item infra">
         <div class="tl-card">
           <div class="tl-top"><span class="tl-num">003</span><span class="tl-title">Esqueleto federado</span><span class="tl-mod">M7 M8</span></div>
-          <p class="tl-desc">a junta fecha contra a <code>ghdaru</code> real: admissão, introspecção, manifesto, embarque, banco próprio, OTel, CI</p>
+          <p class="tl-desc">A junta fecha contra a <code>ghdaru</code> real: admissão, introspecção, manifesto, embarque, banco próprio, OTel, CI</p>
           <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill demo">raia infra</span><span class="pill muted">39 RF · 8 RI · 10 RNF</span><span class="artifacts"><a href="../../specs/003-esqueleto-federado/spec.md">spec.md</a><a href="../../specs/003-esqueleto-federado/data-model.md">data-model.md</a><a href="../../specs/003-esqueleto-federado/plan.md">plan.md</a><a href="../../specs/003-esqueleto-federado/qa-report.md">qa-report.md</a><a href="../../specs/003-esqueleto-federado/tasks.md">tasks.md</a><a href="../../specs/003-esqueleto-federado/contracts/parametros-de-admissao.md">contracts/parametros-de-admissao.md</a></span></div>
           <p class="sublabel">Portões deste ciclo (4)</p>
           <ul class="gatelist"><li>Portão executável (a aptidão mais importante do roadmap): &quot;a junta fecha contra a <code>ghdaru</code> real&quot; — manifesto aceito pela rota de administração real, grant trocado por identidade em <code>POST /auth/introspect</code> servidor a servidor, <code>ev.source</code> e <code>origin</code> verificados, falha fechada com a fundação indisponível, traço OTel de ponta a ponta. Nada disso contra shell simulado.</li><li>Portão executável: migração Alembic aplicada num Neon limpo e revertida sem resíduo.</li><li>Portão de segurança: passagem de segurança em contexto fresco sobre a admissão e o embarque (a irmã achou quatro furos na dela; assumir que não temos seria vaidade).</li><li>Portão humano: aprovação do endereço publicado (eTLD+1 distinto do hospedeiro) — é irreversível na prática, porque entra no manifesto que circula.</li></ul>
           <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
-          <ul class="entrylist"><li>A re-medição dos três bloqueios externos declarados no round 003 de [<code>produto/rounds.md</code>](produto/rounds.md): o alinhamento dos schemas de manifesto (quando a irmã mediu, 4 erros — mutuamente exclusivos), a fatia de federação ligada no hospedeiro, e o estado dos grants em memória. Se o primeiro persistir, o ciclo entra mesmo assim e entrega tudo menos o registro do manifesto — com mensagem nossa referenciando a da irmã.</li><li>ADR 0002 (stack) e ADR 0003 (federação) ratificados — o ciclo é a execução deles.</li></ul>
+          <ul class="entrylist"><li>A re-medição dos três bloqueios externos declarados no round 003 de <code>docs/produto/rounds.md</code>: o alinhamento dos schemas de manifesto (quando a irmã mediu, 4 erros — mutuamente exclusivos), a fatia de federação ligada no hospedeiro, e o estado dos grants em memória. Se o primeiro persistir, o ciclo entra mesmo assim e entrega tudo menos o registro do manifesto — com mensagem nossa referenciando a da irmã.</li><li>ADR 0002 (stack) e ADR 0003 (federação) ratificados — o ciclo é a execução deles.</li></ul>
         </div>
       </div>
       <div class="tl-item ">
@@ -178,12 +178,12 @@
       <div class="tl-item ">
         <div class="tl-card">
           <div class="tl-top"><span class="tl-num">006</span><span class="tl-title">Ações governadas e snapshot</span><span class="tl-mod">M7</span></div>
-          <p class="tl-desc">catálogo <code>toc.*</code>, FSM de proposta, registro de telas, snapshot, wire Nível 1</p>
+          <p class="tl-desc">Catálogo <code>toc.*</code>, FSM de proposta, registro de telas, snapshot, wire Nível 1</p>
           <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">48 RF · 12 RI · 10 RNF</span><span class="artifacts"><a href="../../specs/006-acoes-governadas-e-snapshot/spec.md">spec.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/plan.md">plan.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/qa-report.md">qa-report.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/tasks.md">tasks.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/contracts/manifesto.json">contracts/manifesto.json</a></span></div>
           <p class="sublabel">Portões deste ciclo (3)</p>
           <ul class="gatelist"><li>Portão executável: sem capability de escrita, as ações mutadoras somem do catálogo (teste, com a contagem antes/depois na saída).</li><li>Portão executável: nenhuma mutação proposta por modelo aplica fora da FSM; snapshot sem campo <code>ai_visible: false</code>; replay por <code>seq</code> testado.</li><li>Portão humano: o catálogo <code>toc.*</code> aprovado ação a ação (nomes, riscos, capabilities) — é contrato que circula no manifesto.</li></ul>
           <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
-          <ul class="entrylist"><li>O ciclo 005 promovido (as primeiras ações operam sobre a ARA).</li><li>Os dois bloqueios externos do round 006 re-medidos e aceitos como limite de alcance ([<code>produto/rounds.md</code>](produto/rounds.md)): ação federada sem credencial do lado do host (F7 pendente — <code>ghdaru/docs/adr/0023-acoes-federadas-por-adapter-remoto.md</code>) e grant sem interseção com o usuário. A nossa borda nasce recusando chamada não autenticada; o que fica limitado é a execução disparada do harness, não a FSM.</li></ul>
+          <ul class="entrylist"><li>O ciclo 005 promovido (as primeiras ações operam sobre a ARA).</li><li>Os dois bloqueios externos do round 006 re-medidos e aceitos como limite de alcance (<code>docs/produto/rounds.md</code>): ação federada sem credencial do lado do host (F7 pendente — <code>ghdaru/docs/adr/0023-acoes-federadas-por-adapter-remoto.md</code>) e grant sem interseção com o usuário. A nossa borda nasce recusando chamada não autenticada; o que fica limitado é a execução disparada do harness, não a FSM.</li></ul>
         </div>
       </div>
       <div class="tl-item ">
@@ -227,7 +227,7 @@
           <p class="sublabel">Portões deste ciclo (2)</p>
           <ul class="gatelist"><li>Portão executável: teste de renumeração da subárvore; as três premissas persistidas.</li><li>Portão de jornada: uma S&amp;T sintética de três níveis, com captura.</li></ul>
           <p class="sublabel">O que o ciclo não pode começar sem (1)</p>
-          <ul class="entrylist"><li>O ciclo 004 promovido (é a única dependência técnica; a posição tardia é escolha de valor registrada em [<code>produto/rounds.md</code>](produto/rounds.md)).</li></ul>
+          <ul class="entrylist"><li>O ciclo 004 promovido (é a única dependência técnica; a posição tardia é escolha de valor registrada em <code>docs/produto/rounds.md</code>).</li></ul>
         </div>
       </div>
       <div class="tl-item ">
@@ -244,7 +244,7 @@
       <div class="tl-item ">
         <div class="tl-card">
           <div class="tl-top"><span class="tl-num">012</span><span class="tl-title">Jornadas e autodeclaração</span><span class="tl-mod"></span></div>
-          <p class="tl-desc">jornadas consolidadas, matriz de aderência APH, autodeclaração Nível 2 em ADR, site atualizado</p>
+          <p class="tl-desc">Jornadas consolidadas, matriz de aderência APH, autodeclaração Nível 2 em ADR, site atualizado</p>
           <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">24 RF · 6 RI · 8 RNF</span><span class="artifacts"><a href="../../specs/012-jornadas-e-autodeclaracao/spec.md">spec.md</a><a href="../../specs/012-jornadas-e-autodeclaracao/plan.md">plan.md</a><a href="../../specs/012-jornadas-e-autodeclaracao/qa-report.md">qa-report.md</a><a href="../../specs/012-jornadas-e-autodeclaracao/tasks.md">tasks.md</a></span></div>
           <p class="sublabel">Portões deste ciclo (3)</p>
           <ul class="gatelist"><li>Portão executável: todas as capturas regeneram do build atual; o site regenerado não diverge do commitado (diff vazio em CI).</li><li>Portão de revisão: a matriz de aderência com um veredito por requisito APH, cada um com evidência por caminho — revisada em contexto fresco.</li><li>Portão humano: o Product Steward assina a autodeclaração — é ela que circula para fora do repositório.</li></ul>

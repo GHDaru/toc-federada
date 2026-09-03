@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import posixpath
 import re
 import sys
 from pathlib import Path
@@ -56,6 +57,27 @@ def _strip_emphasis(s: str) -> str:
 
 def _collapse(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
+
+
+_LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)\s]+)\)")
+
+
+def _delink(s: str, base: str = "") -> str:
+    """Troca o link markdown pelo caminho que ele aponta, resolvido a partir da raiz do
+    repositório e em fonte de código.
+
+    Sem isto, a prosa extraída chegaria ao navegador como `[`visao.md`](visao.md)` — texto
+    cru de markdown numa página HTML, que é o cheiro de gerador que não lê o que copia.
+    O caminho resolvido é mais útil que o rótulo: diz onde o fato mora.
+    """
+    def rep(m: re.Match[str]) -> str:
+        label = m.group(1).strip().strip("`")
+        target = m.group(2)
+        if target.startswith(("http://", "https://", "#", "mailto:")):
+            return label or target
+        path = posixpath.normpath(posixpath.join(base, target)) if base else posixpath.normpath(target)
+        return f"`{path}`"
+    return _LINK_RE.sub(rep, s)
 
 
 def _section(text: str, title_pattern: str) -> str:
@@ -140,10 +162,16 @@ def _extract_kind(text: str, prefix: str, section_title: str) -> tuple[list[dict
             continue
         seen.add(rid)
         desc = _collapse(m.group(2))
-        seal = _seal(desc)
+        # O selo do requisito é o que fecha a linha. Selo no meio do texto é conteúdo
+        # (ex.: "(linhagem 🟢, planejado 🟡)") e fica onde está — apagá-lo mutilaria a frase.
+        trailing = re.search(r"([🟢🟡🔴])\s*$", desc)
+        seal = trailing.group(1) if trailing else ""
+        if trailing:
+            desc = desc[:trailing.start()]
         refs = re.findall(r"F-\d+", desc)
-        desc = _strip_emphasis(_SEAL_RE.sub("", desc)).strip()
-        desc = re.sub(r"\s*\[(?:F-\d+(?:,\s*)?)+\]\s*", " ", desc).strip()
+        desc = _strip_emphasis(desc).strip()
+        desc = re.sub(r"\s*\[(?:F-\d+(?:,\s*)?)+\]\s*", " ", desc)
+        desc = re.sub(r"\s+([,.;:)])", r"\1", desc).strip(" .·—-")
         reqs.append({
             "id": rid,
             "d": _collapse(desc),
@@ -196,10 +224,15 @@ def _extract_sources(text: str, project: Path) -> list[dict]:
     for m in pat.finditer(section):
         tag = m.group(1)
         body = _collapse(m.group(2))
-        seal = _seal(body)
-        body_clean = _SEAL_RE.sub("", body).strip(" —·-")
-        path_m = re.match(r"([^\s—]+?)(?::(\d[\d\-–,]*))?\s*[—–-]\s*(.*)$", body_clean)
-        if path_m:
+        trailing = re.search(r"([🟢🟡🔴])\s*$", body)
+        seal = trailing.group(1) if trailing else ""
+        body_clean = (body[:trailing.start()] if trailing else body).strip(" —·-")
+        # O separador é travessão **cercado de espaço**: um hífen simples pertence ao nome
+        # do arquivo (`padrao-aph.md`), e tratá-lo como separador partia a fonte ao meio.
+        path_m = re.match(
+            r"`?([^\s`]+?)(?::(\d[\d,\u2013\u2014-]*))?`?\s+[\u2014\u2013]\s+(.*)$",
+            body_clean)
+        if path_m and "/" in path_m.group(1):
             path = path_m.group(1)
             lines = path_m.group(2) or ""
             desc = path_m.group(3)
@@ -208,9 +241,13 @@ def _extract_sources(text: str, project: Path) -> list[dict]:
         internal = False
         rel = path
         if path:
-            p = path.lstrip("./")
-            if (project / p).exists():
-                internal, rel = True, p
+            candidate = path
+            prefix = str(project) + "/"
+            if candidate.startswith(prefix):        # fonte deste mesmo repositório
+                candidate = candidate[len(prefix):]
+            candidate = candidate.lstrip("./")
+            if not candidate.startswith("/") and (project / candidate).exists():
+                internal, rel = True, candidate
         sources.append({
             "tag": tag,
             "path": path,
@@ -388,9 +425,9 @@ def _group_requirements_into_features(reqs: list[dict], groups: list[dict]) -> l
 def discover_specs(project: Path) -> list[dict]:
     specs = []
     for spec_md in sorted(project.glob("specs/*/spec.md")):
-        text = _read(spec_md)
         spec_dir = spec_md.parent
         spec_id = spec_dir.name
+        text = _delink(_read(spec_md), f"specs/{spec_id}")
         num = spec_id.split("-")[0]
         title = _first_line_heading(text) or spec_id
         reqs = _extract_requirements(text)
@@ -444,7 +481,7 @@ _MODULE_COLORS = ["#5b5bd6", "#2b6cb0", "#1a7a4c", "#b06b00", "#8b5cf6", "#0f766
 
 def discover_modules(project: Path) -> list[dict]:
     """Lê o mapa M1–M8 de `docs/produto/modulos.md` (tabela + seção por módulo)."""
-    text = _read(project / "docs" / "produto" / "modulos.md")
+    text = _delink(_read(project / "docs" / "produto" / "modulos.md"), "docs/produto")
     if not text:
         return []
     modules: list[dict] = []
@@ -464,7 +501,8 @@ def discover_modules(project: Path) -> list[dict]:
         body = sec.group(1) if sec else ""
         job = re.search(r"\*\*O job\*\*:\s*(.+?)(?=\n\n)", body, re.S)
         if job:
-            mod["job"] = _collapse(_strip_emphasis(job.group(1)))
+            j = _collapse(_strip_emphasis(job.group(1)))
+            mod["job"] = (j[0].upper() + j[1:]) if j else j
         for e in re.finditer(r"^\|\s*(E\d\.\d)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*$", body, re.M):
             mod["epics"].append({
                 "id": e.group(1),
@@ -519,7 +557,7 @@ def discover_adrs(project: Path) -> list[dict]:
     for f in sorted(project.glob("docs/adr/*.md")):
         if f.name == "README.md":
             continue
-        text = _read(f)
+        text = _delink(_read(f), "docs/adr")
         title = _first_line_heading(text)
         m = re.search(r"(\d+)", f.name)
         n = m.group(1) if m else ""
@@ -548,7 +586,7 @@ def discover_adrs(project: Path) -> list[dict]:
 def discover_principles(project: Path) -> list[dict]:
     """P1–P7 da constituição do projeto — aplicam-se a todas as specs, por isso são
     extraídos uma vez (o original os copiava dentro de cada spec e inflava a contagem)."""
-    text = _read(project / "docs" / "governance" / "constitution.md")
+    text = _delink(_read(project / "docs" / "governance" / "constitution.md"), "docs/governance")
     out = []
     for m in re.finditer(r"^###\s+(P\d)\.\s+(.+?)$", text, re.M):
         title = _strip_emphasis(m.group(2))
@@ -655,7 +693,7 @@ def extract_stack(project: Path) -> dict:
 
 def extract_overview(project: Path, specs: list[dict], modules: list[dict],
                      adrs: list[dict], counts: dict) -> dict:
-    visao = _read(project / "docs" / "produto" / "visao.md")
+    visao = _delink(_read(project / "docs" / "produto" / "visao.md"), "docs/produto")
     lede = ""
     for para in visao.split("\n\n"):
         p = para.strip()
@@ -703,13 +741,14 @@ def extract_overview(project: Path, specs: list[dict], modules: list[dict],
 # ──────────────────────────────────────────────────────────────────────
 
 def extract_roadmap(project: Path, specs: list[dict]) -> dict:
-    text = _read(project / "docs" / "roadmap.md")
+    text = _delink(_read(project / "docs" / "roadmap.md"), "docs")
     cycles: list[dict] = []
     for m in re.finditer(r"^\|\s*\*\*(\d{3})\*\*\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*$", text, re.M):
+        desc = _collapse(_strip_emphasis(m.group(3)))
         cycles.append({
             "num": m.group(1),
             "title": _strip_emphasis(m.group(2)),
-            "desc": _collapse(_strip_emphasis(m.group(3))),
+            "desc": (desc[0].upper() + desc[1:]) if desc else desc,
             "raia": _strip_emphasis(m.group(4)),
             "portoes": [], "entrada": [], "state": "planejado",
         })

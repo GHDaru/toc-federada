@@ -189,6 +189,9 @@ def _prep(data: dict) -> None:
     princípio, fonte — é escapado e recebe apenas <code> e <b>. Sem esta passagem, um
     requisito que cita `<repo>` some dentro do navegador.
     """
+    ov = data.get("overview", {})
+    if ov.get("lede"):
+        ov["lede"] = _md(ov["lede"])
     for a in data.get("adrs", []):
         a["title"] = _md(a.get("title", ""))
         a["description"] = _md(a.get("description", ""))
@@ -213,7 +216,8 @@ def _prep(data: dict) -> None:
             if src.get("lines"):
                 tip += ":" + src["lines"]
             tip += " — " + (src.get("desc", "") or "")
-            src["t"] = _e(tip)
+            # Tooltip é texto puro: marcação de markdown ali vira ruído visível.
+            src["t"] = _e(re.sub(r"[*`]", "", tip))
         for c in m.get("chain", []):
             c["label"] = _e(c.get("label", ""))
 
@@ -678,7 +682,12 @@ function renderModule(m){
     if(typeFilter!=="all" && typeFilter!==k.id) continue;
     const rows = m[k.key];
     if(!rows.length) continue;
-    const html = rows.map(r=>`<div class="req-row ${k.cls}"><span class="req-id">${seal(r)}${r.id}</span><span class="req-desc">${r.group?`<span class="req-group">${r.group}</span>`:""}${r.d}</span><span class="req-src">${srcLinks(r,m)}</span></div>`).join("");
+    let last = "";
+    const html = rows.map(r=>{
+      const head = (r.group && r.group!==last) ? `<span class="req-group">${r.group}</span>` : "";
+      last = r.group || last;
+      return `<div class="req-row ${k.cls}"><span class="req-id">${seal(r)}${r.id}</span><span class="req-desc">${head}${r.d}</span><span class="req-src">${srcLinks(r,m)}</span></div>`;
+    }).join("");
     tables += `<div class="req-table"><div class="rt-head"><span>ID</span><span>${k.head} — ${rows.length} ${k.id}</span><span class="rt-src">Fonte (backward)</span></div>${html}</div>`;
   }
   return `
