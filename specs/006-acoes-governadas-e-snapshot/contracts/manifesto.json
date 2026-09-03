@@ -1,0 +1,230 @@
+{
+  "app_id": "toc",
+  "name": "TOC Federada",
+  "description": "Processos de Pensamento da Teoria das Restricoes (ARA, Nuvem de Conflito, ARF, APR, AT, S&T) como aplicacao federada da plataforma GHDaru. Rascunho do ciclo 001: url e origin usam o dominio reservado .example ate o endereco real ser aprovado no gate do ciclo 003 ([DUVIDA] 1 da spec 003); o catalogo toc.* abaixo e aprovado acao a acao no gate do ciclo 006.",
+  "owner": "GHDaru",
+  "repository": "https://github.com/GHDaru/toc-federada",
+  "mode": "embedded",
+  "mount": "iframe",
+  "url": "https://toc-federada.example/toc/embarcado",
+  "origin": "https://toc-federada.example",
+  "endpoints": {
+    "introspect": "/auth/introspect",
+    "openapi": "https://toc-federada.example/aph/openapi.json"
+  },
+  "theme": {
+    "consumes_tenant_tokens": true,
+    "tokens_used": [
+      "color-primary",
+      "color-surface",
+      "color-text",
+      "color-danger"
+    ],
+    "fallback": true
+  },
+  "screens": [
+    {
+      "id": "toc.projetos",
+      "route": "/toc/projetos",
+      "title": "Projetos",
+      "ai_actions": ["READ", "NAVIGATE"]
+    },
+    {
+      "id": "toc.ara",
+      "route": "/toc/ara",
+      "title": "Arvore da Realidade Atual",
+      "ai_actions": ["READ", "FILL_FIELDS", "SUBMIT", "NAVIGATE"]
+    },
+    {
+      "id": "toc.lixeira",
+      "route": "/toc/lixeira",
+      "title": "Lixeira",
+      "ai_actions": ["READ"]
+    },
+    {
+      "id": "toc.configuracao",
+      "route": "/toc/configuracao",
+      "title": "Configuracao do embarque",
+      "ai_actions": []
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "toc.listar_projetos",
+      "title": "Listar projetos",
+      "description": "Lista os projetos TOC do tenant do principal, com ferramenta e ultima atualizacao.",
+      "risk": "read",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ferramenta": {
+            "type": "string",
+            "description": "Filtro opcional por ferramenta (ex.: ara)"
+          }
+        }
+      },
+      "ui_route": "/toc/projetos",
+      "intent_keywords": ["projetos", "listar", "arvores"]
+    },
+    {
+      "action_id": "toc.sugerir_udes",
+      "title": "Sugerir Efeitos Indesejaveis",
+      "description": "A partir de uma narrativa, sugere candidatos a Efeito Indesejavel (UDE) para a Arvore da Realidade Atual. Nao grava nada: o resultado e rascunho ate a Facilitadora registrar.",
+      "risk": "read",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["projeto_id", "narrativa"],
+        "properties": {
+          "projeto_id": { "type": "string" },
+          "narrativa": { "type": "string", "maxLength": 8000 }
+        }
+      },
+      "ui_route": "/toc/ara",
+      "intent_keywords": ["ude", "efeito indesejavel", "sugerir"]
+    },
+    {
+      "action_id": "toc.analisar_suficiencia",
+      "title": "Analisar suficiencia causal",
+      "description": "Analisa a arvore atual e aponta relacoes causais com suficiencia fragil. Somente leitura.",
+      "risk": "read",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["projeto_id"],
+        "properties": {
+          "projeto_id": { "type": "string" }
+        }
+      },
+      "ui_route": "/toc/ara",
+      "intent_keywords": ["suficiencia", "analisar", "causa"]
+    },
+    {
+      "action_id": "toc.criar_nos",
+      "title": "Criar nos na arvore",
+      "description": "Cria um ou N nos (lote: uma proposta com N alvos, APH-5.9) no projeto indicado. Mutadora: nasce proposta e atravessa a FSM.",
+      "risk": "confirm",
+      "reversible": true,
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["projeto_id", "nos"],
+        "properties": {
+          "projeto_id": { "type": "string" },
+          "nos": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["titulo", "tipo"],
+              "properties": {
+                "titulo": { "type": "string", "maxLength": 300 },
+                "tipo": { "type": "string", "enum": ["ude", "causa", "causa_raiz"] }
+              }
+            }
+          }
+        }
+      },
+      "ui_route": "/toc/ara",
+      "intent_keywords": ["criar", "adicionar", "no", "ude"]
+    },
+    {
+      "action_id": "toc.criar_arestas",
+      "title": "Ligar causas e efeitos",
+      "description": "Cria uma ou N arestas causais (lote: uma proposta com N alvos) entre nos existentes. Mutadora: nasce proposta.",
+      "risk": "confirm",
+      "reversible": true,
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["projeto_id", "arestas"],
+        "properties": {
+          "projeto_id": { "type": "string" },
+          "arestas": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["origem_id", "destino_id"],
+              "properties": {
+                "origem_id": { "type": "string" },
+                "destino_id": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "ui_route": "/toc/ara",
+      "intent_keywords": ["ligar", "aresta", "causa", "efeito"]
+    },
+    {
+      "action_id": "toc.atualizar_no",
+      "title": "Atualizar um no",
+      "description": "Altera titulo ou tipo de um no existente. Mutadora: nasce proposta.",
+      "risk": "confirm",
+      "reversible": true,
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["projeto_id", "no_id"],
+        "properties": {
+          "projeto_id": { "type": "string" },
+          "no_id": { "type": "string" },
+          "titulo": { "type": "string", "maxLength": 300 },
+          "tipo": { "type": "string", "enum": ["ude", "causa", "causa_raiz"] }
+        }
+      },
+      "ui_route": "/toc/ara",
+      "intent_keywords": ["atualizar", "renomear", "editar"]
+    },
+    {
+      "action_id": "toc.excluir_nos",
+      "title": "Excluir nos (exclusao suave)",
+      "description": "Move um ou N nos (lote) e suas arestas incidentes para a lixeira. Reversivel pela restauracao; a exclusao definitiva nao esta no catalogo.",
+      "risk": "confirm",
+      "reversible": true,
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["projeto_id", "no_ids"],
+        "properties": {
+          "projeto_id": { "type": "string" },
+          "no_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "ui_route": "/toc/ara",
+      "intent_keywords": ["excluir", "remover", "lixeira"]
+    },
+    {
+      "action_id": "toc.exportar_projeto",
+      "title": "Exportar projeto",
+      "description": "Gera a exportacao canonica (JSON versionado e deterministico) do projeto. Somente leitura.",
+      "risk": "read",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["projeto_id"],
+        "properties": {
+          "projeto_id": { "type": "string" }
+        }
+      },
+      "ui_route": "/toc/projetos",
+      "intent_keywords": ["exportar", "backup", "json"]
+    }
+  ],
+  "capabilities_required": ["toc:read", "toc:write"],
+  "audit": {
+    "returns_execution_trace": true,
+    "idempotent_mutations": true
+  }
+}
