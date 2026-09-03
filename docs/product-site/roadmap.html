@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TOC Federada — Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px}
+@media(max-width:760px){.metrics{grid-template-columns:repeat(2,1fr)}}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+.metric .v{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.metric .k{font-size:12px;color:var(--faint);font-weight:600;margin-top:4px;letter-spacing:.02em}
+.metric .v.green{color:var(--green)} .metric .v.accent{color:var(--accent)} .metric .v.amber{color:var(--amber)}
+.metric .sub{font-size:11px;color:var(--faint);margin-top:3px}
+.flow{display:flex;align-items:stretch;gap:0;margin:22px 0 6px;overflow-x:auto;padding-bottom:6px}
+.flow-step{flex:1 1 0;min-width:150px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;position:relative;box-shadow:var(--shadow)}
+.flow-step + .flow-step{margin-left:22px}
+.flow-step + .flow-step::before{content:"";position:absolute;left:-15px;top:50%;width:14px;height:2px;background:var(--border-strong)}
+.flow-step + .flow-step::after{content:"\25B6";position:absolute;left:-9px;top:50%;transform:translateY(-50%);color:var(--faint);font-size:10px}
+.flow-step .fn{font-family:var(--font-mono);font-size:11px;color:var(--accent);font-weight:600}
+.flow-step .ft{font-weight:700;font-size:14px;margin:2px 0 4px}
+.flow-step .fg{font-size:12px;color:var(--muted);margin:0;line-height:1.45}
+.flow-step .gate{margin-top:8px;font-size:11px;color:var(--amber);font-weight:600;display:flex;align-items:center;gap:4px}
+.band{margin:34px 0 6px}
+.timeline{position:relative;padding-left:38px;border-left:2px solid var(--border)}
+.tl-item{position:relative;margin-bottom:18px}
+.tl-item::before{content:"";position:absolute;left:-44px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--surface);border:3px solid var(--accent);box-shadow:0 0 0 4px var(--bg)}
+.tl-item.fix::before{border-color:var(--amber)}
+.tl-item.demo::before{border-color:var(--green)}
+.tl-item.infra::before{border-color:var(--blue)}
+.tl-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);transition:border-color .15s, transform .15s}
+.tl-card:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+.tl-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.tl-num{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--faint);background:var(--surface-2);padding:2px 8px;border-radius:6px;border:1px solid var(--border)}
+.tl-title{font-size:16px;font-weight:700;letter-spacing:-.01em;margin:0}
+.tl-mod{font-family:var(--font-mono);font-size:11px;color:var(--accent);font-weight:600}
+.tl-desc{font-size:13.5px;color:var(--muted);margin:0 0 10px;max-width:68ch}
+.tl-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}
+.pill.fix{background:rgba(176,107,0,.12);color:var(--amber)}
+.pill.demo{background:rgba(43,108,176,.12);color:var(--blue)}
+.artifacts{display:inline-flex;gap:5px;flex-wrap:wrap}
+.artifacts a{font-size:10.5px;padding:1px 6px;font-family:var(--font-mono);background:var(--surface-2);border:1px solid var(--border);border-radius:5px;color:var(--muted);text-decoration:none}
+.artifacts a:hover{border-color:var(--accent);color:var(--accent)}
+.gatelist{margin:10px 0 0;padding:0;list-style:none}
+.gatelist li{font-size:12.5px;color:var(--muted);line-height:1.5;padding-left:20px;position:relative;margin-bottom:5px}
+.gatelist li::before{content:"⏳";position:absolute;left:0;top:0;font-size:11px}
+.entrylist{margin:6px 0 0;padding:0;list-style:none}
+.entrylist li{font-size:12.5px;color:var(--muted);line-height:1.5;padding-left:20px;position:relative;margin-bottom:5px}
+.entrylist li::before{content:"⛔";position:absolute;left:0;top:0;font-size:10px}
+.sublabel{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:12px 0 2px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 0 0}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;border:2.5px solid var(--accent);background:var(--bg)}
+.dot.fix{border-color:var(--amber)} .dot.demo{border-color:var(--green)} .dot.infra{border-color:var(--blue)}
+.horizons{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0}
+@media(max-width:760px){.horizons{grid-template-columns:1fr}}
+.horizon{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;box-shadow:var(--shadow)}
+.horizon .h-label{font-size:13px;font-weight:700;margin-bottom:8px}
+.horizon .h-title{font-size:15px;font-weight:650;margin-bottom:12px;color:var(--ink)}
+.horizon ul{margin:0;padding-left:18px}
+.horizon li{font-size:13px;color:var(--muted);margin-bottom:6px}
+.horizon.done{border-left:3px solid var(--green)}
+.horizon.now{border-left:3px solid var(--amber)}
+.horizon.later{border-left:3px solid var(--accent)}
+.callout.warn{border-left-color:var(--amber);background:rgba(176,107,0,.06)}
+
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" aria-label="Alternar tema"></button>
+<div class="app">
+  <aside class="sidebar">
+  <div class="brand">
+    <div class="logo"><span class="mark">TF</span><span class="name">TOC Federada</span></div>
+    <div class="sub">Ciclo 001 · planejamento</div>
+  </div>
+  <div class="nav-group">
+    <div class="label">Visão geral</div>
+    <a class="nav-item" href="index.html#overview"><span class="ic"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg></span>Visão geral</a>
+    <a class="nav-item" href="index.html#taxonomy"><span class="ic"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg></span>Taxonomia</a>
+  </div>
+  <div class="nav-group">
+    <div class="label">Produto</div>
+    <a class="nav-item active" href="roadmap.html"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h6a4 4 0 0 0 4-4V7"/></svg></span>Roadmap <span class="badge">12</span></a>
+    <a class="nav-item" href="modules.html"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>Módulos <span class="badge">8</span></a>
+    <a class="nav-item" href="traceability.html"><span class="ic"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></span>Rastreabilidade <span class="badge">12</span></a>
+  </div>
+  <div class="nav-group">
+    <div class="label">Engenharia</div>
+    <a class="nav-item" href="index.html#workflow"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></span>Workflow</a>
+    <a class="nav-item" href="index.html#adrs"><span class="ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg></span>ADRs <span class="badge">8</span></a>
+    <a class="nav-item" href="index.html#principios"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 7h14"/><path d="M5 7l-3 7a4 4 0 0 0 6 0z"/><path d="M19 7l3 7a4 4 0 0 1-6 0z"/><path d="M8 21h8"/></svg></span>Princípios</a>
+    <a class="nav-item" href="index.html#artifacts"><span class="ic"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg></span>Artefatos</a>
+  </div>
+  <div class="nav-group">
+    <div class="label">Métricas</div>
+    <a class="nav-item" href="index.html#metrics"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M7 21V13"/><path d="M13 21V8"/><path d="M19 21V4"/></svg></span>Métricas</a>
+  </div>
+</aside>
+  <main class="main">
+
+  <p class="eyebrow">Roadmap</p>
+  <h1>Sequência de ciclos</h1>
+  <p class="lede">Doze ciclos propostos ao Product Steward em 2026-09-03, lidos de <code>docs/roadmap.md</code>. Nenhuma linha de código de produção nasce antes do ciclo 003, e o protótipo do ciclo 002 é descartável por decisão, não por promessa. Apetite: um ciclo por linha — estourou, perde escopo, não ganha ciclo.</p>
+  <div class="callout"><b>Barra:</b> roadmap julgado contra o <b>GitLab Product Handbook</b> (fonte única, portões explícitos, responsável nomeado) — cada ciclo mostra os seus portões reais e o que não pode começar sem; clareza pela <b>régua Linear</b>.</div>
+  <h2>Estado quantificado</h2>
+  <div class="metrics"><div class="metric"><div class="v amber">1</div><div class="k">Ciclos em curso</div><div class="sub">nenhum promovido ainda</div></div><div class="metric"><div class="v ">12</div><div class="k">Ciclos propostos</div><div class="sub">001 a 012</div></div><div class="metric"><div class="v accent">578</div><div class="k">Requisitos planejados</div><div class="sub">RF + RI + RNF</div></div><div class="metric"><div class="v green">0</div><div class="k">Linhas de código</div><div class="sub">nada antes do ciclo 003</div></div></div>
+  <h2>Horizonte — Agora / A seguir / Depois</h2>
+  <div class="horizons"><div class="horizon now"><div class="h-label">🔸 Agora</div><div class="h-title">Ciclo 001 — em curso</div><ul><li>Corpus de planejamento (specs, ADRs, roadmap, site)</li><li>Aguarda o gate humano do Product Steward</li></ul></div><div class="horizon later"><div class="h-label">🔜 A seguir</div><div class="h-title">Ciclos 002–003</div><ul><li>002 · protótipo descartável de interfaces</li><li>003 · esqueleto federado — a junta fecha contra a ghdaru real (raia infra)</li></ul></div><div class="horizon done"><div class="h-label">🧭 Depois</div><div class="h-title">Ciclos 004–012</div><ul><li>004–005 · núcleo de diagramas e Árvore da Realidade Atual</li><li>006–008 · ações governadas, Nuvem de Conflito, árvores de futuro</li><li>009–012 · focalização, Estratégia &amp; Táticas, fundações, autodeclaração APH</li></ul></div></div>
+  <h2>As oito fases que cada ciclo percorre</h2>
+  <p class="muted" style="font-size:13.5px">O fluxo do método Maestro, com dono e métrica por fase.
+  A descrição completa, com critérios de entrada, saídas e arestas de falha, está no
+  <a href="index.html#workflow">workflow</a>.</p>
+  <div class="flow"><div class="flow-step"><div class="fn">Fase 1</div><div class="ft">Spec</div><div class="fg">Spec-agent · humano aprova</div><div class="gate">⏳ scripts/check-specs.sh NNN verde; toda seção obrigatória p…</div></div><div class="flow-step"><div class="fn">Fase 2</div><div class="ft">Plan + Constitution Check</div><div class="fg">plan-architect · Architect/Tech Lead humano aprova</div><div class="gate">⏳ scripts/check-specs.sh NNN acusa as duas tabelas, sem linh…</div></div><div class="flow-step"><div class="fn">Fase 3</div><div class="ft">Tasks</div><div class="fg">plan-architect</div><div class="gate">⏳ toda T-NN referencia um RF/RI/RNF e traz comando de aceite…</div></div><div class="flow-step"><div class="fn">Fase 4</div><div class="ft">Implement (TDD)</div><div class="fg">dev-implementer</div><div class="gate">⏳ import-linter verde na integração contínua (domínio não im…</div></div><div class="flow-step"><div class="fn">Fase 5</div><div class="ft">DoD</div><div class="fg">qa-agent</div><div class="gate">⏳ nenhuma caixa marcada sem a saída colada (regra R1); todo …</div></div><div class="flow-step"><div class="fn">Fase 6</div><div class="ft">Revisão em contexto fresco</div><div class="fg">review-agent + security-agent (quem executa não verifica)</div><div class="gate">⏳ zero achado de correção em aberto; o revisor é agente dife…</div></div><div class="flow-step"><div class="fn">Fase 7</div><div class="ft">Gate humano</div><div class="fg">Product Steward (indelegável)</div><div class="gate">⏳ linha de decisão gravada (o arquivo é somente-acréscimo; u…</div></div><div class="flow-step"><div class="fn">Fase 8</div><div class="ft">Merge e promoção</div><div class="fg">Product Steward + integração contínua</div><div class="gate">⏳ scripts/check-conformance.sh NNN verde; o site regenerado …</div></div></div>
+  <h2>Linha do tempo dos ciclos</h2>
+  <div class="legend"><span><span class="dot "></span> Raia plena</span><span><span class="dot infra"></span> Raia infra (reversibilidade explícita)</span><span><span class="dot fix"></span> Ciclo em curso</span></div>
+  <div class="band"><div class="timeline">
+      <div class="tl-item fix">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">001</span><span class="tl-title">Fundação e planejamento</span><span class="tl-mod"></span></div>
+          <p class="tl-desc">este corpus: método instalado, constituição, visão medida da linhagem, 8 ADRs, 12 specs, roadmap, site de produto</p>
+          <div class="tl-meta"><span class="pill wip">em curso</span><span class="pill muted">raia plena</span><span class="pill muted">12 RF · 0 RI · 5 RNF</span><span class="artifacts"><a href="../../specs/001-fundacao-e-planejamento/spec.md">spec.md</a><a href="../../specs/001-fundacao-e-planejamento/plan.md">plan.md</a><a href="../../specs/001-fundacao-e-planejamento/qa-report.md">qa-report.md</a><a href="../../specs/001-fundacao-e-planejamento/tasks.md">tasks.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (4)</p>
+          <ul class="gatelist"><li>Portão humano: o Product Steward ratifica constituição, os 8 ADRs e as respostas às cinco perguntas da [<code>produto/visao.md</code>](produto/visao.md) §7 (ou o adiamento explícito de cada uma).</li><li>Portão de revisão: revisão independente em contexto fresco sobre o corpus inteiro, com as contas reconferidas (regra R1 — toda medição citada re-executa).</li><li>Portões executáveis: <code>scripts/check-install.sh</code>, <code>scripts/check-links.sh</code> e <code>scripts/check-caminhos.sh</code> verdes, com o tamanho do que examinaram na saída (regra R2).</li><li>Portão de honestidade: nenhum selo 🟢 sem <code>arquivo:linha</code>; nenhuma contagem sem a saída colada.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
+          <ul class="entrylist"><li>O método Maestro instalado pelo instalador oficial e verificado (<code>scripts/check-install.sh</code>) — feito, é a condição em que este repositório nasceu.</li><li>A linhagem inteira legível na sessão (as quatro gerações e os cinco natimortos) — feito, contagem colada na [<code>produto/visao.md</code>](produto/visao.md) §3.</li></ul>
+        </div>
+      </div>
+      <div class="tl-item ">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">002</span><span class="tl-title">Protótipo de interfaces</span><span class="tl-mod"></span></div>
+          <p class="tl-desc">protótipo descartável + <code>ux-design.md</code> + jornadas com capturas geradas por script</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">9 RF · 14 RI · 5 RNF</span><span class="artifacts"><a href="../../specs/002-prototipo-de-interfaces/spec.md">spec.md</a><a href="../../specs/002-prototipo-de-interfaces/plan.md">plan.md</a><a href="../../specs/002-prototipo-de-interfaces/qa-report.md">qa-report.md</a><a href="../../specs/002-prototipo-de-interfaces/tasks.md">tasks.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (3)</p>
+          <ul class="gatelist"><li>Portão humano: o Product Steward aprova o corte de telas (o que da densidade do canvas + vista tabular sobrevive num iframe estreito).</li><li>Portão executável: capturas regeneram byte-idênticas ao rodar o script de novo; <code>scripts/check-caminhos.sh</code> verde sobre as jornadas.</li><li>Portão de revisão: avaliação heurística datada por jornada, no mesmo pull request.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
+          <ul class="entrylist"><li>O gate humano do ciclo 001 fechado — em particular a pergunta 1 da [<code>produto/visao.md</code>](produto/visao.md) §7 (colaboração por projeto ou isolamento por usuário) respondida, porque ela muda as telas de projeto do E1.1.</li><li>As specs dos módulos M1–M3 aprovadas ao menos em rascunho ratificado (os requisitos de interface saem delas).</li></ul>
+        </div>
+      </div>
+      <div class="tl-item infra">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">003</span><span class="tl-title">Esqueleto federado</span><span class="tl-mod">M7 M8</span></div>
+          <p class="tl-desc">a junta fecha contra a <code>ghdaru</code> real: admissão, introspecção, manifesto, embarque, banco próprio, OTel, CI</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill demo">raia infra</span><span class="pill muted">39 RF · 8 RI · 10 RNF</span><span class="artifacts"><a href="../../specs/003-esqueleto-federado/spec.md">spec.md</a><a href="../../specs/003-esqueleto-federado/data-model.md">data-model.md</a><a href="../../specs/003-esqueleto-federado/plan.md">plan.md</a><a href="../../specs/003-esqueleto-federado/qa-report.md">qa-report.md</a><a href="../../specs/003-esqueleto-federado/tasks.md">tasks.md</a><a href="../../specs/003-esqueleto-federado/contracts/parametros-de-admissao.md">contracts/parametros-de-admissao.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (4)</p>
+          <ul class="gatelist"><li>Portão executável (a aptidão mais importante do roadmap): &quot;a junta fecha contra a <code>ghdaru</code> real&quot; — manifesto aceito pela rota de administração real, grant trocado por identidade em <code>POST /auth/introspect</code> servidor a servidor, <code>ev.source</code> e <code>origin</code> verificados, falha fechada com a fundação indisponível, traço OTel de ponta a ponta. Nada disso contra shell simulado.</li><li>Portão executável: migração Alembic aplicada num Neon limpo e revertida sem resíduo.</li><li>Portão de segurança: passagem de segurança em contexto fresco sobre a admissão e o embarque (a irmã achou quatro furos na dela; assumir que não temos seria vaidade).</li><li>Portão humano: aprovação do endereço publicado (eTLD+1 distinto do hospedeiro) — é irreversível na prática, porque entra no manifesto que circula.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
+          <ul class="entrylist"><li>A re-medição dos três bloqueios externos declarados no round 003 de [<code>produto/rounds.md</code>](produto/rounds.md): o alinhamento dos schemas de manifesto (quando a irmã mediu, 4 erros — mutuamente exclusivos), a fatia de federação ligada no hospedeiro, e o estado dos grants em memória. Se o primeiro persistir, o ciclo entra mesmo assim e entrega tudo menos o registro do manifesto — com mensagem nossa referenciando a da irmã.</li><li>ADR 0002 (stack) e ADR 0003 (federação) ratificados — o ciclo é a execução deles.</li></ul>
+        </div>
+      </div>
+      <div class="tl-item ">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">004</span><span class="tl-title">Núcleo de diagramas</span><span class="tl-mod">M1</span></div>
+          <p class="tl-desc">M1 completo com TDD</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">36 RF · 12 RI · 10 RNF</span><span class="artifacts"><a href="../../specs/004-nucleo-de-diagramas/spec.md">spec.md</a><a href="../../specs/004-nucleo-de-diagramas/data-model.md">data-model.md</a><a href="../../specs/004-nucleo-de-diagramas/plan.md">plan.md</a><a href="../../specs/004-nucleo-de-diagramas/qa-report.md">qa-report.md</a><a href="../../specs/004-nucleo-de-diagramas/tasks.md">tasks.md</a><a href="../../specs/004-nucleo-de-diagramas/contracts/rest-api.md">contracts/rest-api.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (3)</p>
+          <ul class="gatelist"><li>Portão executável: suíte de domínio verde e sem rede; contrato de <code>import-linter</code> que falha o build se o domínio importar framework (P3).</li><li>Portão executável: exportar → reimportar devolve JSON idêntico; importação inválida recusa com relato.</li><li>Portão de jornada: jornada viva do primeiro projeto sintético com captura do build (P6).</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
+          <ul class="entrylist"><li>O ciclo 003 promovido — sem junta, o M1 seria a 5ª geração standalone.</li><li>A spec do M1 (<code>specs/004-nucleo-de-diagramas/</code>) com o <code>## Clarify</code> respondido.</li></ul>
+        </div>
+      </div>
+      <div class="tl-item ">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">005</span><span class="tl-title">Árvore da Realidade Atual</span><span class="tl-mod">M2</span></div>
+          <p class="tl-desc">M2 completo, sem assistência (E2.3 entra no 006)</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">38 RF · 10 RI · 9 RNF</span><span class="artifacts"><a href="../../specs/005-arvore-da-realidade-atual/spec.md">spec.md</a><a href="../../specs/005-arvore-da-realidade-atual/plan.md">plan.md</a><a href="../../specs/005-arvore-da-realidade-atual/qa-report.md">qa-report.md</a><a href="../../specs/005-arvore-da-realidade-atual/tasks.md">tasks.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (3)</p>
+          <ul class="gatelist"><li>Portão executável: os critérios decidíveis de UDE avaliados por teste sem rede e sem modelo.</li><li>Portão de jornada: construção de uma ARA sintética completa, com captura do build.</li><li>Portão de revisão: revisão independente confere que nenhum critério de UDE ficou dependente de prompt.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
+          <ul class="entrylist"><li>O ciclo 004 promovido (a ARA é feita de nós e arestas do M1).</li><li>Os critérios formais de UDE transcritos do prompt do v3 (<code>tocbuilderv3/constants.ts:109-137</code>) para a spec do M2, com a separação decidível × julgamento marcada requisito a requisito.</li></ul>
+        </div>
+      </div>
+      <div class="tl-item ">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">006</span><span class="tl-title">Ações governadas e snapshot</span><span class="tl-mod">M7</span></div>
+          <p class="tl-desc">catálogo <code>toc.*</code>, FSM de proposta, registro de telas, snapshot, wire Nível 1</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">48 RF · 12 RI · 10 RNF</span><span class="artifacts"><a href="../../specs/006-acoes-governadas-e-snapshot/spec.md">spec.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/plan.md">plan.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/qa-report.md">qa-report.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/tasks.md">tasks.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/contracts/manifesto.json">contracts/manifesto.json</a></span></div>
+          <p class="sublabel">Portões deste ciclo (3)</p>
+          <ul class="gatelist"><li>Portão executável: sem capability de escrita, as ações mutadoras somem do catálogo (teste, com a contagem antes/depois na saída).</li><li>Portão executável: nenhuma mutação proposta por modelo aplica fora da FSM; snapshot sem campo <code>ai_visible: false</code>; replay por <code>seq</code> testado.</li><li>Portão humano: o catálogo <code>toc.*</code> aprovado ação a ação (nomes, riscos, capabilities) — é contrato que circula no manifesto.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
+          <ul class="entrylist"><li>O ciclo 005 promovido (as primeiras ações operam sobre a ARA).</li><li>Os dois bloqueios externos do round 006 re-medidos e aceitos como limite de alcance ([<code>produto/rounds.md</code>](produto/rounds.md)): ação federada sem credencial do lado do host (F7 pendente — <code>ghdaru/docs/adr/0023-acoes-federadas-por-adapter-remoto.md</code>) e grant sem interseção com o usuário. A nossa borda nasce recusando chamada não autenticada; o que fica limitado é a execução disparada do harness, não a FSM.</li></ul>
+        </div>
+      </div>
+      <div class="tl-item ">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">007</span><span class="tl-title">Nuvem de Conflito</span><span class="tl-mod">M3</span></div>
+          <p class="tl-desc">M3 completo</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">34 RF · 11 RI · 10 RNF</span><span class="artifacts"><a href="../../specs/007-nuvem-de-conflito/spec.md">spec.md</a><a href="../../specs/007-nuvem-de-conflito/plan.md">plan.md</a><a href="../../specs/007-nuvem-de-conflito/qa-report.md">qa-report.md</a><a href="../../specs/007-nuvem-de-conflito/tasks.md">tasks.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (3)</p>
+          <ul class="gatelist"><li>Portão executável: invariantes da nuvem por teste de domínio (5 entidades, 7 arestas, injeção referencia premissa).</li><li>Portão executável: a geração a partir de narrativa entra como <code>action_proposal</code>; recusar deixa o projeto intacto (teste).</li><li>Portão de jornada: o dilema sintético da &quot;Instituição Horizonte&quot; de ponta a ponta, com captura.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
+          <ul class="entrylist"><li>Os ciclos 004 e 006 promovidos.</li><li>A spec do M3 com as 7 premissas modeladas (a skill <code>toc-evaporating-cloud</code> é a fonte técnica; a spec é a norma).</li></ul>
+        </div>
+      </div>
+      <div class="tl-item ">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">008</span><span class="tl-title">Árvores de futuro e implementação</span><span class="tl-mod">M4</span></div>
+          <p class="tl-desc">M4 completo (ARF, APR, AT, encadeamento)</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">45 RF · 13 RI · 10 RNF</span><span class="artifacts"><a href="../../specs/008-arvores-de-futuro-e-implementacao/spec.md">spec.md</a><a href="../../specs/008-arvores-de-futuro-e-implementacao/plan.md">plan.md</a><a href="../../specs/008-arvores-de-futuro-e-implementacao/qa-report.md">qa-report.md</a><a href="../../specs/008-arvores-de-futuro-e-implementacao/tasks.md">tasks.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (3)</p>
+          <ul class="gatelist"><li>Portão executável: teste de domínio percorre a cadeia inteira e prova a referência de origem em cada elo.</li><li>Portão executável: as três árvores exportáveis/importáveis pelo E1.4.</li><li>Portão de jornada: da injeção à APR sequenciada, com captura.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
+          <ul class="entrylist"><li>Os ciclos 005 e 007 promovidos (o encadeamento parte do que eles produzem).</li><li>Decisão registrada sobre o corte de ramos negativos da ARF (fica manual nesta v1 — proposta no round 008).</li></ul>
+        </div>
+      </div>
+      <div class="tl-item ">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">009</span><span class="tl-title">Focalização</span><span class="tl-mod">M6</span></div>
+          <p class="tl-desc">M6 completo</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">21 RF · 8 RI · 8 RNF</span><span class="artifacts"><a href="../../specs/009-focalizacao/spec.md">spec.md</a><a href="../../specs/009-focalizacao/plan.md">plan.md</a><a href="../../specs/009-focalizacao/qa-report.md">qa-report.md</a><a href="../../specs/009-focalizacao/tasks.md">tasks.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (2)</p>
+          <ul class="gatelist"><li>Portão executável: teste percorre os cinco passos com estado herdado entre eles; &quot;recomeçar&quot; reabre sem apagar histórico.</li><li>Portão de jornada: uma análise sintética atravessa identificar → explorar → subordinar → elevar → recomeçar, com captura por passo.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (2)</p>
+          <ul class="entrylist"><li>O ciclo 008 promovido (a jornada aponta para ferramentas que precisam existir).</li><li>ADR 0005 (escopo v1) inalterado — se DBR entrar, é decisão nova antes, não durante.</li></ul>
+        </div>
+      </div>
+      <div class="tl-item ">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">010</span><span class="tl-title">Estratégia &amp; Táticas</span><span class="tl-mod">M5</span></div>
+          <p class="tl-desc">M5 completo</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">21 RF · 9 RI · 8 RNF</span><span class="artifacts"><a href="../../specs/010-estrategia-e-taticas/spec.md">spec.md</a><a href="../../specs/010-estrategia-e-taticas/plan.md">plan.md</a><a href="../../specs/010-estrategia-e-taticas/qa-report.md">qa-report.md</a><a href="../../specs/010-estrategia-e-taticas/tasks.md">tasks.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (2)</p>
+          <ul class="gatelist"><li>Portão executável: teste de renumeração da subárvore; as três premissas persistidas.</li><li>Portão de jornada: uma S&amp;T sintética de três níveis, com captura.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (1)</p>
+          <ul class="entrylist"><li>O ciclo 004 promovido (é a única dependência técnica; a posição tardia é escolha de valor registrada em [<code>produto/rounds.md</code>](produto/rounds.md)).</li></ul>
+        </div>
+      </div>
+      <div class="tl-item ">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">011</span><span class="tl-title">Fundações da aplicação</span><span class="tl-mod">M8</span></div>
+          <p class="tl-desc">E8.3 consolidada, E8.4, E1.4 avançado</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">32 RF · 11 RI · 12 RNF</span><span class="artifacts"><a href="../../specs/011-fundacoes-da-aplicacao/spec.md">spec.md</a><a href="../../specs/011-fundacoes-da-aplicacao/plan.md">plan.md</a><a href="../../specs/011-fundacoes-da-aplicacao/qa-report.md">qa-report.md</a><a href="../../specs/011-fundacoes-da-aplicacao/tasks.md">tasks.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (3)</p>
+          <ul class="gatelist"><li>Portão executável: nenhuma string de interface fora do dicionário de i18n (grep em CI, contagem na saída — regra R2).</li><li>Portão executável: importar um export sintético do <code>tocbuilderv3</code> cria o projeto ou recusa com relato campo a campo.</li><li>Portão de jornada: a documentação embutida acessível de cada ferramenta.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (1)</p>
+          <ul class="entrylist"><li>O ciclo 008 promovido (a documentação embutida cobre as ferramentas existentes).</li></ul>
+        </div>
+      </div>
+      <div class="tl-item ">
+        <div class="tl-card">
+          <div class="tl-top"><span class="tl-num">012</span><span class="tl-title">Jornadas e autodeclaração</span><span class="tl-mod"></span></div>
+          <p class="tl-desc">jornadas consolidadas, matriz de aderência APH, autodeclaração Nível 2 em ADR, site atualizado</p>
+          <div class="tl-meta"><span class="pill muted">planejado</span><span class="pill muted">raia plena</span><span class="pill muted">24 RF · 6 RI · 8 RNF</span><span class="artifacts"><a href="../../specs/012-jornadas-e-autodeclaracao/spec.md">spec.md</a><a href="../../specs/012-jornadas-e-autodeclaracao/plan.md">plan.md</a><a href="../../specs/012-jornadas-e-autodeclaracao/qa-report.md">qa-report.md</a><a href="../../specs/012-jornadas-e-autodeclaracao/tasks.md">tasks.md</a></span></div>
+          <p class="sublabel">Portões deste ciclo (3)</p>
+          <ul class="gatelist"><li>Portão executável: todas as capturas regeneram do build atual; o site regenerado não diverge do commitado (diff vazio em CI).</li><li>Portão de revisão: a matriz de aderência com um veredito por requisito APH, cada um com evidência por caminho — revisada em contexto fresco.</li><li>Portão humano: o Product Steward assina a autodeclaração — é ela que circula para fora do repositório.</li></ul>
+          <p class="sublabel">O que o ciclo não pode começar sem (1)</p>
+          <ul class="entrylist"><li>Os ciclos 009, 010 e 011 promovidos — autodeclarar antes seria declarar sem provar, que é o anti-padrão que este projeto existe para não repetir.</li></ul>
+        </div>
+      </div></div></div>
+  <div class="divider"></div>
+  <div class="callout warn"><b>Nota de honestidade.</b> Este roadmap é uma <b>sequência proposta</b>, não uma promessa de data — e o estado real, em 2026-09-03, é este: o <b>ciclo 001 está em curso</b> e ainda não passou pelo gate humano; <b>nenhum ciclo foi promovido</b>; existem <b>zero linhas de código de produção</b> no repositório (nenhuma nasce antes do ciclo 003, por decisão); os doze <code>qa-report.md</code> estão deliberadamente vazios, dizendo “ciclo planejado no 001; execução ainda não iniciada”, porque caixa marcada não é testemunha; e <b>não há nenhuma jornada viva</b> — <code>docs/jornadas/</code> traz só a convenção, já que jornada sem captura de build real é ficção (princípio P6). Todo requisito das 12 specs nasce com selo 🟡 PLANEJADO; o selo 🟢 pertence às fontes medidas na linhagem, com <code>arquivo:linha</code>.</div>
+  <p class="faint" style="font-size:12px">Gerado por <code>tools/product-site/generate.py</code> + <code>render.py</code> a partir de <code>docs/roadmap.md</code> — 12 ciclos lidos, nenhum digitado à mão (ADR 0008).</p>
+
+  </main>
+</div>
+<script>
+const tt=document.getElementById("themeToggle");
+const MOON_SVG='<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+const SUN_SVG='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+const THEME_KEY="tocfed-theme";
+function applyTheme(t){document.documentElement.setAttribute("data-theme",t);tt.innerHTML=t==="dark"?SUN_SVG:MOON_SVG;try{localStorage.setItem(THEME_KEY,t);}catch(e){}}
+tt.addEventListener("click",()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"));
+try{const saved=localStorage.getItem(THEME_KEY);if(saved)applyTheme(saved);else applyTheme("light");}catch(e){}
+</script>
+</body>
+</html>

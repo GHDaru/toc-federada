@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TOC Federada — Módulos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+
+.summary{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:24px}
+@media(max-width:860px){.summary{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.summary{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)}
+.stat .v{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.stat .k{font-size:10.5px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.jumpbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.jumpbar a{font-size:12px;font-weight:600;font-family:var(--font-mono);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 10px;color:var(--muted)}
+.jumpbar a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+.mod{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);margin-bottom:12px;padding:18px 22px 20px}
+.mod-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.mod-tag{flex-shrink:0;width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;letter-spacing:-.02em}
+.mod-title{font-size:16px;font-weight:700;letter-spacing:-.01em;margin:0 0 2px}
+.mod-sub{font-size:12.5px;color:var(--muted);margin:0}
+.mod-sub .sep{color:var(--border-strong);margin:0 5px}
+.mod-status{margin-left:auto;flex-shrink:0;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;align-self:flex-start}
+.mod-status.tv{background:var(--surface-2);color:var(--faint)}
+.mod-status.wip{background:rgba(176,107,0,.12);color:var(--amber)}
+.vision{font-size:13.5px;color:var(--muted);margin:0 0 12px;max-width:78ch;line-height:1.55}
+.deps{font-size:12.5px;margin:0 0 12px;padding:7px 11px;background:var(--surface-2);border:1px solid var(--border);border-radius:7px}
+.deps b{color:var(--ink);font-weight:650}
+.mod-body{display:grid;grid-template-columns:1.55fr 1fr;gap:20px}
+@media(max-width:760px){.mod-body{grid-template-columns:1fr}}
+.slabel{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:0 0 7px}
+.features{display:flex;flex-direction:column;gap:0}
+.feat{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.4}
+.feat:last-child{border-bottom:none}
+.feat-name{font-weight:650;color:var(--ink);flex-shrink:0}
+.feat-desc{color:var(--muted);flex:1;min-width:0}
+.feat-meta{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);flex-shrink:0;white-space:nowrap}
+.mgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
+@media(max-width:520px){.mgrid{grid-template-columns:repeat(3,1fr)}}
+.mcell{background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:8px 10px}
+.mcell .mv{font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.mcell .mk{font-size:9.5px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.tv-note{font-size:12.5px;color:var(--muted);padding:9px 11px;background:var(--surface-2);border:1px solid var(--border);border-radius:7px;margin-bottom:14px}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{font-size:11.5px;font-weight:600;font-family:var(--font-mono);background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:4px 9px;color:var(--muted)}
+.links a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+@media(max-width:720px){.main{padding:28px 18px 80px}.sidebar{display:none}}
+
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" aria-label="Alternar tema"></button>
+<div class="app">
+  <aside class="sidebar">
+  <div class="brand">
+    <div class="logo"><span class="mark">TF</span><span class="name">TOC Federada</span></div>
+    <div class="sub">Ciclo 001 · planejamento</div>
+  </div>
+  <div class="nav-group">
+    <div class="label">Visão geral</div>
+    <a class="nav-item" href="index.html#overview"><span class="ic"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg></span>Visão geral</a>
+    <a class="nav-item" href="index.html#taxonomy"><span class="ic"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg></span>Taxonomia</a>
+  </div>
+  <div class="nav-group">
+    <div class="label">Produto</div>
+    <a class="nav-item" href="roadmap.html"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h6a4 4 0 0 0 4-4V7"/></svg></span>Roadmap <span class="badge">12</span></a>
+    <a class="nav-item active" href="modules.html"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>Módulos <span class="badge">8</span></a>
+    <a class="nav-item" href="traceability.html"><span class="ic"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></span>Rastreabilidade <span class="badge">12</span></a>
+  </div>
+  <div class="nav-group">
+    <div class="label">Engenharia</div>
+    <a class="nav-item" href="index.html#workflow"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></span>Workflow</a>
+    <a class="nav-item" href="index.html#adrs"><span class="ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg></span>ADRs <span class="badge">8</span></a>
+    <a class="nav-item" href="index.html#principios"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 7h14"/><path d="M5 7l-3 7a4 4 0 0 0 6 0z"/><path d="M19 7l3 7a4 4 0 0 1-6 0z"/><path d="M8 21h8"/></svg></span>Princípios</a>
+    <a class="nav-item" href="index.html#artifacts"><span class="ic"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg></span>Artefatos</a>
+  </div>
+  <div class="nav-group">
+    <div class="label">Métricas</div>
+    <a class="nav-item" href="index.html#metrics"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M7 21V13"/><path d="M13 21V8"/><path d="M19 21V4"/></svg></span>Métricas</a>
+  </div>
+</aside>
+  <main class="main">
+    <p class="eyebrow">Produto</p>
+    <h1>Módulos (M1–M8) e specs</h1>
+    <p class="lede">Cada módulo é um <i>bounded context</i> do Design Orientado a Domínio (DDD) e um
+    <strong>épico de produto</strong>, decomposto em épicos numerados (E&lt;m&gt;.&lt;n&gt;) que as specs
+    quebram em features, user stories e requisitos. O mapa é lido de
+    <code>docs/produto/modulos.md</code>; os requisitos, das 12 specs.</p>
+    <div class="summary"><div class="stat"><div class="v">8</div><div class="k">Módulos</div></div><div class="stat"><div class="v">30</div><div class="k">Épicos</div></div><div class="stat"><div class="v">12</div><div class="k">Specs</div></div><div class="stat"><div class="v">359</div><div class="k">RF</div></div><div class="stat"><div class="v">114</div><div class="k">RI</div></div><div class="stat"><div class="v">105</div><div class="k">RNF</div></div></div>
+    <div class="callout"><b>Barra:</b> hierarquia módulo → épico → feature → story medida contra o
+    <b>Atlassian Agile Coach</b>, e profundidade de requisitos contra a spec 001 do <b>PROJETO_ECS</b>;
+    densidade e conteúdo sempre aberto (sem sanfonas) pela <b>régua Linear</b>.</div>
+    <div class="jumpbar"><a href="#M1">M1</a><a href="#M2">M2</a><a href="#M3">M3</a><a href="#M4">M4</a><a href="#M5">M5</a><a href="#M6">M6</a><a href="#M7">M7</a><a href="#M8">M8</a><a href="#spec-001">001</a><a href="#spec-002">002</a><a href="#spec-003">003</a><a href="#spec-004">004</a><a href="#spec-005">005</a><a href="#spec-006">006</a><a href="#spec-007">007</a><a href="#spec-008">008</a><a href="#spec-009">009</a><a href="#spec-010">010</a><a href="#spec-011">011</a><a href="#spec-012">012</a></div>
+    <h2>Os oito módulos</h2>
+    
+  <div class="mod" id="M1">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">M1</div>
+      <div>
+        <p class="mod-title">M1 — Núcleo de Diagramas Lógicos</p>
+        <p class="mod-sub"><i>Bounded context</i>: projeto, nó, aresta causal, canvas + vista tabular<span class="sep">·</span>ciclo(s) 004</p>
+      </div>
+      <span class="mod-status wip">planejado</span>
+    </div>
+    <p class="vision">tudo que é comum às seis ferramentas — projeto, nó, aresta causal, o canvas e a sua vista tabular equivalente — existe uma vez, aqui. Na linhagem, cada ferramenta carregava a sua cópia de canvas e painel; o M1 é a fatoração que impede a sétima cópia.</p>
+    <p class="deps"><b>Depende de:</b> E8.1 (persistência) e E7.1 (identidade) — por isso o esqueleto vem antes.<br><b>Origem:</b> linhagem (todas as gerações)</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Épicos (4)</p>
+        <div class="features"><div class="feat"><span class="feat-name">E1.1</span><span class="feat-desc"><b>Projetos e organização</b> — CRUD de projetos por (inquilino, usuário), soft delete, papéis de acesso</span></div><div class="feat"><span class="feat-name">E1.2</span><span class="feat-desc"><b>Canvas</b> — nós, arestas, edição direta, desfazer de sessão</span></div><div class="feat"><span class="feat-name">E1.3</span><span class="feat-desc"><b>Vista tabular equivalente</b> — o painel de entidades da linhagem, como projeção do mesmo modelo</span></div><div class="feat"><span class="feat-name">E1.4</span><span class="feat-desc"><b>Exportação/importação JSON</b> — não destrutiva: valida, relata, nunca substitui em silêncio</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Requisitos nas specs que o entregam</p>
+        <div class="mgrid">
+          <div class="mcell"><div class="mv">36</div><div class="mk">RF</div></div>
+          <div class="mcell"><div class="mv">12</div><div class="mk">RI</div></div>
+          <div class="mcell"><div class="mv">10</div><div class="mk">RNF</div></div>
+          <div class="mcell"><div class="mv">6</div><div class="mk">RN</div></div>
+          <div class="mcell"><div class="mv">3</div><div class="mk">INT</div></div>
+        </div>
+        
+        <p class="slabel">Links</p>
+        <div class="links"><a href="../../specs/004-nucleo-de-diagramas/spec.md">📄 spec 004</a><a href="../../docs/produto/modulos.md">🗺️ modulos.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="M2">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#2b6cb0">M2</div>
+      <div>
+        <p class="mod-title">M2 — Árvore da Realidade Atual (ARA)</p>
+        <p class="mod-sub"><i>Bounded context</i>: UDE validada, causas, suficiência, análise<span class="sep">·</span>ciclo(s) 005</p>
+      </div>
+      <span class="mod-status wip">planejado</span>
+    </div>
+    <p class="vision">dos sintomas à causa raiz. A ferramenta mais madura da linhagem, refeita com a diferença que importa: os critérios formais de UDE saem do prompt (<code>tocbuilderv3/constants.ts:109-137</code> 🟢, defeito D-08) e viram regra de domínio pura, testável sem rede.</p>
+    <p class="deps"><b>Depende de:</b> M1 (nó/aresta/canvas); E2.3 depende de E7.3–E7.4 (catálogo e FSM).<br><b>Origem:</b> a ferramenta mais madura da linhagem</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Épicos (3)</p>
+        <div class="features"><div class="feat"><span class="feat-name">E2.1</span><span class="feat-desc"><b>UDEs e validação formal</b> — critérios da TOC como regra de domínio; o modelo só opina no que é julgamento</span></div><div class="feat"><span class="feat-name">E2.2</span><span class="feat-desc"><b>Construção da árvore</b> — causas, relações causais, análise de suficiência</span></div><div class="feat"><span class="feat-name">E2.3</span><span class="feat-desc"><b>Assistência via catálogo</b> — sugerir UDEs/causas/relações, analisar árvore — tudo <code>action_proposal</code></span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Requisitos nas specs que o entregam</p>
+        <div class="mgrid">
+          <div class="mcell"><div class="mv">38</div><div class="mk">RF</div></div>
+          <div class="mcell"><div class="mv">10</div><div class="mk">RI</div></div>
+          <div class="mcell"><div class="mv">9</div><div class="mk">RNF</div></div>
+          <div class="mcell"><div class="mv">12</div><div class="mk">RN</div></div>
+          <div class="mcell"><div class="mv">8</div><div class="mk">INT</div></div>
+        </div>
+        
+        <p class="slabel">Links</p>
+        <div class="links"><a href="../../specs/005-arvore-da-realidade-atual/spec.md">📄 spec 005</a><a href="../../docs/produto/modulos.md">🗺️ modulos.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="M3">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#1a7a4c">M3</div>
+      <div>
+        <p class="mod-title">M3 — Nuvem de Conflito (NC)</p>
+        <p class="mod-sub"><i>Bounded context</i>: 5 entidades, 7 premissas, injeções, visão conflito+solução<span class="sep">·</span>ciclo(s) 007</p>
+      </div>
+      <span class="mod-status wip">planejado</span>
+    </div>
+    <p class="vision">o dilema em 5 entidades (objetivo A, necessidades B e C, ações D e D′ — <code>tocbuilderv3/types.ts:77-82</code> 🟢), as 7 arestas com premissas, e as injeções que evaporam o conflito. A geração assistida a partir de narrativa — o melhor recurso do v3 (<code>tocbuilderv3/APLICATION_PURPOSE.md:29</code> 🟢) — permanece, mas pela fundação.</p>
+    <p class="deps"><b>Depende de:</b> M1; E3.3 depende de E7.3–E7.4.<br><b>Origem:</b> 3ª/4ª gerações + skill <code>toc-evaporating-cloud</code></p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Épicos (4)</p>
+        <div class="features"><div class="feat"><span class="feat-name">E3.1</span><span class="feat-desc"><b>Modelagem do conflito</b> — as 5 entidades e as arestas, com edição direta</span></div><div class="feat"><span class="feat-name">E3.2</span><span class="feat-desc"><b>Premissas e injeções</b> — premissas por aresta; injeção ligada à premissa que invalida</span></div><div class="feat"><span class="feat-name">E3.3</span><span class="feat-desc"><b>Geração assistida a partir de narrativa</b> — texto livre → proposta de nuvem completa, via catálogo</span></div><div class="feat"><span class="feat-name">E3.4</span><span class="feat-desc"><b>Visão conflito+solução</b> — os dois diagramas lado a lado, como no v3</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Requisitos nas specs que o entregam</p>
+        <div class="mgrid">
+          <div class="mcell"><div class="mv">34</div><div class="mk">RF</div></div>
+          <div class="mcell"><div class="mv">11</div><div class="mk">RI</div></div>
+          <div class="mcell"><div class="mv">10</div><div class="mk">RNF</div></div>
+          <div class="mcell"><div class="mv">8</div><div class="mk">RN</div></div>
+          <div class="mcell"><div class="mv">8</div><div class="mk">INT</div></div>
+        </div>
+        
+        <p class="slabel">Links</p>
+        <div class="links"><a href="../../specs/007-nuvem-de-conflito/spec.md">📄 spec 007</a><a href="../../docs/produto/modulos.md">🗺️ modulos.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="M4">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#b06b00">M4</div>
+      <div>
+        <p class="mod-title">M4 — Árvores de Futuro e Implementação</p>
+        <p class="mod-sub"><i>Bounded context</i>: ARF, APR (obstáculo → OI), AT, encadeamento entre ferramentas<span class="sep">·</span>ciclo(s) 008</p>
+      </div>
+      <span class="mod-status wip">planejado</span>
+    </div>
+    <p class="vision">a metade da TOC que quatro gerações prometeram e nenhuma entregou (D-04) — e o encadeamento, que nenhuma sequer modelou (D-11): UDE da ARA alimenta a NC; injeção da NC semeia a ARF; a ARF gera os obstáculos que a APR sequencia em OIs.</p>
+    <p class="deps"><b>Depende de:</b> M2 e M3 (o encadeamento parte do que eles produzem).<br><b>Origem:</b> nunca entregues em 4 gerações (D-04); skill <code>toc-prt</code></p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Épicos (4)</p>
+        <div class="features"><div class="feat"><span class="feat-name">E4.1</span><span class="feat-desc"><b>ARF</b> — injeções → efeitos futuros; ramos negativos identificados</span></div><div class="feat"><span class="feat-name">E4.2</span><span class="feat-desc"><b>APR</b> — obstáculos → OIs, com sequenciamento de dependências</span></div><div class="feat"><span class="feat-name">E4.3</span><span class="feat-desc"><b>AT</b> — passos de transição, cada um com a sua lógica</span></div><div class="feat"><span class="feat-name">E4.4</span><span class="feat-desc"><b>Encadeamento</b> — as referências cruzadas entre ferramentas como cidadãs do modelo</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Requisitos nas specs que o entregam</p>
+        <div class="mgrid">
+          <div class="mcell"><div class="mv">45</div><div class="mk">RF</div></div>
+          <div class="mcell"><div class="mv">13</div><div class="mk">RI</div></div>
+          <div class="mcell"><div class="mv">10</div><div class="mk">RNF</div></div>
+          <div class="mcell"><div class="mv">13</div><div class="mk">RN</div></div>
+          <div class="mcell"><div class="mv">11</div><div class="mk">INT</div></div>
+        </div>
+        
+        <p class="slabel">Links</p>
+        <div class="links"><a href="../../specs/008-arvores-de-futuro-e-implementacao/spec.md">📄 spec 008</a><a href="../../docs/produto/modulos.md">🗺️ modulos.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="M5">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#8b5cf6">M5</div>
+      <div>
+        <p class="mod-title">M5 — Estratégia &amp; Táticas (S&amp;T)</p>
+        <p class="mod-sub"><i>Bounded context</i>: numeração hierárquica, 3 premissas lógicas, status<span class="sep">·</span>ciclo(s) 010</p>
+      </div>
+      <span class="mod-status wip">planejado</span>
+    </div>
+    <p class="vision">devolver a ferramenta que regrediu (D-05). O modelo de dados já existia completo na linhagem — numeração hierárquica (1, 1.1, 1.1.2) e as três premissas lógicas (paralelismo, necessidade ao pai, suficiência dos filhos: <code>tocbuilderv3/types.ts:286-295</code> 🟢) — e ficou duas gerações desligado.</p>
+    <p class="deps"><b>Depende de:</b> M1.<br><b>Origem:</b> única ferramenta que regrediu (D-05)</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Épicos (2)</p>
+        <div class="features"><div class="feat"><span class="feat-name">E5.1</span><span class="feat-desc"><b>Estrutura hierárquica</b> — numeração, três premissas por nó</span></div><div class="feat"><span class="feat-name">E5.2</span><span class="feat-desc"><b>Status e acompanhamento</b> — Validado / Não Validado / Em Execução (<code>tocbuilderv3/types.ts:270-275</code> 🟢)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Requisitos nas specs que o entregam</p>
+        <div class="mgrid">
+          <div class="mcell"><div class="mv">21</div><div class="mk">RF</div></div>
+          <div class="mcell"><div class="mv">9</div><div class="mk">RI</div></div>
+          <div class="mcell"><div class="mv">8</div><div class="mk">RNF</div></div>
+          <div class="mcell"><div class="mv">6</div><div class="mk">RN</div></div>
+          <div class="mcell"><div class="mv">4</div><div class="mk">INT</div></div>
+        </div>
+        
+        <p class="slabel">Links</p>
+        <div class="links"><a href="../../specs/010-estrategia-e-taticas/spec.md">📄 spec 010</a><a href="../../docs/produto/modulos.md">🗺️ modulos.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="M6">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#0f766e">M6</div>
+      <div>
+        <p class="mod-title">M6 — Focalização</p>
+        <p class="mod-sub"><i>Bounded context</i>: restrição registrada, jornada guiada pelos 5 passos<span class="sep">·</span>ciclo(s) 009</p>
+      </div>
+      <span class="mod-status wip">planejado</span>
+    </div>
+    <p class="vision">os cinco passos de focalização — identificar → explorar → subordinar → elevar → recomeçar — como jornada que liga as ferramentas, e o registro da restrição como entidade de primeira classe. Inteiramente novo: zero ocorrências na linhagem (D-09, medição colada na [<code>visao.md</code>](visao.md) §6). Escopo fixado pelo ADR 0005.</p>
+    <p class="deps"><b>Depende de:</b> M2 e M4 (a jornada costura o que eles produzem); registro (E6.1) só de M1.<br><b>Origem:</b> novo (ADR 0005; D-09)</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Épicos (2)</p>
+        <div class="features"><div class="feat"><span class="feat-name">E6.1</span><span class="feat-desc"><b>Registro da restrição</b> — a restrição e o passo atual, por análise</span></div><div class="feat"><span class="feat-name">E6.2</span><span class="feat-desc"><b>Jornada guiada</b> — cada passo aponta a ferramenta certa, com o estado herdado do passo anterior</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Requisitos nas specs que o entregam</p>
+        <div class="mgrid">
+          <div class="mcell"><div class="mv">21</div><div class="mk">RF</div></div>
+          <div class="mcell"><div class="mv">8</div><div class="mk">RI</div></div>
+          <div class="mcell"><div class="mv">8</div><div class="mk">RNF</div></div>
+          <div class="mcell"><div class="mv">7</div><div class="mk">RN</div></div>
+          <div class="mcell"><div class="mv">6</div><div class="mk">INT</div></div>
+        </div>
+        
+        <p class="slabel">Links</p>
+        <div class="links"><a href="../../specs/009-focalizacao/spec.md">📄 spec 009</a><a href="../../docs/produto/modulos.md">🗺️ modulos.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="M7">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#c0392b">M7</div>
+      <div>
+        <p class="mod-title">M7 — Federação APH</p>
+        <p class="mod-sub"><i>Bounded context</i>: identidade/introspecção, admissão, embarque <code>ghd.</code>, manifesto, catálogo <code>toc., </code>action_proposal`, snapshot, wire<span class="sep">·</span>ciclo(s) 003, 006</p>
+      </div>
+      <span class="mod-status wip">planejado</span>
+    </div>
+    <p class="vision">o lado aplicação do Anexo B do padrão APH, Nível 2 (Operador), <code>mode: embedded</code> — identidade por <code>POST /auth/introspect</code>, embarque por iframe com envelope <code>ghd.*</code>, manifesto e catálogo <code>toc.*</code>, todo verbo mutador do modelo nascendo <code>action_proposal</code>, tela como dado (nunca instrução), snapshot sanitizado no servidor.</p>
+    <p class="deps"><b>Depende de:</b> E8.1/E8.2/E8.5 (não há introspecção sem servidor, nem manifesto sem endereço publicado). Bloqueios externos conhecidos: ver [<code>rounds.md</code>](rounds.md).<br><b>Origem:</b> <code>GHDaru/protocolos</code> + <code>GHDaru/ghdaru</code> + lições da irmã</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Épicos (6)</p>
+        <div class="features"><div class="feat"><span class="feat-name">E7.1</span><span class="feat-desc"><b>Identidade e admissão</b> — introspecção; 4 parâmetros de admissão com falha rápida</span></div><div class="feat"><span class="feat-name">E7.2</span><span class="feat-desc"><b>Embarque</b> — iframe, envelope <code>ghd.</code>, tema por lista de permissões com fallback*, modo conteúdo</span></div><div class="feat"><span class="feat-name">E7.3</span><span class="feat-desc"><b>Manifesto e catálogo <code>toc.*</code></b> — o que a aplicação declara e o que o modelo enxerga</span></div><div class="feat"><span class="feat-name">E7.4</span><span class="feat-desc"><b>Ações governadas</b> — FSM de proposta, traço por ação, lote</span></div><div class="feat"><span class="feat-name">E7.5</span><span class="feat-desc"><b>Tela é dado</b> — registro de telas; snapshot sanitizado no servidor</span></div><div class="feat"><span class="feat-name">E7.6</span><span class="feat-desc"><b>Wire APH Nível 1</b> — SSE, <code>seq</code>, replay, cancelamento, códigos de erro</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Requisitos nas specs que o entregam</p>
+        <div class="mgrid">
+          <div class="mcell"><div class="mv">87</div><div class="mk">RF</div></div>
+          <div class="mcell"><div class="mv">20</div><div class="mk">RI</div></div>
+          <div class="mcell"><div class="mv">20</div><div class="mk">RNF</div></div>
+          <div class="mcell"><div class="mv">6</div><div class="mk">RN</div></div>
+          <div class="mcell"><div class="mv">11</div><div class="mk">INT</div></div>
+        </div>
+        <div class="tv-note">Contagem honesta: a spec 003-esqueleto-federado entrega recortes de mais de um módulo, e os requisitos dela contam inteiros nos dois. O corte fino por épico está na própria spec.</div>
+        <p class="slabel">Links</p>
+        <div class="links"><a href="../../specs/003-esqueleto-federado/spec.md">📄 spec 003</a><a href="../../specs/006-acoes-governadas-e-snapshot/spec.md">📄 spec 006</a><a href="../../docs/produto/modulos.md">🗺️ modulos.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="M8">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#475569">M8</div>
+      <div>
+        <p class="mod-title">M8 — Fundações da Aplicação</p>
+        <p class="mod-sub"><i>Bounded context</i>: persistência própria, OTel, i18n, docs embutida, export/import, deploy<span class="sep">·</span>ciclo(s) 003, 011</p>
+      </div>
+      <span class="mod-status wip">planejado</span>
+    </div>
+    <p class="vision">tudo que a linhagem simulou ou adiou, de verdade e de nascença — o backend que foi especificado quatro vezes e construído zero (D-03), a persistência que era <code>localStorage</code> (D-07), a observabilidade que nunca existiu.</p>
+    <p class="deps"><b>Depende de:</b> nada — é a base de todos.<br><b>Origem:</b> violações canônicas do v3 corrigidas (D-03, D-07)</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Épicos (5)</p>
+        <div class="features"><div class="feat"><span class="feat-name">E8.1</span><span class="feat-desc"><b>Persistência própria</b> — PostgreSQL Neon (projeto próprio), migrações Alembic, isolamento por inquilino</span></div><div class="feat"><span class="feat-name">E8.2</span><span class="feat-desc"><b>Observabilidade OTel</b> — traço, log correlacionado e métrica nascem com cada funcionalidade (P5)</span></div><div class="feat"><span class="feat-name">E8.3</span><span class="feat-desc"><b>i18n pt/en</b> — desde o início, português como língua-fonte</span></div><div class="feat"><span class="feat-name">E8.4</span><span class="feat-desc"><b>Documentação embutida</b> — por ferramenta, na aplicação (sucede o <code>DocsView</code> do v3 🟢)</span></div><div class="feat"><span class="feat-name">E8.5</span><span class="feat-desc"><b>Deploy</b> — site próprio em eTLD+1 distinto do hospedeiro</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Requisitos nas specs que o entregam</p>
+        <div class="mgrid">
+          <div class="mcell"><div class="mv">71</div><div class="mk">RF</div></div>
+          <div class="mcell"><div class="mv">19</div><div class="mk">RI</div></div>
+          <div class="mcell"><div class="mv">22</div><div class="mk">RNF</div></div>
+          <div class="mcell"><div class="mv">8</div><div class="mk">RN</div></div>
+          <div class="mcell"><div class="mv">9</div><div class="mk">INT</div></div>
+        </div>
+        <div class="tv-note">Contagem honesta: a spec 003-esqueleto-federado entrega recortes de mais de um módulo, e os requisitos dela contam inteiros nos dois. O corte fino por épico está na própria spec.</div>
+        <p class="slabel">Links</p>
+        <div class="links"><a href="../../specs/003-esqueleto-federado/spec.md">📄 spec 003</a><a href="../../specs/011-fundacoes-da-aplicacao/spec.md">📄 spec 011</a><a href="../../docs/produto/modulos.md">🗺️ modulos.md</a></div>
+      </div>
+    </div>
+  </div>
+    <h2>As doze specs</h2>
+    <p class="muted" style="font-size:13.5px">Uma spec por ciclo do roadmap. As specs 001, 002 e 012
+    são transversais — não entregam um módulo, e sim o corpus, o protótipo descartável e o fechamento
+    com autodeclaração.</p>
+    
+  <div class="mod" id="spec-001">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">001</div>
+      <div>
+        <p class="mod-title">Spec 001 — Fundação e planejamento (ciclo documental)</p>
+        <p class="mod-sub">Módulos: transversal<span class="sep">·</span>raia plena<span class="sep">·</span>12 RF · 0 RI · 5 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho</span>
+    </div>
+    <p class="vision">O repositório nasceu com o método Maestro instalado pelo instalador oficial (<code>scripts/check-install.sh</code> sai com código 0 — F-06) e nada mais. Falta tudo o que o método não traz: o que este produto é, sob quais regras se constrói, em que ordem, e como alguém de fora acompanha.</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (4)</p>
+        <div class="features"><div class="feat"><span class="feat-name">Identidade e governança</span><span class="feat-desc">4 requisitos (RF-01–RF-04)</span></div><div class="feat"><span class="feat-name">Registro de decisões</span><span class="feat-desc">2 requisitos (RF-05–RF-06)</span></div><div class="feat"><span class="feat-name">Produto e planejamento</span><span class="feat-desc">4 requisitos (RF-07–RF-10)</span></div><div class="feat"><span class="feat-name">Portões e site</span><span class="feat-desc">2 requisitos (RF-11–RF-12)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (3)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">A fundação ainda não embarcou nenhuma aplicação federada de ponta a ponta (a irmã relatou bloqueio nos schemas de manifesto em <code>mensagens/005</code> de lá) — assunção: o embarque real acontece no ciclo 003 contra a ghdaru real, e o roadmap o trata como a aptidão mais importante (&quot;a junta fecha&quot;) — risco m</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">O lado aplicação do APH Nível 2 não tem suíte de conformidade executável (a norma o declara: <code>padrao-aph.md:17</code>) — assunção: nossa conformidade será autodeclaração auditável por matriz de aderência (ciclo 012), dita como tal — risco médio.</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">ARF, AT e S&amp;T nunca foram entregues em nenhuma geração da linhagem: não há implementação de referência a extrair, só as skills de domínio e a literatura TOC — assunção: as specs de M4/M5 nascem 🟡 PLANEJADO com regras de negócio derivadas da literatura, validadas pela Facilitadora TOC sintética nas j</span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">3 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/001-fundacao-e-planejamento/spec.md">📄 spec.md</a><a href="../../specs/001-fundacao-e-planejamento/plan.md">📋 plan.md</a><a href="../../specs/001-fundacao-e-planejamento/qa-report.md">📋 qa-report.md</a><a href="../../specs/001-fundacao-e-planejamento/tasks.md">📋 tasks.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-002">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">002</div>
+      <div>
+        <p class="mod-title">Spec 002 — Protótipo de interfaces (ciclo planejado)</p>
+        <p class="mod-sub">Módulos: transversal<span class="sep">·</span>raia plena<span class="sep">·</span>9 RF · 14 RI · 5 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho — ciclo</span>
+    </div>
+    <p class="vision">O ciclo 001 escreveu o que o produto é. Nenhuma linha diz ainda como ele se parece — e a linhagem TOC-Builder prova que essa pergunta não se responde no papel: quatro gerações redesenharam canvas, painéis e temas sem nunca registrar o que foi visto e decidido. Este ciclo produz um protótipo descartável das telas de M1–M3 (canvas, vista tabular, ARA, NC) para que os requisitos de interface das specs de módulo saiam validados por olho humano antes de qualquer código de produção — que só nasce no ciclo 004.</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (2)</p>
+        <div class="features"><div class="feat"><span class="feat-name">Semântica e prova</span><span class="feat-desc">5 requisitos (RF-01–RF-05)</span></div><div class="feat"><span class="feat-name">Conteúdo prototipado</span><span class="feat-desc">4 requisitos (RF-06–RF-09)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (3)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">Não medimos a largura real do iframe na fundação — os 420px são a prova da irmã [F-06], não a nossa. Assunção: 420px como referência de estreito até o embarque real do ciclo 003 medir; se divergir, as capturas estreitas regeneram (são de protótipo). Risco baixo.</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">A lista de <code>theme.tokens</code> que um inquilino da fundação realmente define não é conhecida — a interseção depende do <code>theme.tokens_used</code> do nosso manifesto, que só existe no ciclo 003. Assunção: o adaptador falso entrega um conjunto mínimo plausível e o fallback cobre o resto, como a norma manda [F-04]</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">O catálogo <code>toc.*</code> não existe ainda (ciclo 006), então o protótipo não valida a interface do ciclo propor → confirmar → executar — que a irmã validou cedo no protótipo dela. Assunção: a forma dessa interface é prototipável no próprio ciclo 006, sobre build real, com o custo de uma rodada de ajuste a</span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">3 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/002-prototipo-de-interfaces/spec.md">📄 spec.md</a><a href="../../specs/002-prototipo-de-interfaces/plan.md">📋 plan.md</a><a href="../../specs/002-prototipo-de-interfaces/qa-report.md">📋 qa-report.md</a><a href="../../specs/002-prototipo-de-interfaces/tasks.md">📋 tasks.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-003">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">003</div>
+      <div>
+        <p class="mod-title">Spec 003 — Esqueleto federado (M7/M8 — recorte E7.1, E7.2, E8.1, E8.2, E8.5)</p>
+        <p class="mod-sub">Módulos: M7, M8<span class="sep">·</span>raia infra (plena + reversibilidade — a única do roadmap)<span class="sep">·</span>39 RF · 8 RI · 10 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho — ciclo</span>
+    </div>
+    <p class="vision">O primeiro corte de código de produção: a aplicação existe, embarcada na <code>ghdaru</code> real, sob a identidade de quem a abriu, com banco e traço próprios — ainda sem nenhuma ferramenta TOC. A aptidão central, e a mais importante do roadmap, é executável e binária: &quot;a junta fecha contra a <code>ghdaru</code> real&quot; — manifesto aceito pela rota de administração real, grant trocado por identidade em <code>POST /auth/introspect</code> servidor a servidor, <code>ev.source</code> e <code>ev.origin</code> verificados antes de qualquer conteúdo, falha fechada com a fundação indisponível, e traço OTel de ponta a ponta. Nada disso contra shell simulado.</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (9)</p>
+        <div class="features"><div class="feat"><span class="feat-name">F7.1.1 — Admissão com falha rápida</span><span class="feat-desc">5 requisitos (RF-01–RF-05)</span></div><div class="feat"><span class="feat-name">F7.1.2 — Introspecção</span><span class="feat-desc">8 requisitos (RF-06–RF-13)</span></div><div class="feat"><span class="feat-name">F7.2.1 — Envelope e handshake</span><span class="feat-desc">6 requisitos (RF-14–RF-19)</span></div><div class="feat"><span class="feat-name">F7.2.2 — Verificação de fonte e origem</span><span class="feat-desc">4 requisitos (RF-20–RF-23)</span></div><div class="feat"><span class="feat-name">F7.2.3 — Modo conteúdo e tema</span><span class="feat-desc">4 requisitos (RF-24–RF-27)</span></div><div class="feat"><span class="feat-name">F8.1.1 — Banco e migrações próprios</span><span class="feat-desc">3 requisitos (RF-28–RF-30)</span></div><div class="feat"><span class="feat-name">F8.1.2 — Isolamento por tenant</span><span class="feat-desc">1 requisito (RF-31)</span></div><div class="feat"><span class="feat-name">F8.2.1 — Observabilidade de nascença</span><span class="feat-desc">4 requisitos (RF-32–RF-35)</span></div><div class="feat"><span class="feat-name">F8.5.1 — Deploy e CI</span><span class="feat-desc">4 requisitos (RF-36–RF-39)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (6)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">Os dois schemas de manifesto eram mutuamente exclusivos quando a irmã mediu (golden da fundação × normativo do Anexo B, 4 erros na validação cruzada — [F-14]) — assunção: re-medição na abertura do ciclo; se persistir, o ciclo entrega tudo menos o registro do manifesto, com mensagem nossa referencian</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">A fatia de federação da fundação é desligada por padrão (<code>FEDERATION_MANIFESTS_ENABLED</code> — <code>ghdaru/apps/api/src/ghdaru_api/http/manifest_loader.py:28</code> 🟢; sem ela, tudo responde 404) — assunção: ligar é do operador da fundação e será pedido na abertura do ciclo — risco médio.</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">Grants de embarque vivem em memória no hospedeiro ([F-20]) — assunção: reinício do host invalida embarques em voo e a aplicação trata como <code>GRANT_INATIVO</code> comum (RNF-07); aceitável para leitura — risco baixo.</span></div><div class="feat"><span class="feat-name">L-04</span><span class="feat-desc">A autenticação do chamador da introspecção é 🧪 na norma (§B.6.6), mas a fundação já a implementa (spec 047 — [F-11], [F-12]) — assunção: seguimos a implementação real da fundação; se a norma fechar a cláusula com forma diferente, o adaptador de introspecção absorve a mudança — risco baixo.</span></div><div class="feat"><span class="feat-name">L-05</span><span class="feat-desc">Ambiente de teste da fundação não confirmado (quinta linha da tabela do §B.4: &quot;DEVE ser oferecido&quot;, mas não impede subir) — assunção: sem ele, o ensaio da junta acontece direto no ambiente real com tenant de teste — risco médio (vai ao Clarify).</span></div><div class="feat"><span class="feat-name">L-06</span><span class="feat-desc">Não há baseline de desempenho do embarque — assunção: o alvo ≤ 3 s do RNF-06 é proposto, não medido; a primeira medição real o calibra no gate — risco baixo.</span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">5 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/003-esqueleto-federado/spec.md">📄 spec.md</a><a href="../../specs/003-esqueleto-federado/data-model.md">📋 data-model.md</a><a href="../../specs/003-esqueleto-federado/plan.md">📋 plan.md</a><a href="../../specs/003-esqueleto-federado/qa-report.md">📋 qa-report.md</a><a href="../../specs/003-esqueleto-federado/tasks.md">📋 tasks.md</a><a href="../../specs/003-esqueleto-federado/contracts/parametros-de-admissao.md">📋 contracts/parametros-de-admissao.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-004">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">004</div>
+      <div>
+        <p class="mod-title">Spec 004 — Núcleo de diagramas (M1 — Núcleo de Diagramas Lógicos)</p>
+        <p class="mod-sub">Módulos: M1<span class="sep">·</span>raia plena<span class="sep">·</span>36 RF · 12 RI · 10 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho</span>
+    </div>
+    <p class="vision">O M1 é tudo o que é comum às seis ferramentas de pensamento da TOC — projeto, nó, aresta causal, o canvas e a sua vista tabular equivalente — existindo uma vez. Na linhagem TOC-Builder, cada ferramenta carregava a sua própria cópia de canvas, painel e serviço de dados; o M1 é a fatoração que impede a sétima cópia. Ele não conhece nenhuma semântica TOC (UDE, premissa, injeção — isso é M2 em diante): conhece grafos dirigidos com nós tipáveis e arestas causais, e as operações que qualquer ferramenta faz sobre eles.</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (7)</p>
+        <div class="features"><div class="feat"><span class="feat-name">CRUD de projetos</span><span class="feat-desc">5 requisitos (RF-01–RF-05)</span></div><div class="feat"><span class="feat-name">Exclusão suave e restauração</span><span class="feat-desc">5 requisitos (RF-06–RF-10)</span></div><div class="feat"><span class="feat-name">Nós no canvas</span><span class="feat-desc">6 requisitos (RF-11–RF-16)</span></div><div class="feat"><span class="feat-name">Arestas causais</span><span class="feat-desc">4 requisitos (RF-17–RF-20)</span></div><div class="feat"><span class="feat-name">Edição direta, desfazer e reverter</span><span class="feat-desc">6 requisitos (RF-21–RF-26)</span></div><div class="feat"><span class="feat-name">Vista tabular equivalente</span><span class="feat-desc">5 requisitos (RF-27–RF-31)</span></div><div class="feat"><span class="feat-name">Exportação e importação JSON</span><span class="feat-desc">5 requisitos (RF-32–RF-36)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (4)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">A junta do ciclo 003 (introspecção, banco, OTel) ainda não existe — assunção: o M1 programa contra as portas definidas no 003 e não abre antes de a aptidão &quot;a junta fecha contra a ghdaru real&quot; passar — risco alto (é a dependência inteira do ciclo).</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">O apetite de um ciclo para 4 épicos com TDD é estimativa sem histórico próprio — assunção: o corte declarado no round 004 (sai o desfazer primeiro, nunca a vista tabular) absorve o estouro — risco médio.</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">O identificador estável de tela (INT-02) antecipa um contrato que o ciclo 006 ainda vai fixar — assunção: um <code>data-tela-id</code> por tela custa quase nada e evita renomear; se o 006 decidir outro formato, a migração é mecânica — risco baixo.</span></div><div class="feat"><span class="feat-name">L-04</span><span class="feat-desc">A meta de desempenho (200 nós, RNF-05/06) vem do tamanho típico de ARA na literatura, não de medição própria — assunção: suficiente para v1; medição real na jornada viva — risco baixo.</span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">4 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/004-nucleo-de-diagramas/spec.md">📄 spec.md</a><a href="../../specs/004-nucleo-de-diagramas/data-model.md">📋 data-model.md</a><a href="../../specs/004-nucleo-de-diagramas/plan.md">📋 plan.md</a><a href="../../specs/004-nucleo-de-diagramas/qa-report.md">📋 qa-report.md</a><a href="../../specs/004-nucleo-de-diagramas/tasks.md">📋 tasks.md</a><a href="../../specs/004-nucleo-de-diagramas/contracts/rest-api.md">📋 contracts/rest-api.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-005">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">005</div>
+      <div>
+        <p class="mod-title">Spec 005 — Árvore da Realidade Atual (M2 — Árvore da Realidade Atual)</p>
+        <p class="mod-sub">Módulos: M2<span class="sep">·</span>raia plena<span class="sep">·</span>38 RF · 10 RI · 9 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho</span>
+    </div>
+    <p class="vision">O M2 é a primeira ferramenta TOC de verdade sobre o núcleo do M1: a Árvore da Realidade Atual, que parte dos sintomas percebidos (os UDEs) e desce, por relações de suficiência causal (&quot;se isto, então aquilo&quot;), até as poucas causas que explicam a maioria deles. É a ferramenta mais madura da linhagem TOC-Builder — quatro gerações a construíram, e a 4ª chegou a ter canvas, painel tabular, validação de UDE e análise de árvore funcionando (F-01).</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (7)</p>
+        <div class="features"><div class="feat"><span class="feat-name">UDE como nó tipado da ARA</span><span class="feat-desc">5 requisitos (RF-01–RF-05)</span></div><div class="feat"><span class="feat-name">Validação formal decidível</span><span class="feat-desc">7 requisitos (RF-06–RF-12)</span></div><div class="feat"><span class="feat-name">Ficha, status e parecer de julgamento</span><span class="feat-desc">5 requisitos (RF-13–RF-17)</span></div><div class="feat"><span class="feat-name">Causas e relações de suficiência</span><span class="feat-desc">4 requisitos (RF-18–RF-21)</span></div><div class="feat"><span class="feat-name">Exame de suficiência dos elos</span><span class="feat-desc">4 requisitos (RF-22–RF-25)</span></div><div class="feat"><span class="feat-name">Análise estrutural da árvore</span><span class="feat-desc">6 requisitos (RF-26–RF-31)</span></div><div class="feat"><span class="feat-name">Assistência via catálogo (contrato — execução no ciclo 006)</span><span class="feat-desc">7 requisitos (RF-32–RF-38)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (5)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">As heurísticas lexicais dos critérios decidíveis (RN-01..RN-06) não têm precedente medido — a linhagem decidia tudo por modelo. Assunção: heurística conservadora com <code>indeterminado</code> honesto (RF-08) + corpus sintético versionado (RNF-07) bastam para o v1; falso <code>indeterminado</code> degrada para julgamento</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">O exame de suficiência e o relatório estrutural não existem na linhagem (F-09) — são método TOC sem contraparte medida; as CLR completas (reserva de causalidade, de entidade, de tautologia…) ficam fora do v1. Assunção: o subconjunto elo examinado + conector E + relatório estrutural cobre a prática; </span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">O contrato das ações <code>toc.*</code> (INT-02..INT-06) antecipa o catálogo que o ciclo 006 fixa. Assunção: declarar sem executar (DoD 10) custa pouco e dá ao 006 um primeiro cliente concreto; se o formato do catálogo divergir, a migração é da declaração, não do domínio — risco baixo.</span></div><div class="feat"><span class="feat-name">L-04</span><span class="feat-desc">O apetite de um ciclo para E2.1 + E2.2 com TDD e léxico bilíngue é estimativa sem histórico próprio. Assunção: o corte do round 005 (sai o relatório estrutural primeiro, nunca a validação formal) absorve o estouro — risco médio.</span></div><div class="feat"><span class="feat-name">L-05</span><span class="feat-desc">A distinção decidível × julgamento do RF-09 é decisão nossa sobre os 11 critérios — a linhagem não a fazia (mandava tudo ao modelo). Assunção: a partição desta spec (6 decidíveis com heurística, 5 de julgamento) é o ponto de partida; ela é dado versionado (RF-09), então mover um critério de classe é</span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">5 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/005-arvore-da-realidade-atual/spec.md">📄 spec.md</a><a href="../../specs/005-arvore-da-realidade-atual/plan.md">📋 plan.md</a><a href="../../specs/005-arvore-da-realidade-atual/qa-report.md">📋 qa-report.md</a><a href="../../specs/005-arvore-da-realidade-atual/tasks.md">📋 tasks.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-006">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">006</div>
+      <div>
+        <p class="mod-title">Spec 006 — Ações governadas e snapshot (M7 — Federação APH)</p>
+        <p class="mod-sub">Módulos: M7<span class="sep">·</span>raia plena<span class="sep">·</span>48 RF · 12 RI · 10 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho — ciclo</span>
+    </div>
+    <p class="vision">Este ciclo completa o módulo M7 (Federação APH): ele transforma a junta que o ciclo 003 fechou — identidade, embarque, banco, traço — na fronteira conversacional governada que faz da aplicação um Operador de verdade. Entram os quatro objetos que faltam: o catálogo <code>toc. como única superfície executável, derivado das permissões reais; a FSM de proposta pela qual todo verbo mutador do modelo atravessa antes de tocar o domínio; a tela como dado — registro de telas e snapshot sanitizado no servidor, com schema fechado e teto de tamanho; e o wire APH Nível 1 (SSE sobre POST, </code>seq`, replay, cancelamento, códigos de erro estáveis). O primeiro consumidor é a assistência da ARA (E2.3 do módulo M2): sugerir UDEs, analisar suficiência, criar nós em lote — tudo por proposta, nunca por execução direta.</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (10)</p>
+        <div class="features"><div class="feat"><span class="feat-name">F7.3.1 — Manifesto embedded</span><span class="feat-desc">4 requisitos (RF-01–RF-04)</span></div><div class="feat"><span class="feat-name">F7.3.2 — Catálogo derivado de permissão</span><span class="feat-desc">5 requisitos (RF-05–RF-09)</span></div><div class="feat"><span class="feat-name">F7.4.1 — FSM de proposta</span><span class="feat-desc">7 requisitos (RF-10–RF-16)</span></div><div class="feat"><span class="feat-name">F7.4.2 — Autorização por capability nos casos de uso</span><span class="feat-desc">4 requisitos (RF-17–RF-20)</span></div><div class="feat"><span class="feat-name">F7.4.3 — Traço de 100%</span><span class="feat-desc">3 requisitos (RF-21–RF-23)</span></div><div class="feat"><span class="feat-name">F7.4.4 — Proposta em lote</span><span class="feat-desc">6 requisitos (RF-24–RF-29)</span></div><div class="feat"><span class="feat-name">F7.4.5 — Borda de execução federada</span><span class="feat-desc">4 requisitos (RF-30–RF-33)</span></div><div class="feat"><span class="feat-name">F7.5.1 — Registro de telas</span><span class="feat-desc">3 requisitos (RF-34–RF-36)</span></div><div class="feat"><span class="feat-name">F7.5.2 — Snapshot sanitizado no servidor</span><span class="feat-desc">4 requisitos (RF-37–RF-40)</span></div><div class="feat"><span class="feat-name">F7.6 — Wire APH Nível 1</span><span class="feat-desc">8 requisitos (RF-41–RF-48)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (7)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">O Nível 2 não tem suíte de conformidade executável ([F-26]) — assunção: a prova é autodeclaração com evidência por path + os golden dos schemas no nosso CI (RNF-03); a autodeclaração formal é entrega do ciclo 012 — risco médio (sem medição externa, o erro de auto-avaliação é nosso).</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">O schema normativo do manifesto não admite <code>batch_atomicity</code> — verificado: <code>grep -c batch_atomicity federacao-manifesto.schema.json</code> → <code>0</code>, e a sabotagem que o acrescenta a uma ação do manifesto é rejeitada (<code>1 erro</code>, saída no qa-report do 001); o campo existe só no schema do catálogo do fio (§A.5 [</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">A fatia de ações federadas do hospedeiro chama sem credencial ([F-16]) — assunção: nossa borda nasce exigindo autenticação (RF-32); enquanto o F7 do hospedeiro não emitir credencial de serviço, a borda federada só serve <code>risk: read</code> e o alcance fica limitado à execução disparada do harness — a FSM e</span></div><div class="feat"><span class="feat-name">L-04</span><span class="feat-desc">APH-9.4b sem laboratório: as capabilities recebidas podem exceder o usuário ([F-14]) — assunção: não pressupomos atenuação do hospedeiro; RF-17/RF-19 re-verificam localmente em todo caso de uso — risco médio (a exposição residual é do lado do hospedeiro, mas o traço é nosso).</span></div><div class="feat"><span class="feat-name">L-05</span><span class="feat-desc"><code>usage</code> no <code>done</code> depende da porta da fundação — sem provedor próprio (ADR 0007), não medimos tokens; o campo é opcional no fio — assunção: emitimos <code>done</code> sem <code>usage</code> até a fundação repassar o valor — risco baixo.</span></div><div class="feat"><span class="feat-name">L-06</span><span class="feat-desc"><code>endpoints.actions</code> não existe no schema do manifesto (o próprio ADR 0023 do hospedeiro registra o gap e propõe formalização ao <code>protocolos</code> — [F-15], item 5 de lá) — assunção: seguimos a convenção <code>POST {origin}/aph/actions/{action_id}</code> do ADR até a norma formalizar — risco baixo.</span></div><div class="feat"><span class="feat-name">L-07</span><span class="feat-desc">Não há baseline de desempenho do wire — assunção: os alvos do RNF-09 são propostos; a primeira medição real os calibra no gate — risco baixo.</span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">5 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/006-acoes-governadas-e-snapshot/spec.md">📄 spec.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/plan.md">📋 plan.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/qa-report.md">📋 qa-report.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/tasks.md">📋 tasks.md</a><a href="../../specs/006-acoes-governadas-e-snapshot/contracts/manifesto.json">📋 contracts/manifesto.json</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-007">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">007</div>
+      <div>
+        <p class="mod-title">Spec 007 — Nuvem de Conflito (M3 — Nuvem de Conflito)</p>
+        <p class="mod-sub">Módulos: M3<span class="sep">·</span>raia plena<span class="sep">·</span>34 RF · 11 RI · 10 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho</span>
+    </div>
+    <p class="vision">O M3 é a ferramenta TOC do dilema: a Nuvem de Conflito modela um conflito em 5 entidades — objetivo comum (A), duas necessidades (B e C) e duas ações mutuamente exclusivas (D e D′) — ligadas por 7 arestas, cada aresta sustentada por premissas explícitas, e as injeções que invalidam premissas são o que &quot;evapora&quot; o conflito. É a única ferramenta em que a linhagem TOC-Builder entregou algo próximo do método completo: a 3ª/4ª gerações tinham as 5 entidades e as 7 premissas como estrutura de dado (F-01), a nuvem nascia inteira e nunca parcial (F-02), e a visão espelhada conflito+solução existia (F-07).</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (7)</p>
+        <div class="features"><div class="feat"><span class="feat-name">Projeto NC de topologia fixa</span><span class="feat-desc">4 requisitos (RF-01–RF-04)</span></div><div class="feat"><span class="feat-name">Edição direta e leitura por extenso</span><span class="feat-desc">4 requisitos (RF-05–RF-08)</span></div><div class="feat"><span class="feat-name">Apoio à boa formulação</span><span class="feat-desc">3 requisitos (RF-09–RF-11)</span></div><div class="feat"><span class="feat-name">Premissas por aresta</span><span class="feat-desc">4 requisitos (RF-12–RF-15)</span></div><div class="feat"><span class="feat-name">Injeções ligadas a premissas</span><span class="feat-desc">5 requisitos (RF-16–RF-20)</span></div><div class="feat"><span class="feat-name">Geração assistida a partir de narrativa</span><span class="feat-desc">9 requisitos (RF-21–RF-29)</span></div><div class="feat"><span class="feat-name">Visão conflito+solução</span><span class="feat-desc">5 requisitos (RF-30–RF-34)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (5)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">A multiplicidade de premissas por aresta não tem precedente na linhagem (o v3 fixava exatamente 1 — F-01) nem na skill (que pede 1 por seta). Assunção: zero ou mais, ordenadas, com a completude medindo ≥ 1 vigente (RN-03) — a prática de grupo produz várias crenças por seta e achatá-las perderia info</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">A granularidade da proposta de geração (RF-23: completa sobre nuvem vazia, granular sobre nuvem preenchida) é desenho nosso sem precedente — o v3 sempre sobrescrevia tudo. Assunção: o corte &quot;vazia × preenchida&quot; cobre os dois usos reais (começar e refinar); o caso híbrido resolve-se com as ações gran</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">O contrato das 3 ações e do schema antecipa o formato que o ciclo 006 fixa para o catálogo. Assunção: declarar com schema versionado custa pouco e dá ao 006 um segundo cliente concreto; divergência custa migração de contrato, não de domínio — risco baixo.</span></div><div class="feat"><span class="feat-name">L-04</span><span class="feat-desc">As heurísticas de formulação (RF-09, RF-10) não têm precedente medido — a linhagem mandava tudo ao modelo. Assunção: aviso não bloqueante com <code>indeterminado</code> honesto não pode causar dano de fluxo (o pior caso é silêncio); o corpus sintético (RNF-08) mede o acerto — risco baixo.</span></div><div class="feat"><span class="feat-name">L-05</span><span class="feat-desc">Os campos ReferenciaDeOrigem e ReferenciaDeSemeadura nascem aqui mas só são preenchidos pelo encadeamento do ciclo 008 — desenho antecipado sem consumidor imediato. Assunção: criar o lugar do dado agora evita migração no 008 e custa duas colunas anuláveis; se o desenho do encadeamento divergir, a mi</span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">5 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/007-nuvem-de-conflito/spec.md">📄 spec.md</a><a href="../../specs/007-nuvem-de-conflito/plan.md">📋 plan.md</a><a href="../../specs/007-nuvem-de-conflito/qa-report.md">📋 qa-report.md</a><a href="../../specs/007-nuvem-de-conflito/tasks.md">📋 tasks.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-008">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">008</div>
+      <div>
+        <p class="mod-title">Spec 008 — Árvores de Futuro e Implementação (M4 — Árvores de Futuro e Implementação)</p>
+        <p class="mod-sub">Módulos: M4<span class="sep">·</span>raia plena<span class="sep">·</span>45 RF · 13 RI · 10 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho</span>
+    </div>
+    <p class="vision">O M4 é o módulo que faz o toc-federada suceder a linhagem de fato, e não apenas refazê-la melhor. Nas quatro gerações do TOC-Builder, as três ferramentas deste módulo — ARF, APR e AT — só existiram como item desabilitado de menu: o botão cinza está em <code>tocbuilderv3/components/Sidebar.tsx:55-57</code> (F-01), o tipo de navegação em <code>tocbuilderv3/types.ts:249-258</code> (F-02), os rótulos traduzidos em <code>locales/pt.ts:68-70</code> (F-04) — e nada mais: zero componentes (F-05), zero prompts (F-06), zero linhas de domínio (F-07). É o defeito D-04 da visão.</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (10)</p>
+        <div class="features"><div class="feat"><span class="feat-name">Projeto ARF e efeitos futuros</span><span class="feat-desc">7 requisitos (RF-01–RF-07)</span></div><div class="feat"><span class="feat-name">Ramos negativos</span><span class="feat-desc">3 requisitos (RF-08–RF-10)</span></div><div class="feat"><span class="feat-name">Verificação estrutural da ARF</span><span class="feat-desc">3 requisitos (RF-11–RF-13)</span></div><div class="feat"><span class="feat-name">Projeto APR: obstáculos e objetivos intermediários</span><span class="feat-desc">6 requisitos (RF-14–RF-19)</span></div><div class="feat"><span class="feat-name">Verbalização avaliada</span><span class="feat-desc">3 requisitos (RF-20–RF-22)</span></div><div class="feat"><span class="feat-name">Sequenciamento por dependência</span><span class="feat-desc">5 requisitos (RF-23–RF-27)</span></div><div class="feat"><span class="feat-name">Árvore de transição</span><span class="feat-desc">5 requisitos (RF-28–RF-32)</span></div><div class="feat"><span class="feat-name">Referências cruzadas e promoções</span><span class="feat-desc">8 requisitos (RF-33–RF-40)</span></div><div class="feat"><span class="feat-name">Vista da cadeia</span><span class="feat-desc">2 requisitos (RF-41–RF-42)</span></div><div class="feat"><span class="feat-name">Assistência via catálogo (executa neste ciclo — a FSM do 006 existe)</span><span class="feat-desc">3 requisitos (RF-43–RF-45)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (5)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">As três ferramentas não têm nenhum precedente de implementação na linhagem (F-05..F-07) — nem tela, nem tipo, nem prompt. Assunção: o método TOC via fonte técnica (F-09) e a analogia estrutural com M2/M3 (nó tipado + ficha + função pura) bastam para a primeira versão; onde o método admite variação, </span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">As heurísticas de verbalização de obstáculo/OI (RF-20) não têm corpus prévio. Assunção: a infraestrutura do M2 (léxico versionado + <code>indeterminado</code> honesto + corpus sintético como função forçante) transfere para o vocabulário da APR; como aqui o aviso não veta (RN-08), o custo do erro é menor que no</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">O apetite — três ferramentas novas + encadeamento + extração do pacote de suficiência em um ciclo — é a maior aposta do roadmap depois do 003. Assunção: o corte do round (sai primeiro a AT, que é o diagrama de menor risco; nunca sai o encadeamento) absorve o estouro; se a AT sair, as derivações OI →</span></div><div class="feat"><span class="feat-name">L-04</span><span class="feat-desc">A extração do exame de elo + conector E do M2 para pacote compartilhado (RF-03) refatora código promovido no ciclo 005. Assunção: a suíte do 005 é a rede de proteção (entregável explícito: ela continua verde); se a extração ameaçar o apetite, a ARF duplica temporariamente com dívida declarada em ADR</span></div><div class="feat"><span class="feat-name">L-05</span><span class="feat-desc">A vista da cadeia (RF-41) assume travessia linear UDE → … → passo, mas análises reais podem ramificar (uma NC com duas injeções escolhidas semeando duas ARFs). Assunção: a v1 apresenta a cadeia como grafo percorrido a partir do elemento de entrada, mostrando ramificações como listas no elo — sem lay</span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">5 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/008-arvores-de-futuro-e-implementacao/spec.md">📄 spec.md</a><a href="../../specs/008-arvores-de-futuro-e-implementacao/plan.md">📋 plan.md</a><a href="../../specs/008-arvores-de-futuro-e-implementacao/qa-report.md">📋 qa-report.md</a><a href="../../specs/008-arvores-de-futuro-e-implementacao/tasks.md">📋 tasks.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-009">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">009</div>
+      <div>
+        <p class="mod-title">Spec 009 — Focalização (M6 — Focalização)</p>
+        <p class="mod-sub">Módulos: M6<span class="sep">·</span>raia plena<span class="sep">·</span>21 RF · 8 RI · 8 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho</span>
+    </div>
+    <p class="vision">O M6 é o módulo que dá à aplicação o nome da teoria. Os cinco passos de focalização — identificar a restrição → explorar a restrição → subordinar tudo o mais → elevar a restrição → recomeçar sem deixar a inércia virar a restrição — são o algoritmo central da TOC, e as árvores lógicas dos módulos M2–M5 são as ferramentas que cada passo usa. Sem os cinco passos, seis ferramentas são seis editores desconexos; com eles, viram uma jornada com começo, direção e critério de recomeço.</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (6)</p>
+        <div class="features"><div class="feat"><span class="feat-name">Análise de focalização</span><span class="feat-desc">4 requisitos (RF-01–RF-04)</span></div><div class="feat"><span class="feat-name">Registro da restrição</span><span class="feat-desc">4 requisitos (RF-05–RF-08)</span></div><div class="feat"><span class="feat-name">Passo atual e avanço</span><span class="feat-desc">3 requisitos (RF-09–RF-11)</span></div><div class="feat"><span class="feat-name">Jornada guiada e vínculos de ferramenta</span><span class="feat-desc">3 requisitos (RF-12–RF-14)</span></div><div class="feat"><span class="feat-name">Recomeçar sem inércia</span><span class="feat-desc">4 requisitos (RF-15–RF-18)</span></div><div class="feat"><span class="feat-name">Assistência via catálogo (corte de apetite: sai primeiro)</span><span class="feat-desc">3 requisitos (RF-19–RF-21)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (5)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">A taxonomia de tipos de restrição (<code>fisica</code> | <code>politica</code> | <code>de_mercado</code>) não tem precedente na linhagem (que nunca teve restrição) nem norma no corpus. Assunção: os três tipos clássicos da literatura TOC bastam para a v1, como enum fechado com evento — ampliar é migração aditiva pequena; risco baixo</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">O desenho das DecisoesHerdadas assume que as decisões &quot;de exploração e subordinação&quot; são as que geram inércia — as de identificar e elevar morrem com o ciclo. Assunção: é a leitura direta do quinto passo do método (&quot;não deixe a inércia virar a restrição do sistema&quot;: o que sobrevive por inércia são r</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">A navegação de volta (da ARA/NC/APR para a análise que a vinculou) resolve por consulta ao M6, sem campo novo nos módulos M2–M4. Assunção: consulta indexada basta para a escala da v1 e evita acoplamento reverso; se o custo aparecer, um índice materializado resolve sem tocar nos agregados das ferrame</span></div><div class="feat"><span class="feat-name">L-04</span><span class="feat-desc"><code>toc.suggest_constraint</code> não tem precedente em nenhuma geração (a linhagem não tinha restrição para sugerir). Assunção: candidatas derivadas dos nós de causa raiz da ARA são um primeiro recorte útil; o round já a marca &quot;sai primeiro&quot; — o risco de errar o desenho é pago com o corte, não com o ciclo; </span></div><div class="feat"><span class="feat-name">L-05</span><span class="feat-desc">O ciclo 002 (protótipo de interfaces) cobriu RIs de M1–M3; as telas de jornada do M6 podem não ter <code>ux-design.md</code> prévio. Assunção: o desenho nasce neste ciclo sob o mesmo processo (papel semântico → ux-design → jornada viva), no mesmo pull request; risco médio — é o único módulo de superfície nova </span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">5 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/009-focalizacao/spec.md">📄 spec.md</a><a href="../../specs/009-focalizacao/plan.md">📋 plan.md</a><a href="../../specs/009-focalizacao/qa-report.md">📋 qa-report.md</a><a href="../../specs/009-focalizacao/tasks.md">📋 tasks.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-010">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">010</div>
+      <div>
+        <p class="mod-title">Spec 010 — Estratégia &amp; Táticas (M5 — Estratégia &amp; Táticas)</p>
+        <p class="mod-sub">Módulos: M5<span class="sep">·</span>raia plena<span class="sep">·</span>21 RF · 9 RI · 8 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho</span>
+    </div>
+    <p class="vision">O M5 resgata a única ferramenta que regrediu na linhagem (defeito D-05). A árvore de S&amp;T decompõe uma meta em passos hierarquicamente numerados — 1, 1.1, 1.1.2 — onde cada passo declara a estratégia (o quê) e a tática (como), sustentadas por três premissas lógicas: a paralela (o pressuposto de contexto que sustenta o passo), a de necessidade ao pai (por que o pai precisa deste passo) e a de suficiência dos filhos (por que os filhos bastam). A regressão está medida: a ferramenta estava habilitada na 1ª e na 2ª gerações (F-01, F-02) e foi desligada da 3ª em diante — na 4ª geração o item da navegação carrega <code>disabled: true</code> (F-02) com o modelo de dados completo parado no código (F-03): enum de status, numeração hierárquica comentada no próprio tipo e os três campos de premissa.</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (5)</p>
+        <div class="features"><div class="feat"><span class="feat-name">Projeto S&amp;T com meta global</span><span class="feat-desc">3 requisitos (RF-01–RF-03)</span></div><div class="feat"><span class="feat-name">Passos com numeração derivada</span><span class="feat-desc">7 requisitos (RF-04–RF-10)</span></div><div class="feat"><span class="feat-name">Estratégia, tática e premissas</span><span class="feat-desc">5 requisitos (RF-11–RF-15)</span></div><div class="feat"><span class="feat-name">Status e acompanhamento</span><span class="feat-desc">3 requisitos (RF-16–RF-18)</span></div><div class="feat"><span class="feat-name">Vista tabular, desfazer e exportação</span><span class="feat-desc">3 requisitos (RF-19–RF-21)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (5)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">A linhagem modelava um texto por passo (<code>strategyText</code>) mais uma categoria de 6 valores (F-03); o método S&amp;T pede estratégia e tática por passo. Assunção: estratégia e tática como campos distintos, e a categoria não portada — com os dois campos no passo, classificar o nó como &quot;Estratégia&quot; ou &quot;Tática</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">A linhagem não restringia transições de status (nem registrava quem mudou). Assunção: transição livre entre os 4 valores com evento (RN-03) — impor FSM (ex.: <code>em_execucao</code> só depois de <code>validado</code>) travaria reuniões reais em que o plano executa antes de validar formalmente. Risco baixo; [DÚVIDA] 2.</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">A linhagem não tinha ordem entre irmãos — os nós flutuavam por <code>pos_x</code>/<code>pos_y</code> (F-03) e o número digitado carregava a ordem implícita. Assunção: ordem ordinal explícita e persistida por irmão, fonte única da numeração (RN-01). Risco baixo — é a estrutura mínima que torna a numeração derivável.</span></div><div class="feat"><span class="feat-name">L-04</span><span class="feat-desc">A importação dos exports S&amp;T da 4ª geração (ciclo 011, INT-03) vai encontrar <code>stepNumber</code> livre possivelmente inconsistente com as arestas. Assunção: o modelo deste ciclo (pai + ordem) é reconstruível de número + aresta na maioria dos casos, e o importador recusa com relato os demais — nunca importa</span></div><div class="feat"><span class="feat-name">L-05</span><span class="feat-desc">Múltiplas raízes são permitidas (numeradas 1..n), embora a prática canônica da S&amp;T seja uma raiz sob a meta global. Assunção: permitir e apontar pendência estilística custaria mais que aceitar — planos reais começam por listas de frentes. Risco baixo; [DÚVIDA] 3.</span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">5 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/010-estrategia-e-taticas/spec.md">📄 spec.md</a><a href="../../specs/010-estrategia-e-taticas/plan.md">📋 plan.md</a><a href="../../specs/010-estrategia-e-taticas/qa-report.md">📋 qa-report.md</a><a href="../../specs/010-estrategia-e-taticas/tasks.md">📋 tasks.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-011">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">011</div>
+      <div>
+        <p class="mod-title">Spec 011 — Fundações da aplicação (M8 — Fundações da Aplicação)</p>
+        <p class="mod-sub">Módulos: M8<span class="sep">·</span>raia plena<span class="sep">·</span>32 RF · 11 RI · 12 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho</span>
+    </div>
+    <p class="vision">O M8 é a fundação de infraestrutura da aplicação: o que nenhuma ferramenta da TOC vê, e sem o que nenhuma delas existe. Metade dele já nasceu — o ciclo 003 entregou o banco próprio, a observabilidade e o endereço publicado ([<code>../003-esqueleto-federado/spec.md</code>](../003-esqueleto-federado/spec.md)). Este ciclo fecha a outra metade, e ela não é sobra de escopo: é o conjunto de coisas que custa dez vezes mais depois do que agora — internacionalização, documentação embutida, e a leitura e escrita de arquivos que atravessam a fronteira do produto.</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (5)</p>
+        <div class="features"><div class="feat"><span class="feat-name">Unidade de restauração (F8.1.3)</span><span class="feat-desc">5 requisitos (RF-01–RF-05)</span></div><div class="feat"><span class="feat-name">Dicionário, língua-fonte e paridade (F8.3.1, F8.3.2, F8.3.4)</span><span class="feat-desc">6 requisitos (RF-06–RF-11)</span></div><div class="feat"><span class="feat-name">Idioma efetivo e localização (F8.3.3, F8.3.5)</span><span class="feat-desc">6 requisitos (RF-12–RF-17)</span></div><div class="feat"><span class="feat-name">Documentação embutida (E8.4)</span><span class="feat-desc">7 requisitos (RF-18–RF-24)</span></div><div class="feat"><span class="feat-name">Importação do formato legado e exportação consolidada (E1.4)</span><span class="feat-desc">8 requisitos (RF-25–RF-32)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (5)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">A restauração ensaiada depende de recursos do provedor (cópia gerenciada e recuperação a um ponto no tempo) cujo plano contratado não está declarado em lugar nenhum deste repositório — assunção: o plano do projeto Neon próprio permite restaurar para um destino separado dentro da janela declarada; se</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">O idioma declarado pelo embarque depende de o hospedeiro enviá-lo no envelope <code>ghd.*</code>; a spec 003 não o inclui entre os quatro parâmetros de admissão — assunção: quando ausente, a ordem do RF-12 resolve sem erro (preferência → padrão) e a lacuna vira mensagem ao hospedeiro por <code>mensagens/NNN</code> (P1: r</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">O formato exportado pela quarta geração está medido só nas duas ferramentas que exportavam (ARA e, por composição, a NC); ferramentas que nunca existiram nunca exportaram — assunção: o adaptador cobre o que existe e recusa o resto com relato, em vez de fingir converter — risco baixo.</span></div><div class="feat"><span class="feat-name">L-04</span><span class="feat-desc">O teto de crescimento do pacote inicial pela documentação embutida (RNF-09) é número a fixar na abertura; não há medição própria ainda — assunção: carregamento sob demanda por verbete mantém o custo marginal, e a medição real entra na jornada viva — risco baixo.</span></div><div class="feat"><span class="feat-name">L-05</span><span class="feat-desc">A função de aptidão de literal órfão tem falso positivo conhecido (cadeias de diagnóstico, atributos técnicos) — assunção: a verificação usa lista de exceções declarada com motivo por linha, no mesmo padrão do <code>scripts/check-caminhos.sh</code>, e exceção sem motivo falha o portão — risco médio (uma lista </span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">5 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/011-fundacoes-da-aplicacao/spec.md">📄 spec.md</a><a href="../../specs/011-fundacoes-da-aplicacao/plan.md">📋 plan.md</a><a href="../../specs/011-fundacoes-da-aplicacao/qa-report.md">📋 qa-report.md</a><a href="../../specs/011-fundacoes-da-aplicacao/tasks.md">📋 tasks.md</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="mod" id="spec-012">
+    <div class="mod-head">
+      <div class="mod-tag" style="background:#5b5bd6">012</div>
+      <div>
+        <p class="mod-title">Spec 012 — Jornadas e autodeclaração (ciclo transversal — fechamento da v1)</p>
+        <p class="mod-sub">Módulos: transversal<span class="sep">·</span>raia plena<span class="sep">·</span>24 RF · 6 RI · 8 RNF</p>
+      </div>
+      <span class="mod-status tv">Rascunho</span>
+    </div>
+    <p class="vision">Este é o ciclo em que o projeto prova o que afirmou — e é o único ciclo da versão 1 que não entrega funcionalidade nenhuma. Ele fecha quatro contas abertas desde o ciclo 001: as seis jornadas vivas, cada uma nascida no ciclo da sua ferramenta, viram um conjunto consolidado que atravessa o produto de ponta a ponta; a matriz de aderência ao padrão APH, hoje inteiramente planejada e com toda coluna de evidência vazia de propósito [F-01], é preenchida linha a linha com caminho e teste; a suíte de conformidade executável do Nível 1 (Observador) roda contra a aplicação real e o resultado é registrado, apto ou não; e a autodeclaração de Nível 2 (Operador), lado aplicação do Anexo B, sai em ADR novo — com evidência por requisito e com os limites ditos junto.</p>
+    <div class="mod-body">
+      <div>
+        <p class="slabel">Features declaradas (4)</p>
+        <div class="features"><div class="feat"><span class="feat-name">Jornadas vivas consolidadas</span><span class="feat-desc">7 requisitos (RF-01–RF-07)</span></div><div class="feat"><span class="feat-name">Matriz de aderência com evidência</span><span class="feat-desc">5 requisitos (RF-08–RF-12)</span></div><div class="feat"><span class="feat-name">Conformidade executável do Nível 1</span><span class="feat-desc">6 requisitos (RF-13–RF-18)</span></div><div class="feat"><span class="feat-name">Autodeclaração e site</span><span class="feat-desc">6 requisitos (RF-19–RF-24)</span></div></div>
+      </div>
+      <div>
+        <p class="slabel">Lacunas declaradas (5)</p>
+        <div class="features"><div class="feat"><span class="feat-name">L-01</span><span class="feat-desc">Não existe suíte executável para o Nível 2 nem para o lado aplicação do Anexo B ([F-02], [F-14]) — assunção: a prova é autodeclaração com evidência por caminho mais teste próprio, com o limite dito junto; o risco de erro de autoavaliação é nosso e a mitigação é a revisão independente em contexto fre</span></div><div class="feat"><span class="feat-name">L-02</span><span class="feat-desc">A matriz de obrigações do Anexo B atribui 8 cláusulas exclusivamente à aplicação e 16 a ambos os lados ([F-15]); as 16 compartilhadas só fecham se o hospedeiro fizer a sua metade — assunção: declaramos a nossa metade com evidência e registramos o estado da outra como observado, nunca como nosso; div</span></div><div class="feat"><span class="feat-name">L-03</span><span class="feat-desc">A execução da suíte exige a aplicação publicada e alcançável por HTTP no momento do fechamento — assunção: o ambiente de teste com base sintética está de pé e o registro declara contra qual ambiente rodou (RNF-07); se só houver produção, a execução é adiada em vez de ser feita contra dado real — ris</span></div><div class="feat"><span class="feat-name">L-04</span><span class="feat-desc">A avaliação heurística é feita por quem trabalha no projeto, não por pessoa externa — assunção: o limite é declarado no próprio documento (quem avaliou, em que contexto, o que não foi avaliado), que é o que a torna útil apesar do viés; avaliação externa fica como porta de volta declarada — risco méd</span></div><div class="feat"><span class="feat-name">L-05</span><span class="feat-desc">A regeneração determinística de capturas depende de ambiente controlado (resolução, tema, fontes, base sintética) que ainda não existe versionado — assunção: o ciclo 003 deixa a base do script de captura e os ciclos seguintes a mantêm; se a determinismo não se sustentar, o portão da DoD 2 vira compa</span></div></div>
+        <p class="slabel" style="margin-top:12px">Dúvidas em aberto</p>
+        <div class="tv-note">5 no <code>## Clarify</code>, levadas ao gate humano — nenhuma resolvida em silêncio.</div>
+        <p class="slabel">Artefatos</p>
+        <div class="links"><a href="../../specs/012-jornadas-e-autodeclaracao/spec.md">📄 spec.md</a><a href="../../specs/012-jornadas-e-autodeclaracao/plan.md">📋 plan.md</a><a href="../../specs/012-jornadas-e-autodeclaracao/qa-report.md">📋 qa-report.md</a><a href="../../specs/012-jornadas-e-autodeclaracao/tasks.md">📋 tasks.md</a></div>
+      </div>
+    </div>
+  </div>
+  </main>
+</div>
+<script>
+const tt=document.getElementById("themeToggle");
+const MOON_SVG='<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+const SUN_SVG='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+const THEME_KEY="tocfed-theme";
+function applyTheme(t){document.documentElement.setAttribute("data-theme",t);tt.innerHTML=t==="dark"?SUN_SVG:MOON_SVG;try{localStorage.setItem(THEME_KEY,t);}catch(e){}}
+tt.addEventListener("click",()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"));
+try{const saved=localStorage.getItem(THEME_KEY);if(saved)applyTheme(saved);else applyTheme("light");}catch(e){}
+</script>
+</body>
+</html>

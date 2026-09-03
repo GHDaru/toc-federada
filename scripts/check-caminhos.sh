@@ -61,15 +61,51 @@ ISENTOS = (
     ("ECS/",                 "repositório de referência de profundidade, leitura apenas (P1)"),
     ("docs/integration/",    "documentação do GHDaru/ghdaru — em inglês; a nossa é docs/integracao/"),
     ("services/",            "caminho curto do tocbuilderv3 (violação canônica citada no P7)"),
+    ("locales/",           "arquivo de i18n do tocbuilderv3, leitura apenas (P1)"),
+    ("components/",        "componente React do tocbuilderv3 citado por caminho curto (P1)"),
+    ("persistence/",       "caminho curto do GHDaru/ghdaru (factory de persistência), leitura apenas (P1)"),
+    ("reversa/",           "clone de sandeco/reversa lido no ciclo 001, fora do repositório (ADR 0004)"),
+    ("lib/installer/",     "caminho curto dentro de sandeco/reversa (ADR 0004), leitura apenas"),
+    ("docs/ecosystem/",    "diretório do GHDaru/maestro citado pelo bloco instalado do método (ADR 0014)"),
 )
 
-quebrados, conferidos, isentos, moldes = [], 0, 0, 0
+# Deliverables of cycles that have not run yet. A planning corpus cites what it will build;
+# the path is not broken, it is not born. This list is EXACT (never a prefix) and every entry
+# names the cycle that creates it — so a typo (`contracts/rest-api.mdx`) still fails, which is
+# the whole point: an exemption that swallows a class of paths would turn the gate into a rug.
+FUTUROS = (
+    ("contracts/",                            "003–012: contratos nascem no ciclo que os especifica"),
+    ("contracts/rest-api.md",                 "004: contrato REST do núcleo de diagramas"),
+    ("contracts/acoes-catalogo.md",           "006: catálogo de ações toc.*"),
+    ("contracts/manifesto.json",              "006: manifesto embedded validado contra o schema do Anexo B"),
+    ("contracts/resultado-geracao.schema.json","007: resultado estruturado da geração da nuvem"),
+    ("prototipo/",                            "002: protótipo descartável (ADR 0005 da irmã)"),
+    ("prototipo/dados/",                      "002: base sintética do protótipo (ADR 0006)"),
+    ("prototipo/scripts/",                    "002: geradores versionados do protótipo"),
+    ("prototipo/adaptadores.js",              "002: adaptador da junta no protótipo"),
+    ("docs/jornadas/scripts/",                "002+: script de captura do build real (P6)"),
+    ("docs/jornadas/capturas/",               "002+: capturas geradas do build real (P6)"),
+    ("capturas/",                             "002+: capturas, citadas por caminho curto na jornada (P6)"),
+    ("specs/002-prototipo-de-interfaces/ux-design.md", "002: papel semântico antes do componente"),
+    ("fixtures/",                             "004+: fixtures sintéticas de teste (ADR 0006)"),
+    ("federacao/",                            "003: módulo de federação do serviço (P3, adaptador de borda)"),
+    ("docs/operacao/rollback.md",             "003: procedimento de reversão da raia infra"),
+)
+
+quebrados, conferidos, isentos, moldes, futuros = [], 0, 0, 0, 0
 examinados = sorted(set(a for a in ARQUIVOS if os.path.exists(a)))
 
 def classifica(arq, n, alvo):
-    global conferidos, isentos, moldes
+    global conferidos, isentos, moldes, futuros
     alvo = alvo.split("#")[0]
     if "/" not in alvo:
+        return
+    # Not paths at all: a URL scheme (`postgres://`), an HTTP route (`/toc/`, absolute and
+    # served, not stored), an extension pair (`.ts/.tsx`). The slash is doing another job.
+    ROTA = alvo.startswith("/") and not alvo.startswith(
+        ("/home/", "/tmp/", "/root/", "/usr/", "/etc/", "/var/", "/opt/"))
+    if "://" in alvo or ROTA or re.fullmatch(r"\.\w+/\.\w+", alvo):
+        moldes += 1
         return
     # `<x>`, `*` and `NNN` are templates; `...` is a deliberate elision.
     if any(t in alvo for t in ("<", "*", "...", "NNN")):
@@ -77,6 +113,9 @@ def classifica(arq, n, alvo):
         return
     if any(alvo.startswith(p) or alvo == p for p, _ in ISENTOS):
         isentos += 1
+        return
+    if any(alvo == f for f, _ in FUTUROS):
+        futuros += 1
         return
     conferidos += 1
     relativo = os.path.normpath(os.path.join(os.path.dirname(arq), alvo))
@@ -94,6 +133,7 @@ for arq in examinados:
 print("── Caminhos citados entre crases (regra R4) ──")
 print(f"  arquivos varridos: {len(examinados)}")
 print(f"  caminhos conferidos: {conferidos}  ·  isentos declarados: {isentos}"
+      f"  ·  entregas futuras declaradas: {futuros}"
       f"  ·  moldes ignorados: {moldes}")
 
 if quebrados:

@@ -1,0 +1,2 @@
+{"id":"adr-0001","data":"2026-09-03","titulo":"Decisão sintética original","status":"superada","registro":"docs/adr/0001-decisao-base.md"}
+{"id":"adr-0002","data":"2026-09-03","titulo":"Decisão sintética que sucede a original","status":"aceita","registro":"docs/adr/0002-decisao-que-sucede.md"}
