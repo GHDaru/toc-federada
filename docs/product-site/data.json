@@ -10,7 +10,7 @@
   "overview": {
     "eyebrow": "Visão geral",
     "title": "TOC Federada",
-    "lede": "Este documento é a leitura da linhagem, não o plano do produto: descreve o problema que a aplicação existe para resolver, o que quatro gerações de protótipo entregaram e o que nunca saiu delas, os defeitos medidos que viram requisito ou decisão, e as perguntas que só o humano responde. O mapa de módulos está em `docs/produto/modulos.md`; a ordem de construção em `docs/produto/rounds.md` e `docs/roadmap.md`.",
+    "lede": "Este documento é a leitura da linhagem, não o plano do produto: descreve o problema que a aplicação existe para resolver, o que quatro gerações de protótipo entregaram e o que nunca saiu delas, os defeitos medidos que viram requisito ou decisão, e as perguntas que só o humano responde. O mapa de módulos está em `docs/produto/modulos.md`; a ordem de construção em `docs/produto/rounds.md` e `docs/roadmap.md`. Os números sobre o domínio — e não sobre a linhagem — saem da base sintética da Instituição Horizonte, em `docs/produto/dados/README.md`, medida pelo script `docs/produto/dados/medir-base.py` (ADR 0006).",
     "cards": [
       {
         "title": "📦 O que é",
@@ -1127,7 +1127,7 @@
       "lacunas": [
         {
           "id": "L-01",
-          "d": "A fundação ainda não embarcou nenhuma aplicação federada de ponta a ponta (a irmã relatou bloqueio nos schemas de manifesto em `mensagens/005` de lá) — assunção: o embarque real acontece no ciclo 003 contra a ghdaru real, e o roadmap o trata como a aptidão mais importante (\"a junta fecha\") — risco m"
+          "d": "A fundação ainda não embarcou nenhuma aplicação federada de ponta a ponta (a irmã relatou bloqueio nos schemas de manifesto em `mensagens/005` de lá) — assunção: o embarque real acontece no ciclo 003 contra a ghdaru real, e o roadmap o trata como a aptidão mais importante (\"a junta fecha\") — risco médio."
         },
         {
           "id": "L-02",
@@ -1135,7 +1135,7 @@
         },
         {
           "id": "L-03",
-          "d": "ARF, AT e S&T nunca foram entregues em nenhuma geração da linhagem: não há implementação de referência a extrair, só as skills de domínio e a literatura TOC — assunção: as specs de M4/M5 nascem 🟡 PLANEJADO com regras de negócio derivadas da literatura, validadas pela Facilitadora TOC sintética nas j"
+          "d": "ARF, AT e S&T nunca foram entregues em nenhuma geração da linhagem: não há implementação de referência a extrair, só as skills de domínio e a literatura TOC — assunção: as specs de M4/M5 nascem 🟡 PLANEJADO com regras de negócio derivadas da literatura, validadas pela Facilitadora TOC sintética nas jornadas — risco médio."
         }
       ],
       "clarify": [
@@ -1536,11 +1536,11 @@
         },
         {
           "id": "L-02",
-          "d": "A lista de `theme.tokens` que um inquilino da fundação realmente define não é conhecida — a interseção depende do `theme.tokens_used` do nosso manifesto, que só existe no ciclo 003. Assunção: o adaptador falso entrega um conjunto mínimo plausível e o fallback cobre o resto, como a norma manda [F-04]"
+          "d": "A lista de `theme.tokens` que um inquilino da fundação realmente define não é conhecida — a interseção depende do `theme.tokens_used` do nosso manifesto, que só existe no ciclo 003. Assunção: o adaptador falso entrega um conjunto mínimo plausível e o fallback cobre o resto, como a norma manda [F-04]. Risco baixo."
         },
         {
           "id": "L-03",
-          "d": "O catálogo `toc.*` não existe ainda (ciclo 006), então o protótipo não valida a interface do ciclo propor → confirmar → executar — que a irmã validou cedo no protótipo dela. Assunção: a forma dessa interface é prototipável no próprio ciclo 006, sobre build real, com o custo de uma rodada de ajuste a"
+          "d": "O catálogo `toc.*` não existe ainda (ciclo 006), então o protótipo não valida a interface do ciclo propor → confirmar → executar — que a irmã validou cedo no protótipo dela. Assunção: a forma dessa interface é prototipável no próprio ciclo 006, sobre build real, com o custo de uma rodada de ajuste a mais. Risco médio."
         }
       ],
       "clarify": [
@@ -2228,7 +2228,7 @@
       "lacunas": [
         {
           "id": "L-01",
-          "d": "Os dois schemas de manifesto eram mutuamente exclusivos quando a irmã mediu (golden da fundação × normativo do Anexo B, 4 erros na validação cruzada — [F-14]) — assunção: re-medição na abertura do ciclo; se persistir, o ciclo entrega tudo menos o registro do manifesto, com mensagem nossa referencian"
+          "d": "Os dois schemas de manifesto eram mutuamente exclusivos quando a irmã mediu (golden da fundação × normativo do Anexo B, 4 erros na validação cruzada — [F-14]) — assunção: re-medição na abertura do ciclo; se persistir, o ciclo entrega tudo menos o registro do manifesto, com mensagem nossa referenciando a da irmã — risco alto (é o único item da aptidão central que não depende só de nós)."
         },
         {
           "id": "L-02",
@@ -3941,11 +3941,11 @@
       "lacunas": [
         {
           "id": "L-01",
-          "d": "As heurísticas lexicais dos critérios decidíveis (RN-01..RN-06) não têm precedente medido — a linhagem decidia tudo por modelo. Assunção: heurística conservadora com `indeterminado` honesto (RF-08) + corpus sintético versionado (RNF-07) bastam para o v1; falso `indeterminado` degrada para julgamento"
+          "d": "As heurísticas lexicais dos critérios decidíveis (RN-01..RN-06) não têm precedente medido — a linhagem decidia tudo por modelo. Assunção: heurística conservadora com `indeterminado` honesto (RF-08) + corpus sintético versionado (RNF-07) bastam para o v1; falso `indeterminado` degrada para julgamento, nunca para veredito errado — risco médio."
         },
         {
           "id": "L-02",
-          "d": "O exame de suficiência e o relatório estrutural não existem na linhagem (F-09) — são método TOC sem contraparte medida; as CLR completas (reserva de causalidade, de entidade, de tautologia…) ficam fora do v1. Assunção: o subconjunto elo examinado + conector E + relatório estrutural cobre a prática; "
+          "d": "O exame de suficiência e o relatório estrutural não existem na linhagem (F-09) — são método TOC sem contraparte medida; as CLR completas (reserva de causalidade, de entidade, de tautologia…) ficam fora do v1. Assunção: o subconjunto elo examinado + conector E + relatório estrutural cobre a prática; ampliar para as CLR completas é decisão nova por ADR — risco médio."
         },
         {
           "id": "L-03",
@@ -3957,7 +3957,7 @@
         },
         {
           "id": "L-05",
-          "d": "A distinção decidível × julgamento do RF-09 é decisão nossa sobre os 11 critérios — a linhagem não a fazia (mandava tudo ao modelo). Assunção: a partição desta spec (6 decidíveis com heurística, 5 de julgamento) é o ponto de partida; ela é dado versionado (RF-09), então mover um critério de classe é"
+          "d": "A distinção decidível × julgamento do RF-09 é decisão nossa sobre os 11 critérios — a linhagem não a fazia (mandava tudo ao modelo). Assunção: a partição desta spec (6 decidíveis com heurística, 5 de julgamento) é o ponto de partida; ela é dado versionado (RF-09), então mover um critério de classe é mudança de dado com teste, não de arquitetura — risco baixo."
         }
       ],
       "clarify": [
@@ -4850,11 +4850,11 @@
         },
         {
           "id": "L-02",
-          "d": "O schema normativo do manifesto não admite `batch_atomicity` — verificado: `grep -c batch_atomicity federacao-manifesto.schema.json` → `0`, e a sabotagem que o acrescenta a uma ação do manifesto é rejeitada (`1 erro`, saída no qa-report do 001); o campo existe só no schema do catálogo do fio (§A.5 ["
+          "d": "O schema normativo do manifesto não admite `batch_atomicity` — verificado: `grep -c batch_atomicity federacao-manifesto.schema.json` → `0`, e a sabotagem que o acrescenta a uma ação do manifesto é rejeitada (`1 erro`, saída no qa-report do 001); o campo existe só no schema do catálogo do fio (§A.5 [F-11]) — assunção: declaramos atomicidade no catálogo servido e não no manifesto; se o gap doer na admissão, vira `mensagens/NNN-para-protocolos-` (P1: relate e pare) — risco baixo."
         },
         {
           "id": "L-03",
-          "d": "A fatia de ações federadas do hospedeiro chama sem credencial ([F-16]) — assunção: nossa borda nasce exigindo autenticação (RF-32); enquanto o F7 do hospedeiro não emitir credencial de serviço, a borda federada só serve `risk: read` e o alcance fica limitado à execução disparada do harness — a FSM e"
+          "d": "A fatia de ações federadas do hospedeiro chama sem credencial ([F-16]) — assunção: nossa borda nasce exigindo autenticação (RF-32); enquanto o F7 do hospedeiro não emitir credencial de serviço, a borda federada só serve `risk: read` e o alcance fica limitado à execução disparada do harness — a FSM e o catálogo não dependem disso (é o limite aceito no roadmap, ciclo 006) — risco médio."
         },
         {
           "id": "L-04",
@@ -5780,11 +5780,11 @@
       "lacunas": [
         {
           "id": "L-01",
-          "d": "A multiplicidade de premissas por aresta não tem precedente na linhagem (o v3 fixava exatamente 1 — F-01) nem na skill (que pede 1 por seta). Assunção: zero ou mais, ordenadas, com a completude medindo ≥ 1 vigente (RN-03) — a prática de grupo produz várias crenças por seta e achatá-las perderia info"
+          "d": "A multiplicidade de premissas por aresta não tem precedente na linhagem (o v3 fixava exatamente 1 — F-01) nem na skill (que pede 1 por seta). Assunção: zero ou mais, ordenadas, com a completude medindo ≥ 1 vigente (RN-03) — a prática de grupo produz várias crenças por seta e achatá-las perderia informação; risco baixo (voltar a 1 é restrição de dado, não migração)."
         },
         {
           "id": "L-02",
-          "d": "A granularidade da proposta de geração (RF-23: completa sobre nuvem vazia, granular sobre nuvem preenchida) é desenho nosso sem precedente — o v3 sempre sobrescrevia tudo. Assunção: o corte \"vazia × preenchida\" cobre os dois usos reais (começar e refinar); o caso híbrido resolve-se com as ações gran"
+          "d": "A granularidade da proposta de geração (RF-23: completa sobre nuvem vazia, granular sobre nuvem preenchida) é desenho nosso sem precedente — o v3 sempre sobrescrevia tudo. Assunção: o corte \"vazia × preenchida\" cobre os dois usos reais (começar e refinar); o caso híbrido resolve-se com as ações granulares (INT-03, INT-04) — risco médio."
         },
         {
           "id": "L-03",
@@ -5796,7 +5796,7 @@
         },
         {
           "id": "L-05",
-          "d": "Os campos ReferenciaDeOrigem e ReferenciaDeSemeadura nascem aqui mas só são preenchidos pelo encadeamento do ciclo 008 — desenho antecipado sem consumidor imediato. Assunção: criar o lugar do dado agora evita migração no 008 e custa duas colunas anuláveis; se o desenho do encadeamento divergir, a mi"
+          "d": "Os campos ReferenciaDeOrigem e ReferenciaDeSemeadura nascem aqui mas só são preenchidos pelo encadeamento do ciclo 008 — desenho antecipado sem consumidor imediato. Assunção: criar o lugar do dado agora evita migração no 008 e custa duas colunas anuláveis; se o desenho do encadeamento divergir, a migração é pequena e o dado ainda é nulo — risco baixo."
         }
       ],
       "clarify": [
@@ -6728,23 +6728,23 @@
       "lacunas": [
         {
           "id": "L-01",
-          "d": "As três ferramentas não têm nenhum precedente de implementação na linhagem (F-05..F-07) — nem tela, nem tipo, nem prompt. Assunção: o método TOC via fonte técnica (F-09) e a analogia estrutural com M2/M3 (nó tipado + ficha + função pura) bastam para a primeira versão; onde o método admite variação, "
+          "d": "As três ferramentas não têm nenhum precedente de implementação na linhagem (F-05..F-07) — nem tela, nem tipo, nem prompt. Assunção: o método TOC via fonte técnica (F-09) e a analogia estrutural com M2/M3 (nó tipado + ficha + função pura) bastam para a primeira versão; onde o método admite variação, esta spec decide e declara — risco médio."
         },
         {
           "id": "L-02",
-          "d": "As heurísticas de verbalização de obstáculo/OI (RF-20) não têm corpus prévio. Assunção: a infraestrutura do M2 (léxico versionado + `indeterminado` honesto + corpus sintético como função forçante) transfere para o vocabulário da APR; como aqui o aviso não veta (RN-08), o custo do erro é menor que no"
+          "d": "As heurísticas de verbalização de obstáculo/OI (RF-20) não têm corpus prévio. Assunção: a infraestrutura do M2 (léxico versionado + `indeterminado` honesto + corpus sintético como função forçante) transfere para o vocabulário da APR; como aqui o aviso não veta (RN-08), o custo do erro é menor que no M2 — risco baixo."
         },
         {
           "id": "L-03",
-          "d": "O apetite — três ferramentas novas + encadeamento + extração do pacote de suficiência em um ciclo — é a maior aposta do roadmap depois do 003. Assunção: o corte do round (sai primeiro a AT, que é o diagrama de menor risco; nunca sai o encadeamento) absorve o estouro; se a AT sair, as derivações OI →"
+          "d": "O apetite — três ferramentas novas + encadeamento + extração do pacote de suficiência em um ciclo — é a maior aposta do roadmap depois do 003. Assunção: o corte do round (sai primeiro a AT, que é o diagrama de menor risco; nunca sai o encadeamento) absorve o estouro; se a AT sair, as derivações OI → AT (RF-40) saem junto e o RF-33 perde um tipo de vínculo — risco alto."
         },
         {
           "id": "L-04",
-          "d": "A extração do exame de elo + conector E do M2 para pacote compartilhado (RF-03) refatora código promovido no ciclo 005. Assunção: a suíte do 005 é a rede de proteção (entregável explícito: ela continua verde); se a extração ameaçar o apetite, a ARF duplica temporariamente com dívida declarada em ADR"
+          "d": "A extração do exame de elo + conector E do M2 para pacote compartilhado (RF-03) refatora código promovido no ciclo 005. Assunção: a suíte do 005 é a rede de proteção (entregável explícito: ela continua verde); se a extração ameaçar o apetite, a ARF duplica temporariamente com dívida declarada em ADR — risco médio."
         },
         {
           "id": "L-05",
-          "d": "A vista da cadeia (RF-41) assume travessia linear UDE → … → passo, mas análises reais podem ramificar (uma NC com duas injeções escolhidas semeando duas ARFs). Assunção: a v1 apresenta a cadeia como grafo percorrido a partir do elemento de entrada, mostrando ramificações como listas no elo — sem lay"
+          "d": "A vista da cadeia (RF-41) assume travessia linear UDE → … → passo, mas análises reais podem ramificar (uma NC com duas injeções escolhidas semeando duas ARFs). Assunção: a v1 apresenta a cadeia como grafo percorrido a partir do elemento de entrada, mostrando ramificações como listas no elo — sem layout de grafo novo; se a jornada mostrar que não basta, a evolução é de UI, não de modelo — risco baixo."
         }
       ],
       "clarify": [
@@ -7373,23 +7373,23 @@
       "lacunas": [
         {
           "id": "L-01",
-          "d": "A taxonomia de tipos de restrição (`fisica` | `politica` | `de_mercado`) não tem precedente na linhagem (que nunca teve restrição) nem norma no corpus. Assunção: os três tipos clássicos da literatura TOC bastam para a v1, como enum fechado com evento — ampliar é migração aditiva pequena; risco baixo"
+          "d": "A taxonomia de tipos de restrição (`fisica` | `politica` | `de_mercado`) não tem precedente na linhagem (que nunca teve restrição) nem norma no corpus. Assunção: os três tipos clássicos da literatura TOC bastam para a v1, como enum fechado com evento — ampliar é migração aditiva pequena; risco baixo."
         },
         {
           "id": "L-02",
-          "d": "O desenho das DecisoesHerdadas assume que as decisões \"de exploração e subordinação\" são as que geram inércia — as de identificar e elevar morrem com o ciclo. Assunção: é a leitura direta do quinto passo do método (\"não deixe a inércia virar a restrição do sistema\": o que sobrevive por inércia são r"
+          "d": "O desenho das DecisoesHerdadas assume que as decisões \"de exploração e subordinação\" são as que geram inércia — as de identificar e elevar morrem com o ciclo. Assunção: é a leitura direta do quinto passo do método (\"não deixe a inércia virar a restrição do sistema\": o que sobrevive por inércia são regras de operação); risco baixo (incluir os demais passos na herança é mudança de filtro, não de modelo)."
         },
         {
           "id": "L-03",
-          "d": "A navegação de volta (da ARA/NC/APR para a análise que a vinculou) resolve por consulta ao M6, sem campo novo nos módulos M2–M4. Assunção: consulta indexada basta para a escala da v1 e evita acoplamento reverso; se o custo aparecer, um índice materializado resolve sem tocar nos agregados das ferrame"
+          "d": "A navegação de volta (da ARA/NC/APR para a análise que a vinculou) resolve por consulta ao M6, sem campo novo nos módulos M2–M4. Assunção: consulta indexada basta para a escala da v1 e evita acoplamento reverso; se o custo aparecer, um índice materializado resolve sem tocar nos agregados das ferramentas; risco baixo."
         },
         {
           "id": "L-04",
-          "d": "`toc.suggest_constraint` não tem precedente em nenhuma geração (a linhagem não tinha restrição para sugerir). Assunção: candidatas derivadas dos nós de causa raiz da ARA são um primeiro recorte útil; o round já a marca \"sai primeiro\" — o risco de errar o desenho é pago com o corte, não com o ciclo; "
+          "d": "`toc.suggest_constraint` não tem precedente em nenhuma geração (a linhagem não tinha restrição para sugerir). Assunção: candidatas derivadas dos nós de causa raiz da ARA são um primeiro recorte útil; o round já a marca \"sai primeiro\" — o risco de errar o desenho é pago com o corte, não com o ciclo; risco baixo."
         },
         {
           "id": "L-05",
-          "d": "O ciclo 002 (protótipo de interfaces) cobriu RIs de M1–M3; as telas de jornada do M6 podem não ter `ux-design.md` prévio. Assunção: o desenho nasce neste ciclo sob o mesmo processo (papel semântico → ux-design → jornada viva), no mesmo pull request; risco médio — é o único módulo de superfície nova "
+          "d": "O ciclo 002 (protótipo de interfaces) cobriu RIs de M1–M3; as telas de jornada do M6 podem não ter `ux-design.md` prévio. Assunção: o desenho nasce neste ciclo sob o mesmo processo (papel semântico → ux-design → jornada viva), no mesmo pull request; risco médio — é o único módulo de superfície nova sem protótipo anterior, e o apetite do ciclo paga esse desenho."
         }
       ],
       "clarify": [
@@ -7926,7 +7926,7 @@
       "lacunas": [
         {
           "id": "L-01",
-          "d": "A linhagem modelava um texto por passo (`strategyText`) mais uma categoria de 6 valores (F-03); o método S&T pede estratégia e tática por passo. Assunção: estratégia e tática como campos distintos, e a categoria não portada — com os dois campos no passo, classificar o nó como \"Estratégia\" ou \"Tática"
+          "d": "A linhagem modelava um texto por passo (`strategyText`) mais uma categoria de 6 valores (F-03); o método S&T pede estratégia e tática por passo. Assunção: estratégia e tática como campos distintos, e a categoria não portada — com os dois campos no passo, classificar o nó como \"Estratégia\" ou \"Tática\" perde a função, e VCD/BUILD/LEVERAGE são jargão sem uso registrado na linhagem além do enum e das cores (F-03, F-09). Risco baixo (adicionar uma classificação depois é campo opcional); a decisão vai a ADR se o gate a confirmar ([DÚVIDA] 1)."
         },
         {
           "id": "L-02",
@@ -7938,7 +7938,7 @@
         },
         {
           "id": "L-04",
-          "d": "A importação dos exports S&T da 4ª geração (ciclo 011, INT-03) vai encontrar `stepNumber` livre possivelmente inconsistente com as arestas. Assunção: o modelo deste ciclo (pai + ordem) é reconstruível de número + aresta na maioria dos casos, e o importador recusa com relato os demais — nunca importa"
+          "d": "A importação dos exports S&T da 4ª geração (ciclo 011, INT-03) vai encontrar `stepNumber` livre possivelmente inconsistente com as arestas. Assunção: o modelo deste ciclo (pai + ordem) é reconstruível de número + aresta na maioria dos casos, e o importador recusa com relato os demais — nunca importa estrutura ambígua em silêncio. Risco médio, pago no 011; o que este ciclo deve ao 011 é só o modelo estável."
         },
         {
           "id": "L-05",
@@ -8665,11 +8665,11 @@
       "lacunas": [
         {
           "id": "L-01",
-          "d": "A restauração ensaiada depende de recursos do provedor (cópia gerenciada e recuperação a um ponto no tempo) cujo plano contratado não está declarado em lugar nenhum deste repositório — assunção: o plano do projeto Neon próprio permite restaurar para um destino separado dentro da janela declarada; se"
+          "d": "A restauração ensaiada depende de recursos do provedor (cópia gerenciada e recuperação a um ponto no tempo) cujo plano contratado não está declarado em lugar nenhum deste repositório — assunção: o plano do projeto Neon próprio permite restaurar para um destino separado dentro da janela declarada; se não permitir, o ensaio vira o ADR que decide a alternativa — risco alto (é a diferença entre ter e não ter apólice)."
         },
         {
           "id": "L-02",
-          "d": "O idioma declarado pelo embarque depende de o hospedeiro enviá-lo no envelope `ghd.*`; a spec 003 não o inclui entre os quatro parâmetros de admissão — assunção: quando ausente, a ordem do RF-12 resolve sem erro (preferência → padrão) e a lacuna vira mensagem ao hospedeiro por `mensagens/NNN` (P1: r"
+          "d": "O idioma declarado pelo embarque depende de o hospedeiro enviá-lo no envelope `ghd.*`; a spec 003 não o inclui entre os quatro parâmetros de admissão — assunção: quando ausente, a ordem do RF-12 resolve sem erro (preferência → padrão) e a lacuna vira mensagem ao hospedeiro por `mensagens/NNN` (P1: relatar e parar) — risco médio."
         },
         {
           "id": "L-03",
@@ -8681,7 +8681,7 @@
         },
         {
           "id": "L-05",
-          "d": "A função de aptidão de literal órfão tem falso positivo conhecido (cadeias de diagnóstico, atributos técnicos) — assunção: a verificação usa lista de exceções declarada com motivo por linha, no mesmo padrão do `scripts/check-caminhos.sh`, e exceção sem motivo falha o portão — risco médio (uma lista "
+          "d": "A função de aptidão de literal órfão tem falso positivo conhecido (cadeias de diagnóstico, atributos técnicos) — assunção: a verificação usa lista de exceções declarada com motivo por linha, no mesmo padrão do `scripts/check-caminhos.sh`, e exceção sem motivo falha o portão — risco médio (uma lista de exceções sem motivo é exatamente como um portão passa a mentir)."
         }
       ],
       "clarify": [
@@ -9305,23 +9305,23 @@
       "lacunas": [
         {
           "id": "L-01",
-          "d": "Não existe suíte executável para o Nível 2 nem para o lado aplicação do Anexo B ([F-02], [F-14]) — assunção: a prova é autodeclaração com evidência por caminho mais teste próprio, com o limite dito junto; o risco de erro de autoavaliação é nosso e a mitigação é a revisão independente em contexto fre"
+          "d": "Não existe suíte executável para o Nível 2 nem para o lado aplicação do Anexo B ([F-02], [F-14]) — assunção: a prova é autodeclaração com evidência por caminho mais teste próprio, com o limite dito junto; o risco de erro de autoavaliação é nosso e a mitigação é a revisão independente em contexto fresco — risco médio."
         },
         {
           "id": "L-02",
-          "d": "A matriz de obrigações do Anexo B atribui 8 cláusulas exclusivamente à aplicação e 16 a ambos os lados ([F-15]); as 16 compartilhadas só fecham se o hospedeiro fizer a sua metade — assunção: declaramos a nossa metade com evidência e registramos o estado da outra como observado, nunca como nosso; div"
+          "d": "A matriz de obrigações do Anexo B atribui 8 cláusulas exclusivamente à aplicação e 16 a ambos os lados ([F-15]); as 16 compartilhadas só fecham se o hospedeiro fizer a sua metade — assunção: declaramos a nossa metade com evidência e registramos o estado da outra como observado, nunca como nosso; divergência vira `mensagens/NNN` — risco médio."
         },
         {
           "id": "L-03",
-          "d": "A execução da suíte exige a aplicação publicada e alcançável por HTTP no momento do fechamento — assunção: o ambiente de teste com base sintética está de pé e o registro declara contra qual ambiente rodou (RNF-07); se só houver produção, a execução é adiada em vez de ser feita contra dado real — ris"
+          "d": "A execução da suíte exige a aplicação publicada e alcançável por HTTP no momento do fechamento — assunção: o ambiente de teste com base sintética está de pé e o registro declara contra qual ambiente rodou (RNF-07); se só houver produção, a execução é adiada em vez de ser feita contra dado real — risco baixo."
         },
         {
           "id": "L-04",
-          "d": "A avaliação heurística é feita por quem trabalha no projeto, não por pessoa externa — assunção: o limite é declarado no próprio documento (quem avaliou, em que contexto, o que não foi avaliado), que é o que a torna útil apesar do viés; avaliação externa fica como porta de volta declarada — risco méd"
+          "d": "A avaliação heurística é feita por quem trabalha no projeto, não por pessoa externa — assunção: o limite é declarado no próprio documento (quem avaliou, em que contexto, o que não foi avaliado), que é o que a torna útil apesar do viés; avaliação externa fica como porta de volta declarada — risco médio."
         },
         {
           "id": "L-05",
-          "d": "A regeneração determinística de capturas depende de ambiente controlado (resolução, tema, fontes, base sintética) que ainda não existe versionado — assunção: o ciclo 003 deixa a base do script de captura e os ciclos seguintes a mantêm; se a determinismo não se sustentar, o portão da DoD 2 vira compa"
+          "d": "A regeneração determinística de capturas depende de ambiente controlado (resolução, tema, fontes, base sintética) que ainda não existe versionado — assunção: o ciclo 003 deixa a base do script de captura e os ciclos seguintes a mantêm; se a determinismo não se sustentar, o portão da DoD 2 vira comparação tolerante declarada, nunca silenciosa — risco médio."
         }
       ],
       "clarify": [
@@ -9872,7 +9872,7 @@
         "lacunas": [
           {
             "id": "L-01",
-            "d": "A fundação ainda não embarcou nenhuma aplicação federada de ponta a ponta (a irmã relatou bloqueio nos schemas de manifesto em `mensagens/005` de lá) — assunção: o embarque real acontece no ciclo 003 contra a ghdaru real, e o roadmap o trata como a aptidão mais importante (\"a junta fecha\") — risco m"
+            "d": "A fundação ainda não embarcou nenhuma aplicação federada de ponta a ponta (a irmã relatou bloqueio nos schemas de manifesto em `mensagens/005` de lá) — assunção: o embarque real acontece no ciclo 003 contra a ghdaru real, e o roadmap o trata como a aptidão mais importante (\"a junta fecha\") — risco médio."
           },
           {
             "id": "L-02",
@@ -9880,7 +9880,7 @@
           },
           {
             "id": "L-03",
-            "d": "ARF, AT e S&T nunca foram entregues em nenhuma geração da linhagem: não há implementação de referência a extrair, só as skills de domínio e a literatura TOC — assunção: as specs de M4/M5 nascem 🟡 PLANEJADO com regras de negócio derivadas da literatura, validadas pela Facilitadora TOC sintética nas j"
+            "d": "ARF, AT e S&T nunca foram entregues em nenhuma geração da linhagem: não há implementação de referência a extrair, só as skills de domínio e a literatura TOC — assunção: as specs de M4/M5 nascem 🟡 PLANEJADO com regras de negócio derivadas da literatura, validadas pela Facilitadora TOC sintética nas jornadas — risco médio."
           }
         ]
       },
@@ -10226,11 +10226,11 @@
           },
           {
             "id": "L-02",
-            "d": "A lista de `theme.tokens` que um inquilino da fundação realmente define não é conhecida — a interseção depende do `theme.tokens_used` do nosso manifesto, que só existe no ciclo 003. Assunção: o adaptador falso entrega um conjunto mínimo plausível e o fallback cobre o resto, como a norma manda [F-04]"
+            "d": "A lista de `theme.tokens` que um inquilino da fundação realmente define não é conhecida — a interseção depende do `theme.tokens_used` do nosso manifesto, que só existe no ciclo 003. Assunção: o adaptador falso entrega um conjunto mínimo plausível e o fallback cobre o resto, como a norma manda [F-04]. Risco baixo."
           },
           {
             "id": "L-03",
-            "d": "O catálogo `toc.*` não existe ainda (ciclo 006), então o protótipo não valida a interface do ciclo propor → confirmar → executar — que a irmã validou cedo no protótipo dela. Assunção: a forma dessa interface é prototipável no próprio ciclo 006, sobre build real, com o custo de uma rodada de ajuste a"
+            "d": "O catálogo `toc.*` não existe ainda (ciclo 006), então o protótipo não valida a interface do ciclo propor → confirmar → executar — que a irmã validou cedo no protótipo dela. Assunção: a forma dessa interface é prototipável no próprio ciclo 006, sobre build real, com o custo de uma rodada de ajuste a mais. Risco médio."
           }
         ]
       },
@@ -10916,7 +10916,7 @@
         "lacunas": [
           {
             "id": "L-01",
-            "d": "Os dois schemas de manifesto eram mutuamente exclusivos quando a irmã mediu (golden da fundação × normativo do Anexo B, 4 erros na validação cruzada — [F-14]) — assunção: re-medição na abertura do ciclo; se persistir, o ciclo entrega tudo menos o registro do manifesto, com mensagem nossa referencian"
+            "d": "Os dois schemas de manifesto eram mutuamente exclusivos quando a irmã mediu (golden da fundação × normativo do Anexo B, 4 erros na validação cruzada — [F-14]) — assunção: re-medição na abertura do ciclo; se persistir, o ciclo entrega tudo menos o registro do manifesto, com mensagem nossa referenciando a da irmã — risco alto (é o único item da aptidão central que não depende só de nós)."
           },
           {
             "id": "L-02",
@@ -12371,11 +12371,11 @@
         "lacunas": [
           {
             "id": "L-01",
-            "d": "As heurísticas lexicais dos critérios decidíveis (RN-01..RN-06) não têm precedente medido — a linhagem decidia tudo por modelo. Assunção: heurística conservadora com `indeterminado` honesto (RF-08) + corpus sintético versionado (RNF-07) bastam para o v1; falso `indeterminado` degrada para julgamento"
+            "d": "As heurísticas lexicais dos critérios decidíveis (RN-01..RN-06) não têm precedente medido — a linhagem decidia tudo por modelo. Assunção: heurística conservadora com `indeterminado` honesto (RF-08) + corpus sintético versionado (RNF-07) bastam para o v1; falso `indeterminado` degrada para julgamento, nunca para veredito errado — risco médio."
           },
           {
             "id": "L-02",
-            "d": "O exame de suficiência e o relatório estrutural não existem na linhagem (F-09) — são método TOC sem contraparte medida; as CLR completas (reserva de causalidade, de entidade, de tautologia…) ficam fora do v1. Assunção: o subconjunto elo examinado + conector E + relatório estrutural cobre a prática; "
+            "d": "O exame de suficiência e o relatório estrutural não existem na linhagem (F-09) — são método TOC sem contraparte medida; as CLR completas (reserva de causalidade, de entidade, de tautologia…) ficam fora do v1. Assunção: o subconjunto elo examinado + conector E + relatório estrutural cobre a prática; ampliar para as CLR completas é decisão nova por ADR — risco médio."
           },
           {
             "id": "L-03",
@@ -12387,7 +12387,7 @@
           },
           {
             "id": "L-05",
-            "d": "A distinção decidível × julgamento do RF-09 é decisão nossa sobre os 11 critérios — a linhagem não a fazia (mandava tudo ao modelo). Assunção: a partição desta spec (6 decidíveis com heurística, 5 de julgamento) é o ponto de partida; ela é dado versionado (RF-09), então mover um critério de classe é"
+            "d": "A distinção decidível × julgamento do RF-09 é decisão nossa sobre os 11 critérios — a linhagem não a fazia (mandava tudo ao modelo). Assunção: a partição desta spec (6 decidíveis com heurística, 5 de julgamento) é o ponto de partida; ela é dado versionado (RF-09), então mover um critério de classe é mudança de dado com teste, não de arquitetura — risco baixo."
           }
         ]
       },
@@ -13269,11 +13269,11 @@
           },
           {
             "id": "L-02",
-            "d": "O schema normativo do manifesto não admite `batch_atomicity` — verificado: `grep -c batch_atomicity federacao-manifesto.schema.json` → `0`, e a sabotagem que o acrescenta a uma ação do manifesto é rejeitada (`1 erro`, saída no qa-report do 001); o campo existe só no schema do catálogo do fio (§A.5 ["
+            "d": "O schema normativo do manifesto não admite `batch_atomicity` — verificado: `grep -c batch_atomicity federacao-manifesto.schema.json` → `0`, e a sabotagem que o acrescenta a uma ação do manifesto é rejeitada (`1 erro`, saída no qa-report do 001); o campo existe só no schema do catálogo do fio (§A.5 [F-11]) — assunção: declaramos atomicidade no catálogo servido e não no manifesto; se o gap doer na admissão, vira `mensagens/NNN-para-protocolos-` (P1: relate e pare) — risco baixo."
           },
           {
             "id": "L-03",
-            "d": "A fatia de ações federadas do hospedeiro chama sem credencial ([F-16]) — assunção: nossa borda nasce exigindo autenticação (RF-32); enquanto o F7 do hospedeiro não emitir credencial de serviço, a borda federada só serve `risk: read` e o alcance fica limitado à execução disparada do harness — a FSM e"
+            "d": "A fatia de ações federadas do hospedeiro chama sem credencial ([F-16]) — assunção: nossa borda nasce exigindo autenticação (RF-32); enquanto o F7 do hospedeiro não emitir credencial de serviço, a borda federada só serve `risk: read` e o alcance fica limitado à execução disparada do harness — a FSM e o catálogo não dependem disso (é o limite aceito no roadmap, ciclo 006) — risco médio."
           },
           {
             "id": "L-04",
@@ -13948,11 +13948,11 @@
         "lacunas": [
           {
             "id": "L-01",
-            "d": "A multiplicidade de premissas por aresta não tem precedente na linhagem (o v3 fixava exatamente 1 — F-01) nem na skill (que pede 1 por seta). Assunção: zero ou mais, ordenadas, com a completude medindo ≥ 1 vigente (RN-03) — a prática de grupo produz várias crenças por seta e achatá-las perderia info"
+            "d": "A multiplicidade de premissas por aresta não tem precedente na linhagem (o v3 fixava exatamente 1 — F-01) nem na skill (que pede 1 por seta). Assunção: zero ou mais, ordenadas, com a completude medindo ≥ 1 vigente (RN-03) — a prática de grupo produz várias crenças por seta e achatá-las perderia informação; risco baixo (voltar a 1 é restrição de dado, não migração)."
           },
           {
             "id": "L-02",
-            "d": "A granularidade da proposta de geração (RF-23: completa sobre nuvem vazia, granular sobre nuvem preenchida) é desenho nosso sem precedente — o v3 sempre sobrescrevia tudo. Assunção: o corte \"vazia × preenchida\" cobre os dois usos reais (começar e refinar); o caso híbrido resolve-se com as ações gran"
+            "d": "A granularidade da proposta de geração (RF-23: completa sobre nuvem vazia, granular sobre nuvem preenchida) é desenho nosso sem precedente — o v3 sempre sobrescrevia tudo. Assunção: o corte \"vazia × preenchida\" cobre os dois usos reais (começar e refinar); o caso híbrido resolve-se com as ações granulares (INT-03, INT-04) — risco médio."
           },
           {
             "id": "L-03",
@@ -13964,7 +13964,7 @@
           },
           {
             "id": "L-05",
-            "d": "Os campos ReferenciaDeOrigem e ReferenciaDeSemeadura nascem aqui mas só são preenchidos pelo encadeamento do ciclo 008 — desenho antecipado sem consumidor imediato. Assunção: criar o lugar do dado agora evita migração no 008 e custa duas colunas anuláveis; se o desenho do encadeamento divergir, a mi"
+            "d": "Os campos ReferenciaDeOrigem e ReferenciaDeSemeadura nascem aqui mas só são preenchidos pelo encadeamento do ciclo 008 — desenho antecipado sem consumidor imediato. Assunção: criar o lugar do dado agora evita migração no 008 e custa duas colunas anuláveis; se o desenho do encadeamento divergir, a migração é pequena e o dado ainda é nulo — risco baixo."
           }
         ]
       },
@@ -14797,23 +14797,23 @@
         "lacunas": [
           {
             "id": "L-01",
-            "d": "As três ferramentas não têm nenhum precedente de implementação na linhagem (F-05..F-07) — nem tela, nem tipo, nem prompt. Assunção: o método TOC via fonte técnica (F-09) e a analogia estrutural com M2/M3 (nó tipado + ficha + função pura) bastam para a primeira versão; onde o método admite variação, "
+            "d": "As três ferramentas não têm nenhum precedente de implementação na linhagem (F-05..F-07) — nem tela, nem tipo, nem prompt. Assunção: o método TOC via fonte técnica (F-09) e a analogia estrutural com M2/M3 (nó tipado + ficha + função pura) bastam para a primeira versão; onde o método admite variação, esta spec decide e declara — risco médio."
           },
           {
             "id": "L-02",
-            "d": "As heurísticas de verbalização de obstáculo/OI (RF-20) não têm corpus prévio. Assunção: a infraestrutura do M2 (léxico versionado + `indeterminado` honesto + corpus sintético como função forçante) transfere para o vocabulário da APR; como aqui o aviso não veta (RN-08), o custo do erro é menor que no"
+            "d": "As heurísticas de verbalização de obstáculo/OI (RF-20) não têm corpus prévio. Assunção: a infraestrutura do M2 (léxico versionado + `indeterminado` honesto + corpus sintético como função forçante) transfere para o vocabulário da APR; como aqui o aviso não veta (RN-08), o custo do erro é menor que no M2 — risco baixo."
           },
           {
             "id": "L-03",
-            "d": "O apetite — três ferramentas novas + encadeamento + extração do pacote de suficiência em um ciclo — é a maior aposta do roadmap depois do 003. Assunção: o corte do round (sai primeiro a AT, que é o diagrama de menor risco; nunca sai o encadeamento) absorve o estouro; se a AT sair, as derivações OI →"
+            "d": "O apetite — três ferramentas novas + encadeamento + extração do pacote de suficiência em um ciclo — é a maior aposta do roadmap depois do 003. Assunção: o corte do round (sai primeiro a AT, que é o diagrama de menor risco; nunca sai o encadeamento) absorve o estouro; se a AT sair, as derivações OI → AT (RF-40) saem junto e o RF-33 perde um tipo de vínculo — risco alto."
           },
           {
             "id": "L-04",
-            "d": "A extração do exame de elo + conector E do M2 para pacote compartilhado (RF-03) refatora código promovido no ciclo 005. Assunção: a suíte do 005 é a rede de proteção (entregável explícito: ela continua verde); se a extração ameaçar o apetite, a ARF duplica temporariamente com dívida declarada em ADR"
+            "d": "A extração do exame de elo + conector E do M2 para pacote compartilhado (RF-03) refatora código promovido no ciclo 005. Assunção: a suíte do 005 é a rede de proteção (entregável explícito: ela continua verde); se a extração ameaçar o apetite, a ARF duplica temporariamente com dívida declarada em ADR — risco médio."
           },
           {
             "id": "L-05",
-            "d": "A vista da cadeia (RF-41) assume travessia linear UDE → … → passo, mas análises reais podem ramificar (uma NC com duas injeções escolhidas semeando duas ARFs). Assunção: a v1 apresenta a cadeia como grafo percorrido a partir do elemento de entrada, mostrando ramificações como listas no elo — sem lay"
+            "d": "A vista da cadeia (RF-41) assume travessia linear UDE → … → passo, mas análises reais podem ramificar (uma NC com duas injeções escolhidas semeando duas ARFs). Assunção: a v1 apresenta a cadeia como grafo percorrido a partir do elemento de entrada, mostrando ramificações como listas no elo — sem layout de grafo novo; se a jornada mostrar que não basta, a evolução é de UI, não de modelo — risco baixo."
           }
         ]
       },
@@ -15280,23 +15280,23 @@
         "lacunas": [
           {
             "id": "L-01",
-            "d": "A taxonomia de tipos de restrição (`fisica` | `politica` | `de_mercado`) não tem precedente na linhagem (que nunca teve restrição) nem norma no corpus. Assunção: os três tipos clássicos da literatura TOC bastam para a v1, como enum fechado com evento — ampliar é migração aditiva pequena; risco baixo"
+            "d": "A taxonomia de tipos de restrição (`fisica` | `politica` | `de_mercado`) não tem precedente na linhagem (que nunca teve restrição) nem norma no corpus. Assunção: os três tipos clássicos da literatura TOC bastam para a v1, como enum fechado com evento — ampliar é migração aditiva pequena; risco baixo."
           },
           {
             "id": "L-02",
-            "d": "O desenho das DecisoesHerdadas assume que as decisões \"de exploração e subordinação\" são as que geram inércia — as de identificar e elevar morrem com o ciclo. Assunção: é a leitura direta do quinto passo do método (\"não deixe a inércia virar a restrição do sistema\": o que sobrevive por inércia são r"
+            "d": "O desenho das DecisoesHerdadas assume que as decisões \"de exploração e subordinação\" são as que geram inércia — as de identificar e elevar morrem com o ciclo. Assunção: é a leitura direta do quinto passo do método (\"não deixe a inércia virar a restrição do sistema\": o que sobrevive por inércia são regras de operação); risco baixo (incluir os demais passos na herança é mudança de filtro, não de modelo)."
           },
           {
             "id": "L-03",
-            "d": "A navegação de volta (da ARA/NC/APR para a análise que a vinculou) resolve por consulta ao M6, sem campo novo nos módulos M2–M4. Assunção: consulta indexada basta para a escala da v1 e evita acoplamento reverso; se o custo aparecer, um índice materializado resolve sem tocar nos agregados das ferrame"
+            "d": "A navegação de volta (da ARA/NC/APR para a análise que a vinculou) resolve por consulta ao M6, sem campo novo nos módulos M2–M4. Assunção: consulta indexada basta para a escala da v1 e evita acoplamento reverso; se o custo aparecer, um índice materializado resolve sem tocar nos agregados das ferramentas; risco baixo."
           },
           {
             "id": "L-04",
-            "d": "`toc.suggest_constraint` não tem precedente em nenhuma geração (a linhagem não tinha restrição para sugerir). Assunção: candidatas derivadas dos nós de causa raiz da ARA são um primeiro recorte útil; o round já a marca \"sai primeiro\" — o risco de errar o desenho é pago com o corte, não com o ciclo; "
+            "d": "`toc.suggest_constraint` não tem precedente em nenhuma geração (a linhagem não tinha restrição para sugerir). Assunção: candidatas derivadas dos nós de causa raiz da ARA são um primeiro recorte útil; o round já a marca \"sai primeiro\" — o risco de errar o desenho é pago com o corte, não com o ciclo; risco baixo."
           },
           {
             "id": "L-05",
-            "d": "O ciclo 002 (protótipo de interfaces) cobriu RIs de M1–M3; as telas de jornada do M6 podem não ter `ux-design.md` prévio. Assunção: o desenho nasce neste ciclo sob o mesmo processo (papel semântico → ux-design → jornada viva), no mesmo pull request; risco médio — é o único módulo de superfície nova "
+            "d": "O ciclo 002 (protótipo de interfaces) cobriu RIs de M1–M3; as telas de jornada do M6 podem não ter `ux-design.md` prévio. Assunção: o desenho nasce neste ciclo sob o mesmo processo (papel semântico → ux-design → jornada viva), no mesmo pull request; risco médio — é o único módulo de superfície nova sem protótipo anterior, e o apetite do ciclo paga esse desenho."
           }
         ]
       },
@@ -15803,7 +15803,7 @@
         "lacunas": [
           {
             "id": "L-01",
-            "d": "A linhagem modelava um texto por passo (`strategyText`) mais uma categoria de 6 valores (F-03); o método S&T pede estratégia e tática por passo. Assunção: estratégia e tática como campos distintos, e a categoria não portada — com os dois campos no passo, classificar o nó como \"Estratégia\" ou \"Tática"
+            "d": "A linhagem modelava um texto por passo (`strategyText`) mais uma categoria de 6 valores (F-03); o método S&T pede estratégia e tática por passo. Assunção: estratégia e tática como campos distintos, e a categoria não portada — com os dois campos no passo, classificar o nó como \"Estratégia\" ou \"Tática\" perde a função, e VCD/BUILD/LEVERAGE são jargão sem uso registrado na linhagem além do enum e das cores (F-03, F-09). Risco baixo (adicionar uma classificação depois é campo opcional); a decisão vai a ADR se o gate a confirmar ([DÚVIDA] 1)."
           },
           {
             "id": "L-02",
@@ -15815,7 +15815,7 @@
           },
           {
             "id": "L-04",
-            "d": "A importação dos exports S&T da 4ª geração (ciclo 011, INT-03) vai encontrar `stepNumber` livre possivelmente inconsistente com as arestas. Assunção: o modelo deste ciclo (pai + ordem) é reconstruível de número + aresta na maioria dos casos, e o importador recusa com relato os demais — nunca importa"
+            "d": "A importação dos exports S&T da 4ª geração (ciclo 011, INT-03) vai encontrar `stepNumber` livre possivelmente inconsistente com as arestas. Assunção: o modelo deste ciclo (pai + ordem) é reconstruível de número + aresta na maioria dos casos, e o importador recusa com relato os demais — nunca importa estrutura ambígua em silêncio. Risco médio, pago no 011; o que este ciclo deve ao 011 é só o modelo estável."
           },
           {
             "id": "L-05",
@@ -16497,11 +16497,11 @@
         "lacunas": [
           {
             "id": "L-01",
-            "d": "A restauração ensaiada depende de recursos do provedor (cópia gerenciada e recuperação a um ponto no tempo) cujo plano contratado não está declarado em lugar nenhum deste repositório — assunção: o plano do projeto Neon próprio permite restaurar para um destino separado dentro da janela declarada; se"
+            "d": "A restauração ensaiada depende de recursos do provedor (cópia gerenciada e recuperação a um ponto no tempo) cujo plano contratado não está declarado em lugar nenhum deste repositório — assunção: o plano do projeto Neon próprio permite restaurar para um destino separado dentro da janela declarada; se não permitir, o ensaio vira o ADR que decide a alternativa — risco alto (é a diferença entre ter e não ter apólice)."
           },
           {
             "id": "L-02",
-            "d": "O idioma declarado pelo embarque depende de o hospedeiro enviá-lo no envelope `ghd.*`; a spec 003 não o inclui entre os quatro parâmetros de admissão — assunção: quando ausente, a ordem do RF-12 resolve sem erro (preferência → padrão) e a lacuna vira mensagem ao hospedeiro por `mensagens/NNN` (P1: r"
+            "d": "O idioma declarado pelo embarque depende de o hospedeiro enviá-lo no envelope `ghd.*`; a spec 003 não o inclui entre os quatro parâmetros de admissão — assunção: quando ausente, a ordem do RF-12 resolve sem erro (preferência → padrão) e a lacuna vira mensagem ao hospedeiro por `mensagens/NNN` (P1: relatar e parar) — risco médio."
           },
           {
             "id": "L-03",
@@ -16513,7 +16513,7 @@
           },
           {
             "id": "L-05",
-            "d": "A função de aptidão de literal órfão tem falso positivo conhecido (cadeias de diagnóstico, atributos técnicos) — assunção: a verificação usa lista de exceções declarada com motivo por linha, no mesmo padrão do `scripts/check-caminhos.sh`, e exceção sem motivo falha o portão — risco médio (uma lista "
+            "d": "A função de aptidão de literal órfão tem falso positivo conhecido (cadeias de diagnóstico, atributos técnicos) — assunção: a verificação usa lista de exceções declarada com motivo por linha, no mesmo padrão do `scripts/check-caminhos.sh`, e exceção sem motivo falha o portão — risco médio (uma lista de exceções sem motivo é exatamente como um portão passa a mentir)."
           }
         ]
       },
@@ -17036,23 +17036,23 @@
         "lacunas": [
           {
             "id": "L-01",
-            "d": "Não existe suíte executável para o Nível 2 nem para o lado aplicação do Anexo B ([F-02], [F-14]) — assunção: a prova é autodeclaração com evidência por caminho mais teste próprio, com o limite dito junto; o risco de erro de autoavaliação é nosso e a mitigação é a revisão independente em contexto fre"
+            "d": "Não existe suíte executável para o Nível 2 nem para o lado aplicação do Anexo B ([F-02], [F-14]) — assunção: a prova é autodeclaração com evidência por caminho mais teste próprio, com o limite dito junto; o risco de erro de autoavaliação é nosso e a mitigação é a revisão independente em contexto fresco — risco médio."
           },
           {
             "id": "L-02",
-            "d": "A matriz de obrigações do Anexo B atribui 8 cláusulas exclusivamente à aplicação e 16 a ambos os lados ([F-15]); as 16 compartilhadas só fecham se o hospedeiro fizer a sua metade — assunção: declaramos a nossa metade com evidência e registramos o estado da outra como observado, nunca como nosso; div"
+            "d": "A matriz de obrigações do Anexo B atribui 8 cláusulas exclusivamente à aplicação e 16 a ambos os lados ([F-15]); as 16 compartilhadas só fecham se o hospedeiro fizer a sua metade — assunção: declaramos a nossa metade com evidência e registramos o estado da outra como observado, nunca como nosso; divergência vira `mensagens/NNN` — risco médio."
           },
           {
             "id": "L-03",
-            "d": "A execução da suíte exige a aplicação publicada e alcançável por HTTP no momento do fechamento — assunção: o ambiente de teste com base sintética está de pé e o registro declara contra qual ambiente rodou (RNF-07); se só houver produção, a execução é adiada em vez de ser feita contra dado real — ris"
+            "d": "A execução da suíte exige a aplicação publicada e alcançável por HTTP no momento do fechamento — assunção: o ambiente de teste com base sintética está de pé e o registro declara contra qual ambiente rodou (RNF-07); se só houver produção, a execução é adiada em vez de ser feita contra dado real — risco baixo."
           },
           {
             "id": "L-04",
-            "d": "A avaliação heurística é feita por quem trabalha no projeto, não por pessoa externa — assunção: o limite é declarado no próprio documento (quem avaliou, em que contexto, o que não foi avaliado), que é o que a torna útil apesar do viés; avaliação externa fica como porta de volta declarada — risco méd"
+            "d": "A avaliação heurística é feita por quem trabalha no projeto, não por pessoa externa — assunção: o limite é declarado no próprio documento (quem avaliou, em que contexto, o que não foi avaliado), que é o que a torna útil apesar do viés; avaliação externa fica como porta de volta declarada — risco médio."
           },
           {
             "id": "L-05",
-            "d": "A regeneração determinística de capturas depende de ambiente controlado (resolução, tema, fontes, base sintética) que ainda não existe versionado — assunção: o ciclo 003 deixa a base do script de captura e os ciclos seguintes a mantêm; se a determinismo não se sustentar, o portão da DoD 2 vira compa"
+            "d": "A regeneração determinística de capturas depende de ambiente controlado (resolução, tema, fontes, base sintética) que ainda não existe versionado — assunção: o ciclo 003 deixa a base do script de captura e os ciclos seguintes a mantêm; se a determinismo não se sustentar, o portão da DoD 2 vira comparação tolerante declarada, nunca silenciosa — risco médio."
           }
         ]
       }

@@ -42,13 +42,13 @@ Python 3.11.15
 
 $ python3 tools/product-site/generate.py . --output docs/product-site/data.json
 JSON escrito em docs/product-site/data.json
-  módulos=8 specs=12 adrs=8 RF=359 RI=114 RNF=105 RN=71 INT=61 fontes=176 ciclos=12
+  módulos=8 specs=12 adrs=8 RF=359 RI=114 RNF=105 RN=71 INT=61 fontes=176 lacunas=58 ciclos=12
 
 $ python3 tools/product-site/render.py docs/product-site/data.json --output docs/product-site
   docs/product-site/styles.css (6209 bytes)
-  docs/product-site/index.html (47890 bytes)
-  docs/product-site/modules.html (88977 bytes)
-  docs/product-site/traceability.html (377476 bytes)
+  docs/product-site/index.html (48126 bytes)
+  docs/product-site/modules.html (91018 bytes)
+  docs/product-site/traceability.html (392415 bytes)
   docs/product-site/roadmap.html (36806 bytes)
 Site renderizado em docs/product-site/
 ```
@@ -117,6 +117,38 @@ afirma o que não leu. As adaptações, todas na cópia — nunca no original:
 12. **Nota de honestidade no rodapé do roadmap**, com o estado real: ciclo 001 em curso, zero
     linha de código de produção, nenhuma jornada viva.
 13. **Marca "TOC Federada"** na casca (nome, sigla, subtítulo, títulos das páginas).
+14. **Os cinco tipos de requisito na rastreabilidade, não três.** A página iterava só
+    `rfs`, `ris` e `rnfs` — e jogava fora, na renderização, o que o próprio `data.json` já
+    carregava: 71 regras de negócio (RN) e 61 integrações (INT). São grupos próprios agora,
+    com filtro, busca, cor e linha de fonte *backward* iguais aos outros três. Contado no
+    navegador depois da correção, contra o JSON:
+
+    ```
+    RF   DOM=359  data.json=359  IGUAL
+    RI   DOM=114  data.json=114  IGUAL
+    RNF  DOM=105  data.json=105  IGUAL
+    RN   DOM=71   data.json=71   IGUAL
+    INT  DOM=61   data.json=61   IGUAL
+    L    DOM=58   data.json=58   IGUAL
+    ```
+15. **As 58 lacunas declaradas têm lugar na rastreabilidade.** Eram o buraco mais grave:
+    uma página cujo argumento inteiro é honestidade não mostrava nenhuma das lacunas que as
+    specs declararam. Agora aparecem em três lugares: um painel na visão geral, com a
+    distribuição por risco (4 alto · 24 médio · 30 baixo) e as **quatro de risco alto
+    escritas por extenso**; um bloco vermelho ao pé de cada ciclo, junto dos requisitos que
+    ele promete; e um filtro `L` que abre as 58 de uma vez. Cada linha traz o ciclo e o
+    caminho da spec, o texto como a spec o escreveu, a fonte F-NN que ela cita e — quando
+    houver — o comando executado ou a evidência `arquivo:linha` colada em destaque
+    (1 comando e 2 evidências neste corpus; o resto é assunção declarada, e a página diz
+    isso em vez de fingir medição). O nível de risco vem do texto da própria spec: quando
+    não estiver escrito, a etiqueta diz "risco não declarado" — nunca um nível inventado.
+16. **Lacuna deixou de ser truncada em 300 caracteres.** A origem cortava, e como a
+    convenção do ADR 0004 escreve o risco no **fim** da linha, o corte apagava justamente
+    o risco de 33 das 58 (30 chegavam ao JSON sem nível algum). A mais longa do corpus tem
+    542 caracteres — não havia razão de tamanho para o corte. Corrigido em `generate.py`;
+    `modules.html` também parou de exibir lacuna cortada no meio da palavra
+    (`— risco m`, `referencian`). Junto, `generate.py` passou a imprimir `lacunas=` na
+    linha de contagem, para o verde dizer quanto examinou (R2).
 
 ## O que **não** foi adaptado — e a divergência que isso deixa
 
@@ -151,7 +183,8 @@ tools/product-site/
 
 Saída, em `docs/product-site/`: `index.html` (visão geral, taxonomia, workflow, ADRs,
 princípios, artefatos, métricas), `modules.html` (M1–M8 e as doze specs),
-`traceability.html` (RF + RI + RNF com fontes e cadeia), `roadmap.html` (os doze ciclos),
+`traceability.html` (RF, RI, RNF, RN e INT com fontes e cadeia, mais as lacunas
+declaradas), `roadmap.html` (os doze ciclos),
 `styles.css` e `data.json` (o insumo intermediário, versionado para que o site seja
 auditável sem rodar nada).
 

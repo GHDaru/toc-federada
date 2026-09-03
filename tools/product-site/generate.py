@@ -302,10 +302,21 @@ def _extract_artifacts(spec_dir: Path, project: Path) -> list[dict]:
 
 
 def _extract_lacunas(text: str) -> list[dict]:
+    """Lacunas declaradas (L-NN), **sem truncar**.
+
+    A origem cortava em 300 caracteres. Como a convenção deste repositório escreve o risco
+    no FIM da linha (`... — risco **médio**`), o corte apagava justamente o risco: 33 das 58
+    lacunas chegavam ao JSON sem ele. Medido antes da correção:
+
+        $ python3 -c "...len(l['d'])>=300..."
+        total lacunas 58 truncadas(>=300) 33 sem risco no texto 30
+
+    A lacuna mais longa do corpus tem 542 caracteres — não há razão de tamanho para cortar.
+    """
     section = _section(text, r"Lacunas e assun[çc][õo]es")
     out = []
     for m in _req_pattern("L").finditer(section):
-        out.append({"id": m.group(1), "d": _collapse(_strip_emphasis(m.group(2)))[:300]})
+        out.append({"id": m.group(1), "d": _collapse(_strip_emphasis(m.group(2)))})
     return out
 
 
@@ -1210,7 +1221,7 @@ def main():
         print(f"JSON escrito em {args.output}", file=sys.stderr)
         print(f"  módulos={c['modules']} specs={c['specs']} adrs={c['adrs']} "
               f"RF={c['rf']} RI={c['ri']} RNF={c['rnf']} RN={c['rn']} INT={c['int']} "
-              f"fontes={c['sources']} ciclos={c['cycles']}", file=sys.stderr)
+              f"fontes={c['sources']} lacunas={c['lacunas']} ciclos={c['cycles']}", file=sys.stderr)
     else:
         print(output)
 

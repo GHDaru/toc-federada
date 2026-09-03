@@ -39,7 +39,7 @@ temporário criado com `mktemp -d` e sabota a cópia.
 | `caminhos/` | `scripts/check-caminhos.sh` | um caminho nosso que existe, um caminho isento declarado e um molde `NNN` |
 | `adrs-sucessao/` | `scripts/check-adrs-sucessao.sh` | dois ADRs sintéticos, um sucedendo o outro, com o par declarado nos dois lados, índice e registro |
 | `rounds/` | `scripts/check-rounds.sh` | dois rounds com os sete campos, uma dependência acíclica e dois defeitos com um destino cada |
-| `specs/` | `scripts/check-specs.sh` | um ciclo sintético com os quatro artefatos, as quinze seções, as duas tabelas de Constitution Check e a cauda |
+| `specs/` | `scripts/check-specs.sh` | um ciclo sintético com os quatro artefatos, as quinze seções, as duas tabelas de Constitution Check, a cauda e nota 96,7 na régua de prontidão do ADR 0004 §5 |
 
 Base 100% sintética, por regra do ADR 0006: personas fictícias (**Facilitadora TOC**,
 "Instituição Horizonte"), nenhum nome, enunciado ou data de pessoa real. A regra vale aqui
@@ -49,7 +49,7 @@ como vale em spec e em captura — fixture é exatamente onde a dívida da irmã
 ## As sabotagens
 
 A tabela viva está em `scripts/tests/run-sabotagem.sh` (a mutação e o trecho exigido moram
-juntos, para não divergirem). Em resumo, 22 mutações cobrindo:
+juntos, para não divergirem). Em resumo, 23 mutações cobrindo:
 
 - **`check-caminhos.sh`** — caminho nosso inexistente; caminho de repositório não isento.
 - **`check-adrs-sucessao.sh`** — antigo sem `Superseded by`; ADR sem `Princípios tocados`;
@@ -59,7 +59,9 @@ juntos, para não divergirem). Em resumo, 22 mutações cobrindo:
   round inexistente; defeito sem destino; defeito em dois destinos.
 - **`check-specs.sh`** — artefato do ciclo ausente; seção obrigatória renomeada; spec sem
   RI; spec sem `Status`; DoD sem coluna de verificação; plano com uma tabela só; linha de
-  princípio vazia; artefato condicional não declarado; cauda incompleta.
+  princípio vazia; artefato condicional não declarado; cauda incompleta; **tabela de DoD
+  sem nenhuma linha executável** — esta última passa no piso mecânico e cai só na régua de
+  prontidão, por Testabilidade.
 
 ## Um achado que este diretório já pagou
 

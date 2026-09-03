@@ -137,16 +137,20 @@ documento diz *o que entra, o que sai primeiro e o que nunca sai*.
   suficiência (E2.2). A ferramenta mais madura da linhagem, agora testável.
 - **Fora**: **E2.3** (assistência via catálogo) — decisão 4: entra no round 006, quando
   o catálogo existir. Qualquer outra ferramenta.
-- **Aptidão executável**: os critérios decidíveis de UDE (estado e não ação, tempo
-  presente, frase completa, sem culpar pessoa) avaliados por teste de domínio **sem
-  rede e sem modelo** — o mesmo caso que o prompt do v3 tratava por chamada de IA passa
-  agora por função pura; jornada viva da construção de uma ARA sintética com captura
-  gerada do build.
+- **Aptidão executável**: a base sintética da Instituição Horizonte
+  (`docs/produto/dados/analise-horizonte.json`, 12 UDEs) submetida ao domínio puro **sem
+  rede e sem modelo** devolve os mesmos **3 aprovados e 9 reprovados**, com o mesmo motivo
+  por UDE, que `docs/produto/dados/medir-base.py` mede hoje (saída colada em
+  [`visao.md`](visao.md) §6, D-12) — o mesmo caso que o prompt do v3 só resolvia por
+  chamada de inteligência artificial passa a ser teste de domínio; jornada viva da
+  construção dessa ARA com captura gerada do build.
 - **Depende de**: 004.
 - **Sai primeiro**: a análise de suficiência assistida por relatório (fica a marcação
   manual). **Nunca sai**: a validação formal de UDE como domínio puro — é a correção do
   D-08 e a razão de este round existir separado do 004.
-- **Defeitos**: **D-08** (a regra de negócio sai do prompt e vira domínio testável).
+- **Defeitos**: **D-08** (a regra de negócio sai do prompt e vira domínio testável),
+  **D-12** (o número que a torna critério de aceite: 3 de 12 UDEs passam, e as 4
+  características indecidíveis ficam declaradas como julgamento, nunca como função).
 
 ## Round 006 — Ações governadas e snapshot (E7.3–E7.6)
 
@@ -315,8 +319,9 @@ documento diz *o que entra, o que sai primeiro e o que nunca sai*.
 
 Conferência de exaustividade: D-01 (006) · D-02 (003) · D-03 (003) · D-04 (008) · D-05
 (010) · D-06 (não corrigido em round, motivo acima) · D-07 (003) · D-08 (005) · D-09
-(009) · D-10 (não corrigido em round, motivo acima) · D-11 (008). **Onze defeitos, onze
-destinos, nenhum em dois lugares.**
+(009) · D-10 (não corrigido em round, motivo acima) · D-11 (008) · D-12 (005). **Doze
+defeitos, doze destinos, nenhum em dois lugares** — conferido por
+`scripts/check-rounds.sh`, não pela leitura desta linha.
 
 ## O que este documento não decide
 

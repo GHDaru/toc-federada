@@ -95,6 +95,66 @@ def _js(s: str) -> str:
     return s.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${")
 
 
+# ──────────────────────────────────────────────────────────────────────
+# Lacunas declaradas (L-NN) — campos derivados do texto que a spec escreveu
+# ──────────────────────────────────────────────────────────────────────
+#
+# A convenção do ADR 0004 é `L-NN: lacuna — assunção — risco (baixo/médio/alto)`. O texto
+# chega ao renderizador como uma linha só; estas funções o leem SEM reescrever nada:
+# o que não estiver escrito na spec não aparece na página.
+
+_RISCO_RE = re.compile(r"risco\s+(alto|m[ée]dio|baixo)", re.I)
+_CODE_SPAN_RE = re.compile(r"`([^`]+)`")
+_CMD_HEAD_RE = re.compile(
+    r"^(?:grep|rg|python3?|pytest|md5sum|ls|sed|awk|curl|node|npm|npx|bash|sh|git|jq|wc"
+    r"|diff|find|cat|head|tail|alembic|make|uv|scripts/|tools/|bin/)\b"
+)
+_PATH_LINE_RE = re.compile(r"^[\w./@-]+\.[A-Za-z]{1,6}:\d[\d,\u2013\u2014-]*$")
+_FONTE_RE = re.compile(r"\bF-\d+\b")
+
+
+def _risco(s: str) -> str:
+    """O nível de risco que a lacuna declara. Vazio quando a spec não o escreveu — a
+    página diz "não declarado" em vez de inventar um nível."""
+    m = _RISCO_RE.search(s or "")
+    if not m:
+        return ""
+    v = m.group(1).lower()
+    return "médio" if v.startswith("m") else v
+
+
+def _comandos(s: str) -> list[str]:
+    """Comandos executados citados dentro da lacuna. Exige cabeça de comando conhecida
+    **e** argumento (um espaço): `scripts/check-caminhos.sh` sozinho é caminho citado, não
+    comando executado, e chamá-lo de comando seria a mentira que esta página existe para
+    não contar."""
+    out: list[str] = []
+    for m in _CODE_SPAN_RE.finditer(s or ""):
+        c = m.group(1).strip()
+        if " " in c and _CMD_HEAD_RE.match(c) and c not in out:
+            out.append(c)
+    return out
+
+
+def _evidencias(s: str) -> list[str]:
+    """Evidência no formato `arquivo:linha` citada dentro da lacuna."""
+    out: list[str] = []
+    for m in _CODE_SPAN_RE.finditer(s or ""):
+        c = m.group(1).strip()
+        if _PATH_LINE_RE.match(c) and c not in out:
+            out.append(c)
+    return out
+
+
+def _fontes_citadas(s: str) -> list[str]:
+    """As fontes F-NN que a lacuna cita, na ordem em que aparecem, sem repetir."""
+    out: list[str] = []
+    for m in _FONTE_RE.finditer(s or ""):
+        if m.group(0) not in out:
+            out.append(m.group(0))
+    return out
+
+
 def _up(path: str) -> str:
     """Caminho do repositório visto de dentro de `docs/product-site/`."""
     return "../../" + path if path and not path.startswith(("http", "../")) else path
@@ -211,6 +271,14 @@ def _prep(data: dict) -> None:
             for r in m.get(kind, []):
                 r["d"] = _md(r.get("d", ""))
                 r["group"] = _md(r.get("group", ""))
+        # Lacunas: os campos derivados saem do texto CRU, antes de `_md` escapar o HTML.
+        for lac in m.get("lacunas", []):
+            raw = lac.get("d", "") or ""
+            lac["risco"] = _risco(raw)
+            lac["cmds"] = [_md("`%s`" % c) for c in _comandos(raw)]
+            lac["paths"] = [_md("`%s`" % c) for c in _evidencias(raw)]
+            lac["s"] = ", ".join(_fontes_citadas(raw))
+            lac["d"] = _md(raw)
         for src in m.get("sources", []):
             tip = (src.get("path", "") or "")
             if src.get("lines"):
@@ -535,11 +603,21 @@ def _render_modules(data: dict, project: dict) -> str:
 # ──────────────────────────────────────────────────────────────────────
 
 _TRACE_CSS = """
+/* Cores próprias dos dois grupos novos (RN, INT) e das lacunas. Ficam aqui, e não no
+   `templates/styles.css`, porque aquele arquivo é a régua de design mantida byte a byte
+   idêntica à origem. Ao contrário de --green/--amber/--blue, estes tokens têm variante
+   escura, para que RN e INT não fiquem ilegíveis no tema escuro. */
+:root{--rn-c:#7c3aed;--int-c:#b45309;--lac-c:#c0392b}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --rn-c:#a78bfa;--int-c:#f0b429;--lac-c:#f87171} }
+[data-theme="dark"]{--rn-c:#a78bfa;--int-c:#f0b429;--lac-c:#f87171}
 .grid-3{grid-template-columns:repeat(3,1fr)}
 @media(max-width:900px){.grid-3{grid-template-columns:1fr}}
 .pill.rf{background:rgba(91,91,214,.12);color:var(--accent)}
 .pill.ri{background:rgba(15,118,110,.14);color:#0f766e}
 .pill.rnf{background:rgba(43,108,176,.12);color:var(--blue)}
+.pill.rn{background:rgba(124,58,237,.13);color:var(--rn-c)}
+.pill.int{background:rgba(180,83,9,.13);color:var(--int-c)}
 .stat-tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;text-align:center}
 .stat-tile .num{font-size:28px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
 .stat-tile .lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-top:2px}
@@ -548,6 +626,9 @@ _TRACE_CSS = """
 .req-row .req-id{font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent);white-space:nowrap}
 .req-row.ri .req-id{color:#0f766e}
 .req-row.rnf .req-id{color:var(--blue)}
+.req-row.rn .req-id{color:var(--rn-c)}
+.req-row.int .req-id{color:var(--int-c)}
+.req-row.lac .req-id{color:var(--lac-c)}
 .req-row .req-desc{color:var(--ink);line-height:1.45}
 .req-row .req-group{display:block;font-size:10.5px;color:var(--faint);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
 .req-row .req-src{font-size:10.5px;color:var(--faint);font-family:var(--font-mono);text-align:right;white-space:normal}
@@ -583,6 +664,33 @@ _TRACE_CSS = """
 .filter-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .search-box{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px;font-family:inherit;margin-bottom:16px}
 .search-box:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+/* ── Lacunas declaradas (L-NN) ── */
+.lac-table{border-left:3px solid var(--lac-c)}
+.lac-table .rt-head{color:var(--lac-c)}
+.req-row.lac .req-desc{line-height:1.5}
+.lac-where{display:block;font-size:10.5px;color:var(--faint);font-weight:600;letter-spacing:.04em;margin-bottom:3px;font-family:var(--font-mono)}
+.lac-where a{color:var(--faint);border-bottom:1px dotted var(--border-strong)}
+.lac-where a:hover{color:var(--accent);text-decoration:none;border-bottom-color:var(--accent)}
+.lac-ev{margin-top:7px;background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;color:var(--muted)}
+.lac-ev-lbl{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-right:7px}
+.lac-src{margin-top:6px;font-size:10.5px;color:var(--faint);font-family:var(--font-mono)}
+.lac-empty{font-size:12.5px;color:var(--muted);padding:10px 2px 4px;line-height:1.5}
+.risk-pill{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap}
+.risk-pill.risk-hi{background:rgba(192,57,43,.15);color:var(--lac-c)}
+.risk-pill.risk-mid{background:rgba(176,107,0,.16);color:var(--amber)}
+.risk-pill.risk-lo{background:rgba(26,122,76,.14);color:var(--green)}
+.risk-pill.risk-na{background:var(--surface-2);color:var(--faint)}
+.lac-panel{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--lac-c);border-radius:10px;padding:18px 22px;box-shadow:var(--shadow);margin-bottom:28px}
+.lac-panel h3{margin:0 0 4px;font-size:16px;letter-spacing:-.01em}
+.lac-panel .lac-lede{font-size:13px;color:var(--muted);margin:0 0 14px;max-width:78ch;line-height:1.55}
+.lac-bars{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.lac-bar{flex:1 1 150px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+.lac-bar .n{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.lac-bar .l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-top:1px}
+.lac-bar.hi .n{color:var(--lac-c)} .lac-bar.mid .n{color:var(--amber)} .lac-bar.lo .n{color:var(--green)}
+.lac-top{list-style:none;padding:0;margin:0 0 12px}
+.lac-top li{font-size:13px;color:var(--ink);padding:8px 0;border-top:1px solid var(--border);line-height:1.5}
+.lac-top li .tag{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--lac-c);margin-right:8px}
 """
 
 
@@ -603,18 +711,73 @@ let specFilter = "all";
 let typeFilter = "all";
 let searchTerm = "";
 const KINDS = [
-  {key:"rfs", id:"RF", label:"Requisitos funcionais", cls:"rf", head:"Requisito funcional (forma EARS)"},
-  {key:"ris", id:"RI", label:"Requisitos de interface", cls:"ri", head:"Requisito de interface (tela, estado, acessibilidade)"},
-  {key:"rnfs", id:"RNF", label:"Requisitos não funcionais", cls:"rnf", head:"Requisito não funcional (desempenho, segurança, observabilidade)"}
+  {key:"rfs",  id:"RF",  label:"Requisitos funcionais",     cls:"rf",  head:"Requisito funcional (forma EARS)"},
+  {key:"ris",  id:"RI",  label:"Requisitos de interface",   cls:"ri",  head:"Requisito de interface (tela, estado, acessibilidade)"},
+  {key:"rnfs", id:"RNF", label:"Requisitos não funcionais", cls:"rnf", head:"Requisito não funcional (desempenho, segurança, observabilidade)"},
+  {key:"rns",  id:"RN",  label:"Regras de negócio",         cls:"rn",  head:"Regra de negócio da TOC (domínio puro, testável sem rede)"},
+  {key:"ints", id:"INT", label:"Integrações",               cls:"int", head:"Integração (fronteira APH: ação do catálogo, tela do registro)"}
 ];
+const KEYS = KINDS.map(k=>k.key);
+// "L" não é um tipo de requisito: é a lacuna declarada. Anda junto no mesmo filtro porque
+// quem audita rastreabilidade precisa ver, na mesma tela, o que foi prometido e o que
+// assumidamente não se sabe.
+const LAC = "L";
+
+function activeKeys(){
+  if(typeFilter==="all") return KEYS;
+  if(typeFilter===LAC) return [];
+  return KINDS.filter(k=>k.id===typeFilter).map(k=>k.key);
+}
+function showLacunas(){ return typeFilter==="all" || typeFilter===LAC; }
 
 function totals(){
-  let t = {rf:0, ri:0, rnf:0, src:0, comFonte:0, total:0};
+  let t = {rf:0, ri:0, rnf:0, rn:0, int:0, src:0, comFonte:0, total:0,
+           lac:0, alto:0, medio:0, baixo:0, semRisco:0, lacEvid:0, lacFonte:0};
   MODULES.forEach(m=>{
-    t.rf+=m.rfs.length; t.ri+=m.ris.length; t.rnf+=m.rnfs.length; t.src+=m.sources.length;
-    ["rfs","ris","rnfs"].forEach(k=>m[k].forEach(r=>{ t.total++; if(r.s) t.comFonte++; }));
+    t.rf+=m.rfs.length; t.ri+=m.ris.length; t.rnf+=m.rnfs.length;
+    t.rn+=m.rns.length; t.int+=m.ints.length; t.src+=m.sources.length;
+    KEYS.forEach(k=>m[k].forEach(r=>{ t.total++; if(r.s) t.comFonte++; }));
+    (m.lacunas||[]).forEach(l=>{
+      t.lac++;
+      if(l.risco==="alto") t.alto++;
+      else if(l.risco==="médio") t.medio++;
+      else if(l.risco==="baixo") t.baixo++;
+      else t.semRisco++;
+      if((l.cmds&&l.cmds.length)||(l.paths&&l.paths.length)) t.lacEvid++;
+      if(l.s) t.lacFonte++;
+    });
   });
   return t;
+}
+
+function riskPill(l){
+  const r = l.risco||"";
+  const cls = r==="alto" ? "risk-hi" : r==="médio" ? "risk-mid" : r==="baixo" ? "risk-lo" : "risk-na";
+  return `<span class="risk-pill ${cls}" title="risco declarado pela própria spec">${r||"risco não declarado"}</span>`;
+}
+
+function lacunaTable(m){
+  const ls = m.lacunas||[];
+  if(!ls.length){
+    return `<div class="req-table lac-table"><div class="rt-head"><span>ID</span><span>Lacunas declaradas — 0 L</span><span class="rt-src">Risco</span></div>`
+         + `<div class="lac-empty">Esta spec não declarou nenhuma lacuna. Isso não é ausência de risco — é ausência de declaração, e conta contra a spec, não a favor.</div></div>`;
+  }
+  const rows = ls.map(l=>{
+    const cmd = (l.cmds&&l.cmds.length)
+      ? `<div class="lac-ev"><span class="lac-ev-lbl">comando executado</span>${l.cmds.join(" · ")}</div>` : "";
+    const ev = (l.paths&&l.paths.length)
+      ? `<div class="lac-ev"><span class="lac-ev-lbl">evidência arquivo:linha</span>${l.paths.join(" · ")}</div>` : "";
+    const src = l.s
+      ? `<div class="lac-src">fonte (backward): ${srcLinks(l, m)}</div>`
+      : `<div class="lac-src">fonte (backward): <span class="faint" title="lacuna sem fonte citada: nasce da ausência de precedente, não de um documento lido">—</span></div>`;
+    const where = `<span class="lac-where">ciclo ${m.id} · <a href="../../${m.specPath}">${m.specPath}</a></span>`;
+    return `<div class="req-row lac"><span class="req-id">🔴 ${l.id}</span>`
+         + `<span class="req-desc">${where}${l.d}${cmd}${ev}${src}</span>`
+         + `<span class="req-src">${riskPill(l)}</span></div>`;
+  }).join("");
+  return `<div class="req-table lac-table"><div class="rt-head"><span>ID</span>`
+       + `<span>Lacunas declaradas — ${ls.length} L (lacuna · assunção · risco, como a spec escreveu)</span>`
+       + `<span class="rt-src">Risco</span></div>${rows}</div>`;
 }
 
 function seal(r){
@@ -651,23 +814,44 @@ function renderOverview(){
       <div class="stat-tile"><div class="num">${t.ri}</div><div class="lbl">Requisitos de interface</div></div>
       <div class="stat-tile"><div class="num">${t.rnf}</div><div class="lbl">Requisitos não funcionais</div></div>
     </div>
+    <div class="grid grid-3" style="margin-bottom:14px">
+      <div class="stat-tile"><div class="num">${t.rn}</div><div class="lbl">Regras de negócio</div></div>
+      <div class="stat-tile"><div class="num">${t.int}</div><div class="lbl">Integrações</div></div>
+      <div class="stat-tile"><div class="num">${t.total}</div><div class="lbl">Itens de requisito (os 5 tipos)</div></div>
+    </div>
     <div class="grid grid-3" style="margin-bottom:28px">
       <div class="stat-tile"><div class="num">${t.src}</div><div class="lbl">Fontes declaradas (F-NN)</div></div>
-      <div class="stat-tile"><div class="num">${t.total}</div><div class="lbl">Requisitos totais</div></div>
-      <div class="stat-tile"><div class="num">${pct}%</div><div class="lbl">Citam uma fonte</div></div>
+      <div class="stat-tile"><div class="num">${pct}%</div><div class="lbl">Desses, citam uma fonte</div></div>
+      <div class="stat-tile"><div class="num">${t.lac}</div><div class="lbl">Lacunas declaradas (L-NN)</div></div>
+    </div>`;
+  const altas = [];
+  MODULES.forEach(m=>(m.lacunas||[]).forEach(l=>{ if(l.risco==="alto") altas.push({m:m, l:l}); }));
+  const lacPanel = `
+    <div class="lac-panel">
+      <h3>O que assumidamente não sabemos — ${t.lac} lacunas declaradas</h3>
+      <p class="lac-lede">Uma lacuna (L-NN) é o que a spec <b>não</b> sabe: o buraco, a assunção que se fez no lugar dele e o risco de a assunção estar errada. Está nesta página, e não escondida no fim de cada arquivo, porque uma matriz de rastreabilidade que só mostra o que foi prometido mede metade da verdade. ${t.lacFonte} das ${t.lac} citam uma fonte F-NN; ${t.lacEvid} trazem comando executado ou evidência <code>arquivo:linha</code> colada.</p>
+      <div class="lac-bars">
+        <div class="lac-bar hi"><div class="n">${t.alto}</div><div class="l">risco alto</div></div>
+        <div class="lac-bar mid"><div class="n">${t.medio}</div><div class="l">risco médio</div></div>
+        <div class="lac-bar lo"><div class="n">${t.baixo}</div><div class="l">risco baixo</div></div>
+        <div class="lac-bar"><div class="n">${t.semRisco}</div><div class="l">sem risco declarado</div></div>
+      </div>
+      <ul class="lac-top">${altas.map(x=>`<li><span class="tag">${x.m.id} · ${x.l.id}</span>${x.l.d}</li>`).join("")}</ul>
+      <button class="filter-chip" onclick="setType('L')">Abrir as ${t.lac} lacunas →</button>
     </div>`;
   const cards = MODULES.map(m=>`
     <div class="card" style="cursor:pointer" onclick="setSpec('${m.id}')">
       <p class="card-title"><span class="pill rf">${m.id}</span> ${m.name}</p>
-      <p class="card-sub">${m.rfs.length} RF · ${m.ris.length} RI · ${m.rnfs.length} RNF · ${m.sources.length} fontes</p>
+      <p class="card-sub">${m.rfs.length} RF · ${m.ris.length} RI · ${m.rnfs.length} RNF · ${m.rns.length} RN · ${m.ints.length} INT · ${(m.lacunas||[]).length} L · ${m.sources.length} fontes</p>
       <p class="muted" style="font-size:12px;margin:0">Módulos: ${(m.modules&&m.modules.length)?m.modules.join(", "):"transversal"} · <a href="../../${m.specPath}" onclick="event.stopPropagation()">spec.md</a></p>
     </div>`).join("");
   return `
     <p class="eyebrow">Rastreabilidade</p>
     <h1>Matriz de rastreabilidade</h1>
-    <p class="lede">A cadeia inteira, nos dois sentidos. <b>Backward</b>: cada requisito cita as fontes F-NN da sua spec, com <code>arquivo:linha</code> na linhagem TOC-Builder, na norma APH ou na plataforma. <b>Forward</b>: spec → plan → tasks → contratos → qa-report → código do ciclo. Clique num ciclo para abrir os seus requisitos.</p>
+    <p class="lede">A cadeia inteira, nos dois sentidos. <b>Backward</b>: cada requisito cita as fontes F-NN da sua spec, com <code>arquivo:linha</code> na linhagem TOC-Builder, na norma APH ou na plataforma. <b>Forward</b>: spec → plan → tasks → contratos → qa-report → código do ciclo. Cinco tipos de requisito — RF, RI, RNF, RN e INT — mais as lacunas declaradas. Clique num ciclo para abrir os seus itens.</p>
     <div class="callout">${D.callout}</div>
     ${tiles}
+    ${lacPanel}
     <h2>Resumo por ciclo</h2>
     <div class="grid grid-2">${cards}</div>`;
 }
@@ -690,6 +874,7 @@ function renderModule(m){
     }).join("");
     tables += `<div class="req-table"><div class="rt-head"><span>ID</span><span>${k.head} — ${rows.length} ${k.id}</span><span class="rt-src">Fonte (backward)</span></div>${html}</div>`;
   }
+  if(showLacunas()) tables += lacunaTable(m);
   return `
     <div class="module-section" data-mid="${m.id}">
       <div class="module-header">
@@ -702,7 +887,7 @@ function renderModule(m){
       </div>
       ${chainRow(m)}
       <div class="source-list"><strong>Fontes consultadas:</strong> ${sources||"—"}</div>
-      ${tables||'<div class="callout">Nenhum requisito deste tipo nesta spec.</div>'}
+      ${tables||'<div class="callout">Nenhum item deste tipo nesta spec.</div>'}
     </div>`;
 }
 
@@ -710,13 +895,12 @@ function renderFiltered(){
   let html = `
     <p class="eyebrow">Rastreabilidade</p>
     <h1>Matriz de rastreabilidade</h1>
-    <p class="lede">Requisito → fonte (backward) e ciclo → artefatos (forward). Filtre por tipo ou por ciclo, ou busque por identificador, texto e fonte.</p>
-    <input class="search-box" id="searchBox" placeholder="Buscar por identificador, texto ou fonte (ex.: UDE, F-06, snapshot)..." value="${searchTerm}">
+    <p class="lede">Requisito → fonte (backward) e ciclo → artefatos (forward). Filtre por tipo ou por ciclo, ou busque por identificador, texto e fonte. O filtro <b>L</b> abre as lacunas declaradas — o que a spec assume sem saber, com o risco que ela mesma nomeou.</p>
+    <input class="search-box" id="searchBox" placeholder="Buscar por identificador, texto ou fonte (ex.: UDE, F-06, snapshot, risco alto)..." value="${searchTerm}">
     <div class="filter-bar">
       <button class="filter-chip type" data-type="all">Todos os tipos</button>
-      <button class="filter-chip type" data-type="RF">RF</button>
-      <button class="filter-chip type" data-type="RI">RI</button>
-      <button class="filter-chip type" data-type="RNF">RNF</button>
+      ${KINDS.map(k=>`<button class="filter-chip type" data-type="${k.id}" title="${k.label}">${k.id}</button>`).join("")}
+      <button class="filter-chip type" data-type="L" title="Lacunas declaradas (L-NN)">L — lacunas</button>
     </div>
     <div class="filter-bar">
       <button class="filter-chip spec" data-spec="all">Todos os ciclos</button>
@@ -725,13 +909,23 @@ function renderFiltered(){
   let mods = specFilter==="all" ? MODULES : MODULES.filter(m=>m.id===specFilter);
   if(searchTerm){
     const q = searchTerm.toLowerCase();
-    const hit = r => r.id.toLowerCase().includes(q) || (r.d||"").toLowerCase().includes(q) || (r.s||"").toLowerCase().includes(q) || (r.group||"").toLowerCase().includes(q);
-    mods = mods.map(m=>({...m, rfs:m.rfs.filter(hit), ris:m.ris.filter(hit), rnfs:m.rnfs.filter(hit)}))
-               .filter(m=>m.rfs.length||m.ris.length||m.rnfs.length);
+    const hit = r => r.id.toLowerCase().includes(q) || (r.d||"").toLowerCase().includes(q) || (r.s||"").toLowerCase().includes(q) || (r.group||"").toLowerCase().includes(q) || (r.risco||"").toLowerCase().includes(q);
+    mods = mods.map(m=>{
+                 const o = {...m};
+                 KEYS.forEach(k=>{ o[k] = m[k].filter(hit); });
+                 o.lacunas = (m.lacunas||[]).filter(hit);
+                 return o;
+               })
+               .filter(m=>KEYS.some(k=>m[k].length) || m.lacunas.length);
   }
-  const shown = mods.reduce((a,m)=>a+m.rfs.length+m.ris.length+m.rnfs.length,0);
-  html += `<p class="faint" style="font-size:12px">${shown} requisitos em ${mods.length} ciclo(s) — a contagem é do filtro atual, não do repositório inteiro.</p>`;
-  if(!mods.length) html += `<div class="callout">Nenhum requisito encontrado para "${searchTerm}".</div>`;
+  const ak = activeKeys();
+  const shown = mods.reduce((a,m)=>a+ak.reduce((b,k)=>b+m[k].length,0),0);
+  const shownLac = showLacunas() ? mods.reduce((a,m)=>a+(m.lacunas||[]).length,0) : 0;
+  const parts = [];
+  if(ak.length) parts.push(`${shown} requisito(s)`);
+  if(showLacunas()) parts.push(`${shownLac} lacuna(s) declarada(s)`);
+  html += `<p class="faint" style="font-size:12px">${parts.join(" e ")} em ${mods.length} ciclo(s) — a contagem é do filtro atual, não do repositório inteiro.</p>`;
+  if(!mods.length) html += `<div class="callout">Nada encontrado para "${searchTerm}".</div>`;
   else mods.forEach(m=>{ html += renderModule(m); });
   return html;
 }
@@ -749,7 +943,7 @@ function render(){
   document.querySelectorAll(".filter-chip.type").forEach(b=>b.addEventListener("click",()=>setType(b.dataset.type)));
 }
 function setSpec(f){ specFilter=f; render(); window.scrollTo(0,0); }
-function setType(t){ typeFilter=t; if(specFilter==="all"&&!searchTerm&&t!=="all"){} render(); window.scrollTo(0,0); }
+function setType(t){ typeFilter=t; render(); window.scrollTo(0,0); }
 render();
 </script>""".replace("__PAYLOAD__", payload_json)
 

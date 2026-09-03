@@ -1,0 +1,151 @@
+{
+  "versao": "1.0.0",
+  "data": "2026-09-03",
+  "sintetica": true,
+  "origem": "docs/adr/0006-base-sintetica-desde-o-dia-1.md",
+  "aviso": "Base 100% fictícia. Nenhum dado real de pessoa, organização ou análise. Personas são papéis, não pessoas.",
+  "organizacao": {
+    "nome": "Instituição Horizonte",
+    "descricao": "Instituição de ensino técnico fictícia, com oferta semestral de turmas presenciais.",
+    "meta_declarada": "Formar profissionais técnicos em turmas completas, com alta taxa de conclusão."
+  },
+  "personas": [
+    { "id": "P-01", "papel": "Facilitadora TOC", "faz": "conduz a análise, valida os UDEs, fecha a nuvem" },
+    { "id": "P-02", "papel": "Participante", "faz": "contribui UDEs e premissas a partir da própria área" },
+    { "id": "P-03", "papel": "Gestora", "faz": "decide sobre as injeções e acompanha o plano" }
+  ],
+  "ara": {
+    "objetivo_do_sistema": "A Instituição Horizonte forma turmas completas com alta taxa de conclusão.",
+    "nos": [
+      {
+        "id": "U-01", "tipo": "ude", "autor": "P-02",
+        "texto": "O intervalo médio da matrícula até a primeira aula é de 43 dias.",
+        "patologia": "nenhuma — escrito como estado factual, mensurável, no presente",
+        "esperado_reprovado": false
+      },
+      {
+        "id": "U-02", "tipo": "ude", "autor": "P-02",
+        "texto": "Um terço das turmas abertas encerra o semestre com menos de dez alunos.",
+        "patologia": "nenhuma — UDE de existência de lacuna, com número",
+        "esperado_reprovado": false
+      },
+      {
+        "id": "U-03", "tipo": "ude", "autor": "P-01",
+        "texto": "A taxa de conclusão dos cursos técnicos é de 54%.",
+        "patologia": "nenhuma — UDE de existência de lacuna, com número",
+        "esperado_reprovado": false
+      },
+      {
+        "id": "U-04", "tipo": "ude", "autor": "P-03",
+        "texto": "Reduzir o tempo de resposta às solicitações dos alunos matriculados.",
+        "patologia": "ação, não estado — a Gestora escreveu a tarefa que quer ver feita",
+        "esperado_reprovado": true
+      },
+      {
+        "id": "U-05", "tipo": "ude", "autor": "P-02",
+        "texto": "Os alunos abandonam o curso porque a coordenação não responde às mensagens.",
+        "patologia": "traz a causa presumida dentro da própria verbalização",
+        "esperado_reprovado": true
+      },
+      {
+        "id": "U-06", "tipo": "ude", "autor": "P-02",
+        "texto": "Falta um sistema integrado de matrícula na secretaria.",
+        "patologia": "solução disfarçada de efeito — o remédio escrito como se fosse o sintoma",
+        "esperado_reprovado": true
+      },
+      {
+        "id": "U-07", "tipo": "ude", "autor": "P-03",
+        "texto": "A equipe da secretaria é desleixada com os prazos e o aluno fica sem resposta.",
+        "patologia": "culpa pessoas, junta duas entidades e usa juízo de valor",
+        "esperado_reprovado": true
+      },
+      {
+        "id": "U-08", "tipo": "ude", "autor": "P-02",
+        "texto": "O atendimento ao aluno é péssimo.",
+        "patologia": "juízo subjetivo, sem fato observável",
+        "esperado_reprovado": true
+      },
+      {
+        "id": "U-09", "tipo": "ude", "autor": "P-02",
+        "texto": "Os professores chegam atrasados e as salas não têm projetor.",
+        "patologia": "duas entidades numa frase só",
+        "esperado_reprovado": true
+      },
+      {
+        "id": "U-10", "tipo": "ude", "autor": "P-03",
+        "texto": "A evasão aumentará no próximo semestre.",
+        "patologia": "previsão em tempo futuro — não é realidade atual",
+        "esperado_reprovado": true
+      },
+      {
+        "id": "U-11", "tipo": "ude", "autor": "P-01",
+        "texto": "A instituição perdeu 120 matrículas no último semestre.",
+        "patologia": "fato passado e encerrado, não um problema contínuo no presente",
+        "esperado_reprovado": true
+      },
+      {
+        "id": "U-12", "tipo": "ude", "autor": "P-02",
+        "texto": "Alta evasão",
+        "patologia": "rótulo, não frase — a forma mais comum de UDE em quadro de post-it",
+        "esperado_reprovado": true
+      },
+      {
+        "id": "C-01", "tipo": "causa",
+        "texto": "A alocação de docentes começa depois da abertura das matrículas."
+      },
+      {
+        "id": "C-02", "tipo": "causa",
+        "texto": "A secretaria opera com o mesmo quadro de pessoas desde a duplicação da oferta."
+      },
+      {
+        "id": "C-03", "tipo": "causa",
+        "texto": "O acompanhamento do aluno termina no ato da matrícula."
+      },
+      {
+        "id": "R-01", "tipo": "causa_raiz",
+        "texto": "A instituição avalia o semestre pelo volume de matrículas, não pela conclusão dos cursos."
+      }
+    ],
+    "arestas": [
+      { "de": "R-01", "para": "C-01", "tipo": "suficiencia" },
+      { "de": "R-01", "para": "C-02", "tipo": "suficiencia" },
+      { "de": "R-01", "para": "C-03", "tipo": "suficiencia" },
+      { "de": "C-01", "para": "U-01", "tipo": "suficiencia" },
+      { "de": "C-01", "para": "U-09", "tipo": "suficiencia" },
+      { "de": "C-01", "para": "U-02", "tipo": "suficiencia" },
+      { "de": "C-02", "para": "U-05", "tipo": "suficiencia" },
+      { "de": "C-02", "para": "U-06", "tipo": "suficiencia" },
+      { "de": "C-02", "para": "U-07", "tipo": "suficiencia" },
+      { "de": "C-02", "para": "U-08", "tipo": "suficiencia" },
+      { "de": "C-02", "para": "U-04", "tipo": "suficiencia" },
+      { "de": "C-03", "para": "U-03", "tipo": "suficiencia" },
+      { "de": "C-03", "para": "U-11", "tipo": "suficiencia" },
+      { "de": "C-03", "para": "U-12", "tipo": "suficiencia" },
+      { "de": "U-01", "para": "U-10", "tipo": "suficiencia" },
+      { "de": "U-03", "para": "U-10", "tipo": "suficiencia" }
+    ]
+  },
+  "nuvem": {
+    "derivada_de": "R-01",
+    "entidades": [
+      { "id": "A", "papel": "objetivo comum", "texto": "A Instituição Horizonte forma turmas completas com alta taxa de conclusão." },
+      { "id": "B", "papel": "necessidade", "texto": "A instituição precisa de receita previsível a cada semestre." },
+      { "id": "C", "papel": "necessidade", "texto": "A instituição precisa de qualidade pedagógica em cada turma aberta." },
+      { "id": "D", "papel": "ação", "texto": "Abrir toda turma que atinja o mínimo de matrículas." },
+      { "id": "D-linha", "papel": "ação oposta", "texto": "Abrir turma somente quando houver docente titular alocado." }
+    ],
+    "arestas": [
+      { "de": "B", "para": "A", "tipo": "necessidade", "premissa": "Sem receita previsível a instituição não sustenta a oferta do semestre seguinte." },
+      { "de": "C", "para": "A", "tipo": "necessidade", "premissa": "Turma sem qualidade pedagógica não chega à conclusão, ainda que complete a matrícula." },
+      { "de": "D", "para": "B", "tipo": "necessidade", "premissa": "A receita do semestre vem do número de turmas abertas, não das concluídas." },
+      { "de": "D-linha", "para": "C", "tipo": "necessidade", "premissa": "Só há qualidade pedagógica com docente titular definido antes da primeira aula." },
+      { "de": "D", "para": "D-linha", "tipo": "conflito", "premissa": "Esperar a alocação do docente titular faz a turma perder a janela de matrícula." },
+      { "de": "D", "para": "C", "tipo": "ameaca", "premissa": "Abrir sem docente titular obriga a substituições ao longo do semestre." },
+      { "de": "D-linha", "para": "B", "tipo": "ameaca", "premissa": "Adiar a abertura empurra a receita para fora do semestre corrente." }
+    ],
+    "injecoes": [
+      { "id": "I-01", "ataca": "D->B", "texto": "A instituição passa a reconhecer a receita do semestre pelas turmas que chegam à conclusão." },
+      { "id": "I-02", "ataca": "D->D-linha", "texto": "A alocação do docente titular acontece na abertura do calendário, antes da matrícula." }
+    ]
+  }
+}

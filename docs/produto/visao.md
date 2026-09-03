@@ -22,7 +22,10 @@ Este documento é a **leitura da linhagem**, não o plano do produto: descreve o
 a aplicação existe para resolver, o que quatro gerações de protótipo entregaram e o que
 nunca saiu delas, os defeitos medidos que viram requisito ou decisão, e as perguntas que só
 o humano responde. O mapa de módulos está em [`modulos.md`](modulos.md); a ordem de
-construção em [`rounds.md`](rounds.md) e [`../roadmap.md`](../roadmap.md).
+construção em [`rounds.md`](rounds.md) e [`../roadmap.md`](../roadmap.md). Os números
+sobre o **domínio** — e não sobre a linhagem — saem da base sintética da Instituição
+Horizonte, em [`dados/README.md`](dados/README.md), medida pelo script
+[`dados/medir-base.py`](dados/medir-base.py) (ADR 0006).
 
 ## 1. O problema
 
@@ -43,6 +46,31 @@ lógico auditável**: o sintoma vira UDE validado por critérios formais, a disc
 árvore de causa e efeito, o dilema vira nuvem com premissas explícitas que se pode atacar
 uma a uma, e a solução vira plano com obstáculos e objetivos intermediários sequenciados —
 tudo multiusuário, dentro da plataforma onde o trabalho já acontece.
+
+### 1.1 O que conta como resultado aceitável — e como isso se mede
+
+O problema acima é fácil de descrever e difícil de medir, e é aí que quatro gerações
+pararam: nenhuma delas definiu **o que é uma análise boa**. Esta define, e a definição é
+executável antes de existir uma linha de produto. Uma análise TOC é aceitável quando as
+quatro condições abaixo valem ao mesmo tempo — as quatro são verificadas hoje, por função
+pura, sobre a base sintética da Instituição Horizonte
+([`dados/README.md`](dados/README.md)):
+
+1. **Todo UDE passa nos critérios formais decidíveis** — frase completa, tempo presente,
+   estado e não ação, sem culpar pessoa, sem solução disfarçada, uma entidade só, sem a
+   causa embutida, factual. São oito checagens que traduzem sete das onze características
+   que a linhagem deixou dentro de um prompt (`tocbuilderv3/constants.ts:122-133`).
+2. **A árvore de causa e efeito não tem ciclo** — se A causa B e B causa A, não é
+   diagnóstico, é opinião circular.
+3. **Toda aresta da nuvem carrega a premissa escrita** — a nuvem sem premissas é um
+   desenho bonito: o que se ataca é a premissa, não a posição.
+4. **Cada efeito indesejável está ligado à árvore** — UDE órfão é queixa solta, não
+   sintoma de nada.
+
+E a régua tem um número de partida, medido e não declarado: **dos doze UDEs escritos como
+um facilitador humano os escreve, três passam** (§6, D-12). É essa distância — 3 de 12 —
+que a ferramenta existe para fechar, e é ela que vira critério de aceite do módulo M2 na
+spec 005, em vez de "a validação funciona bem".
 
 ## 2. O que a Teoria das Restrições oferece — os processos de pensamento
 
@@ -131,12 +159,29 @@ ferramentas dos processos de pensamento nunca chegou a um usuário**.
 
 ### 3.2 A leitura em uma frase
 
-A linhagem provou o **valor** (a ARA e a NC funcionam e a assistência de IA neles é
-genuinamente útil — `tocbuilderv3/APLICATION_PURPOSE.md:29` descreve a NC gerada de
-narrativa em linguagem natural 🟢) e provou o **teto**: protótipo frontend sem backend,
-sem teste, sem identidade real e com a chave do provedor no navegador não atravessa a
-linha de produto, não importa quantas vezes recomece. As nove tentativas são o argumento
-empírico do método: o que faltou nunca foi ideia — foi fundação, portão e sequência.
+A linhagem provou o **valor** (a ARA e a NC funcionam e a assistência de inteligência
+artificial neles é genuinamente útil — `tocbuilderv3/APLICATION_PURPOSE.md:29` descreve a
+NC gerada de narrativa em linguagem natural 🟢) e provou o **teto**: protótipo frontend
+sem backend, sem teste, sem identidade real e com a chave do provedor no navegador não
+atravessa a linha de produto, não importa quantas vezes recomece. As nove tentativas são o
+argumento empírico do método: o que faltou nunca foi ideia — foi fundação, portão e
+sequência.
+
+Uma ressalva atravessa o parágrafo inteiro e está declarada como lacuna 🔴 **L-01**: esse
+"valor" é **julgado por quem construiu, nunca medido em uso**. Em quatro gerações não há
+uma linha de instrumentação:
+
+```console
+$ grep -rniE "analytics|telemetr|mixpanel|amplitude|posthog|gtag|sentry|opentelemetry" \
+    TOC-Builder TOC-Builder-APP TOC-Builder-V2 tocbuilderv3 --include="*.ts" \
+    --include="*.tsx" --include="*.md" --include="*.json" --include="*.html" | wc -l
+0
+```
+
+Zero ocorrências 🟢 — nenhuma sessão registrada, nenhuma análise concluída contada,
+nenhum usuário fora dos autores. Tudo o que este documento afirma sobre utilidade é
+inferência a partir de código, e a correção não é retórica: é o princípio P5
+(observabilidade de nascença) valendo do ciclo 003 em diante.
 
 ## 4. Por que federada
 
@@ -195,7 +240,7 @@ não-corrigidos com motivo.
 
 ```console
 $ for d in TOC-Builder TOC-Builder-APP TOC-Builder-V2 tocbuilderv3; do \
-    grep -n "apiKey" $d/services/geminiService.ts | head -1; done
+    grep -n "new GoogleGenAI" $d/services/geminiService.ts; done
 16:const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 16:const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 16:const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -218,9 +263,9 @@ não existe. A federação substitui isso por inteiro: identidade por `POST /aut
 
 ```console
 $ md5sum */api_specifications.md   # nas quatro gerações
-ae5b3c3a6d153fb82fa9256e2b45e96a  TOC-Builder/api_specifications.md
 ae5b3c3a6d153fb82fa9256e2b45e96a  TOC-Builder-APP/api_specifications.md
 ae5b3c3a6d153fb82fa9256e2b45e96a  TOC-Builder-V2/api_specifications.md
+ae5b3c3a6d153fb82fa9256e2b45e96a  TOC-Builder/api_specifications.md
 ae5b3c3a6d153fb82fa9256e2b45e96a  tocbuilderv3/api_specifications.md
 $ for d in TOC-Builder TOC-Builder-APP TOC-Builder-V2 tocbuilderv3; do \
     echo "$d: mockApiService.ts $(wc -l < $d/services/mockApiService.ts) linhas"; done
@@ -236,33 +281,39 @@ investimento foi todo em fingir o backend, nunca em construí-lo. Somado aos cin
 natimortos (§3), é a lição mais cara da linhagem: **fundação primeiro** — e é por isso
 que o ciclo 003 (esqueleto federado, banco próprio) vem antes de qualquer ferramenta.
 
-**D-04 · ARF, APR e AT nunca saíram — em nenhuma geração.**
+**D-04 · ARF, APR e AT nunca saíram — em nenhuma geração.** 🔴 L-02
 
 ```console
 $ for d in TOC-Builder TOC-Builder-APP TOC-Builder-V2 tocbuilderv3; do \
     echo "== $d"; grep -n "disabled: true" $d/components/Sidebar.tsx; done
 == TOC-Builder
-45:    { id: 'nc', ... view: 'NC', disabled: true },
-46:    { id: 'arf', ... view: 'ARF', disabled: true },
-47:    { id: 'apr', ... view: 'APR', disabled: true },
-48:    { id: 'at', ... view: 'AT', disabled: true },
+45:    { id: 'nc', label: 'Nuvem de Conflito (NC)', icon: <CloudIcon />, view: 'NC', disabled: true },
+46:    { id: 'arf', label: 'Árvore Realidade Futura (ARF)', icon: <FutureTreeIcon />, view: 'ARF', disabled: true },
+47:    { id: 'apr', label: 'Árvore de Pré-Requisitos (APR)', icon: <PrereqIcon />, view: 'APR', disabled: true },
+48:    { id: 'at', label: 'Árvore de Transição (AT)', icon: <TransitionIcon />, view: 'AT', disabled: true },
 == TOC-Builder-APP
-45-48: (idênticas às da 1ª geração)
+45:    { id: 'nc', label: 'Nuvem de Conflito (NC)', icon: <CloudIcon />, view: 'NC', disabled: true },
+46:    { id: 'arf', label: 'Árvore Realidade Futura (ARF)', icon: <FutureTreeIcon />, view: 'ARF', disabled: true },
+47:    { id: 'apr', label: 'Árvore de Pré-Requisitos (APR)', icon: <PrereqIcon />, view: 'APR', disabled: true },
+48:    { id: 'at', label: 'Árvore de Transição (AT)', icon: <TransitionIcon />, view: 'AT', disabled: true },
 == TOC-Builder-V2
-53:    { id: 'arf', ... disabled: true },
-54:    { id: 'apr', ... disabled: true },
-55:    { id: 'at', ... disabled: true },
-56:    { id: 'snt', ... disabled: true },
+53:    { id: 'arf', label: t('sidebar.nav.arf'), icon: <FutureTreeIcon />, view: 'ARF', disabled: true },
+54:    { id: 'apr', label: t('sidebar.nav.apr'), icon: <PrereqIcon />, view: 'APR', disabled: true },
+55:    { id: 'at', label: t('sidebar.nav.at'), icon: <TransitionIcon />, view: 'AT', disabled: true },
+56:    { id: 'snt', label: t('sidebar.nav.snt'), icon: <SnTIcon />, view: 'SNT_TREE', disabled: true },
 == tocbuilderv3
-55:    { id: 'arf', ... disabled: true },
-56:    { id: 'apr', ... disabled: true },
-57:    { id: 'at', ... disabled: true },
-58:    { id: 'snt', ... disabled: true },
+55:    { id: 'arf', label: t('sidebar.nav.arf'), icon: <FutureTreeIcon />, view: 'ARF', disabled: true },
+56:    { id: 'apr', label: t('sidebar.nav.apr'), icon: <PrereqIcon />, view: 'APR', disabled: true },
+57:    { id: 'at', label: t('sidebar.nav.at'), icon: <TransitionIcon />, view: 'AT', disabled: true },
+58:    { id: 'snt', label: t('sidebar.nav.snt'), icon: <SnTIcon />, view: 'SNT_TREE', disabled: true },
 ```
 
-(Saída abreviada nos rótulos; linhas e flags literais 🟢.) As árvores de futuro e de
-implementação — a metade "para o que mudar / como mudar" da TOC — ficaram quatro gerações
-como botão cinza. São o módulo M4, com round próprio.
+Saída literal, sem abreviação 🟢. As árvores de futuro e de implementação — a metade
+"para o que mudar / como mudar" da TOC — ficaram quatro gerações como botão cinza. São o
+módulo M4, com round próprio. **A lacuna L-02 é consequência disto**: para ARF, APR e AT
+não existe nem tela anterior a herdar, nem modelo de dados, nem vocabulário de interface
+— o M4 é o único módulo que nasce sem nenhuma linha de linhagem atrás dele, e o risco de
+estimativa ali é alto (§8, L-02).
 
 **D-05 · A S&T é a única ferramenta que regrediu.** Ativa na 1ª e na 2ª geração
 (`TOC-Builder/components/Sidebar.tsx:44` e `TOC-Builder-APP/components/Sidebar.tsx:44`,
@@ -341,6 +392,38 @@ Nenhuma referência cruzada entre projetos de ferramentas diferentes no modelo d
 injeção da NC não semeia nada. O encadeamento, que é o valor central dos processos de
 pensamento (§2), é o épico E4.4 do M4.
 
+**D-12 · Os critérios de UDE só existem como texto de prompt porque nunca foram medidos:
+aplicados como função pura à base sintética do domínio, reprovam 9 dos 12 UDEs — e 4 das
+11 características não são decidíveis por função alguma.** 🟢
+
+O D-08 diz *onde* a regra de negócio mora (num prompt). Faltava o número que transforma
+isso em critério de aceite: **quantos UDEs escritos como um facilitador humano os escreve
+de fato passam nos critérios formais**. A base sintética da Instituição Horizonte
+([`dados/README.md`](dados/README.md), exigida pelo ADR 0006) foi construída para
+responder — doze UDEs redigidos com as patologias típicas de oficina (ação em vez de
+estado, causa embutida, solução disfarçada, juízo sobre pessoas) — e o script mede:
+
+```console
+$ python3 docs/produto/dados/medir-base.py | grep -E "^  (ARA:|Nuvem|características|UDEs medidos|divergências|validação)"
+  ARA: 16 nós (12 UDEs, 4 causas) · 16 arestas causais
+  Nuvem de Conflito: 5 entidades · 7 arestas com premissa · 2 injeções
+  validação estrutural: 0 falha(s)
+  características do prompt: 11  ·  decidíveis por função pura: 8 checagens cobrindo 7  ·  dependentes de julgamento: 4
+  UDEs medidos: 12  ·  passam nos 8 critérios decidíveis: 3 (U-01, U-02, U-03)  ·  reprovam: 9
+  divergências entre o esperado na base e o medido: 0
+```
+
+Três de doze 🟢. As oito checagens traduzem **sete** das onze características de
+`tocbuilderv3/constants.ts:122-133` (a característica 2 vira duas: frase completa e tempo
+presente); as quatro restantes — 1 (queixa sobre problema contínuo), 4 (área de
+responsabilidade), 5 (algo pode ser feito) e 7 (não é causa especulada) — dependem de
+julgamento sobre o sistema analisado e **nenhuma função pura as decide** 🔴 L-03.
+
+É essa divisão que o épico E2.1 (spec 005) implementa, e o número é o critério de aceite:
+o mesmo conjunto de doze UDEs, submetido ao domínio puro sem rede e sem modelo, tem de
+devolver os mesmos 9 reprovados com o mesmo motivo por UDE — o que hoje só acontece por
+chamada ao provedor. Destino declarado em [`rounds.md`](rounds.md), round 005.
+
 ## 7. Perguntas ao Product Steward — mantidas, com resposta proposta
 
 Perguntas que só o humano responde. Ficam **abertas até o gate do ciclo 001**; a resposta
@@ -375,3 +458,37 @@ silêncio.
    pt/en desde o início (E8.3), com o português como língua-fonte da linguagem ubíqua e
    dos exemplos sintéticos, e o inglês como tradução de interface — nunca de conceito de
    domínio.
+
+## 8. Lacunas declaradas
+
+O selo 🔴 deste documento não é decorativo: as três lacunas abaixo são o que **não se sabe**
+depois de ler nove repositórios e construir uma base sintética. Cada uma traz a assunção
+que vale enquanto ela durar, o risco e o ciclo onde ela fecha ou deixa de importar. Nenhuma
+delas foi resolvida em silêncio, e nenhuma vira requisito por decreto: viram entrada da
+spec do ciclo que as fecha.
+
+| # | Lacuna | Assunção enquanto durar | Risco | Onde fecha |
+|---|---|---|---|---|
+| 🔴 **L-01** | **Nenhum usuário real foi medido em quatro gerações.** Zero instrumentação (§3.2, saída colada) — nenhuma sessão, nenhuma análise concluída, nenhum abandono contado. Tudo o que se afirma sobre utilidade é inferência a partir de código. | O valor da ARA e da NC observado no código e no `tocbuilderv3/APLICATION_PURPOSE.md` se sustenta em uso real. | médio | ciclo 003 (observabilidade de nascença, P5) mede a primeira sessão; ciclo 012 fecha com jornada avaliada. |
+| 🔴 **L-02** | **ARF, APR e AT nunca tiveram nem tela para herdar.** Quatro gerações de botão cinza (§6, D-04): não há componente anterior, modelo de dados, vocabulário de interface nem exemplo de uso — só a navegação desabilitada. | O conteúdo técnico das skills de domínio (`toc-prt` para a APR) e a literatura da TOC bastam para especificar o M4 sem protótipo prévio. | **alto** — é o único módulo sem nenhuma linha de linhagem atrás dele | ciclo 002 (protótipo de interfaces) tira a primeira tela do papel; round 008 entrega o módulo. |
+| 🔴 **L-03** | **Não existe base medida do domínio.** A única base é a sintética da Instituição Horizonte ([`dados/README.md`](dados/README.md)) — escrita por nós, não colhida de oficina. Sobre ela, 4 das 11 características de UDE não são decidíveis por função alguma (§6, D-12). | Os doze UDEs sintéticos, redigidos com as patologias típicas de oficina, aproximam a distribuição real o bastante para servir de critério de aceite do E2.1. | médio | ciclo 005 (validação como domínio puro) usa a base como critério; a base real só existe depois de uso medido — depende de L-01, e por decisão do ADR 0006 nunca será dado de pessoa real. |
+
+Três lacunas, três destinos. O que **não** é lacuna, e por isso não aparece aqui: tudo que
+o §6 mede com saída colada (é fato, não incerteza) e tudo que o §7 pergunta ao Product
+Steward (é decisão pendente, não desconhecimento).
+
+Legenda que declara nível e nunca o usa é legenda mentindo. A contagem dos três selos
+neste documento, medida e não declarada (o comando não escreve os selos, por isso contá-lo
+não muda a conta):
+
+```console
+$ python3 -c "t=open('docs/produto/visao.md',encoding='utf-8').read(); \
+print(' · '.join(f'{n}: {t.count(chr(c))}' for n,c in \
+(('CONFIRMADO',0x1F7E2),('PLANEJADO',0x1F7E1),('LACUNA',0x1F534))))"
+CONFIRMADO: 44 · PLANEJADO: 9 · LACUNA: 8
+```
+
+Os três níveis da legenda aparecem no corpo. As três lacunas estão marcadas onde nascem —
+L-01 no §3.2, L-02 no §6 (D-04), L-03 no §6 (D-12) — e reunidas na tabela acima, cada uma
+com assunção, risco e ciclo de fechamento.
+

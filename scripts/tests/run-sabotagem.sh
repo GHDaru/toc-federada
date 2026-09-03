@@ -135,6 +135,15 @@ SABOTAGENS=(
   "scripts/check-specs.sh" "specs" "cauda-incompleta"
   "sed -i 's,TAIL:mutation,revisão por mutação,' specs/004-modulo-sintetico/tasks.md"
   'não carrega `TAIL:mutation`'
+
+  # A régua de prontidão (DoR — Definition of Ready, definição de pronto para começar) do
+  # ADR 0004 §5. A mutação apaga as LINHAS da tabela de critérios de aceite e deixa o
+  # cabeçalho: a spec continua passando no piso mecânico (a coluna "Verificação
+  # executável" segue lá) e cai só na nota, por Testabilidade — que é exatamente a
+  # divergência que a régua existe para pegar.
+  "scripts/check-specs.sh" "specs" "dod-sem-linha-executavel-cai-na-regua"
+  "sed -i '/^| [0-9]\+ | /d' specs/004-modulo-sintetico/spec.md"
+  "dimensão mais baixa: Testabilidade"
 )
 
 falhas=0
