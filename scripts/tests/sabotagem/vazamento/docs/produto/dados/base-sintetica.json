@@ -1,0 +1,17 @@
+{
+  "versao": "1.0.0",
+  "sintetica": true,
+  "aviso": "Base 100% fictícia. Nenhum dado real de pessoa. Personas são papéis, não pessoas.",
+  "organizacao": {
+    "nome": "Instituição Horizonte",
+    "descricao": "Instituição de ensino técnico fictícia."
+  },
+  "personas": [
+    { "id": "P-01", "papel": "Facilitadora TOC", "faz": "conduz a análise e fecha a nuvem" },
+    { "id": "P-02", "papel": "Participante", "faz": "contribui efeitos indesejáveis" }
+  ],
+  "nos": [
+    { "id": "U-01", "tipo": "ude", "autor": "P-02", "texto": "A taxa de conclusão é de 54%." },
+    { "id": "U-02", "tipo": "ude", "autor": "P-01", "texto": "Um terço das turmas encerra com menos de dez alunos." }
+  ]
+}

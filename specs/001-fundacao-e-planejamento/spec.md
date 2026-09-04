@@ -6,7 +6,8 @@
 > Undesirable Effect (Efeito Indesejável) · DoD — Definition of Done (Definição de
 > Pronto) · DoR — Definition of Ready (Definição de Prontidão) · EARS — Easy Approach to
 > Requirements Syntax · TDD — Test-Driven Development · DDD — Domain-Driven Design ·
-> IA — inteligência artificial
+> IA — inteligência artificial · JSON — JavaScript Object Notation (notação de
+> objetos JavaScript)
 
 - **Status**: Rascunho (aprovação: gate humano do ciclo 001)
 - **Raia**: plena
@@ -146,9 +147,64 @@ RNF-05: Todo número afirmado em documento DEVE ter sido executado, com a saída
 | 8 | Caminhos entre crases resolvem | `scripts/check-caminhos.sh` → código 0, dizendo **quantos** conferiu (R2) |
 | 9 | Links relativos resolvem | `scripts/check-links.sh` → código 0 |
 | 10 | Site gerado por script, não à mão | `test -f docs/product-site/index.html && test -f tools/product-site/generate.py` → código 0 |
-| 11 | Nenhum vazamento da base real da irmã | `grep -rn "gestaodeprioridades/protot[i]po" --include='*.md' . \| wc -l` → `0` (a classe `[i]` impede o comando de contar a si mesmo) |
+| 11 | Nenhum vazamento de **dado real de pessoa** da base da irmã | `scripts/check-vazamento.sh` → código 0, dizendo **quanto** varreu (R2) — nome próprio em campo de pessoa, registro no formato da base real, ou código lendo essa base |
 | 12 | Método segue instalado e coerente | `scripts/check-install.sh` → código 0 |
 | 13 | Conformidade do ciclo | `scripts/check-conformance.sh 001` → código 0 |
+
+### Mudança declarada no critério 11 (2026-09-04, dentro do ciclo 001)
+
+O critério 11 acima **não é o que este ciclo escreveu na primeira redação**. Ele foi
+reescrito, e a troca fica declarada aqui — critério de aceite trocado em silêncio é caixa
+marcada sem testemunha, que é exatamente o defeito que este projeto herdou pronto para não
+repetir.
+
+**Como era.** `grep -rn "gestaodeprioridades/protot[i]po" --include='*.md' . | wc -l` → `0`.
+
+**Por que estava errado — ele media outra coisa.** A intenção declarada era *"nenhum
+vazamento da base real da irmã"*; a medida era a **string do caminho** dela em qualquer
+`*.md`. As duas divergem em dois pontos, e os dois foram observados:
+
+1. **Falso positivo sobre a evidência.** A única ocorrência no corpus é um caminho **dentro
+   do bloco de evidência do ADR 0006** (`docs/adr/0006-base-sintetica-desde-o-dia-1.md`) —
+   o comando que mediu a base da irmã imprimindo **só contagens** para justificar a decisão
+   "base sintética desde o dia 1". Citar a origem da evidência é o que um ADR (Architecture
+   Decision Record, registro de decisão arquitetural) existe para fazer; nenhum nome,
+   enunciado de trabalho ou data de desempenho atravessou. O critério reprovava a prova da
+   própria regra.
+2. **Instabilidade — o número mudava quando se escrevia sobre ele.** Como casava caminho, o
+   critério contava o relatório do achado junto com o achado: a contagem saiu de `1` para
+   `2` só porque o `qa-report.md` citou a linha. Portão cujo número depende de escrever
+   sobre o portão não é medida de estado.
+
+**Como ficou — mede conteúdo, e é estável.** O critério passa a ser o portão
+`scripts/check-vazamento.sh`, que procura **o que caracteriza um vazamento de verdade**,
+nos termos do ADR 0006 e do aviso do `CLAUDE.md` (*"nome, enunciado de trabalho, data de
+desempenho"*), em três sinais:
+
+- **V1 · nome próprio de pessoa em campo de pessoa** — `"responsavel": "<Nome Sobrenome>"`,
+  `**Responsável**: <Nome Sobrenome>` ou uma coluna de pessoa de tabela, em qualquer
+  arquivo do repositório, incluindo o percurso estrutural dos JSON (registro impresso em
+  várias linhas). O elenco fictício declarado (ADR 0006) é isento **com o motivo escrito**.
+- **V2 · registro no formato da base real da irmã** — quatro ou mais campos do esquema da
+  fixture dela no mesmo registro, que é como enunciado de trabalho e data de desempenho
+  viajam mesmo com os nomes retirados.
+- **V3 · base real lida por código deste repositório** — o caminho da fixture ou das
+  capturas dela em arquivo que **não** é `*.md`. Documento cita origem; código que lê a
+  base real é o vazamento em tempo de execução.
+
+**Por que é estável.** Nenhum dos três sinais casa um caminho citado dentro de um bloco de
+documentação — este parágrafo cita o caminho e o portão continua em `0`. Rodar duas vezes
+seguidas devolve o mesmo número, e escrever sobre o portão não o move.
+
+**Por que não é afrouxamento.** O critério novo é **mais largo** que o antigo em conteúdo
+(pega nome, registro e leitura em código — o antigo pegava nenhum dos três) e mais estreito
+só na coisa errada que ele pegava. E ele **reprova**: a suíte
+`scripts/tests/run-sabotagem.sh` planta quatro vazamentos numa cópia da base válida
+`scripts/tests/sabotagem/vazamento/` — nome fictício em campo de pessoa, nome fictício em
+coluna de tabela, registro no esquema da irmã e leitura da base real em `*.py` — e exige
+que o portão reprove **pelo motivo declarado** em cada uma. A base válida guarda de
+propósito um bloco de evidência citando o caminho da irmã: se o portão a reprovasse, teria
+voltado a ser o critério antigo.
 
 ## Fontes
 

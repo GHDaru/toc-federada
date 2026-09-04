@@ -38,6 +38,7 @@ BASES=(
   "scripts/check-adrs-sucessao.sh"  "adrs-sucessao"
   "scripts/check-rounds.sh"         "rounds"
   "scripts/check-specs.sh"          "specs"
+  "scripts/check-vazamento.sh"      "vazamento"
 )
 
 # ── as sabotagens ───────────────────────────────────────────────────────────────
@@ -144,6 +145,28 @@ SABOTAGENS=(
   "scripts/check-specs.sh" "specs" "dod-sem-linha-executavel-cai-na-regua"
   "sed -i '/^| [0-9]\+ | /d' specs/004-modulo-sintetico/spec.md"
   "dimensão mais baixa: Testabilidade"
+
+  # --- check-vazamento.sh (RNF-03 · ADR 0006) ---
+  # As quatro mutações plantam um vazamento DE VERDADE numa cópia da base válida. Os nomes
+  # são inventados (verificado contra a base da irmã: nenhum token em comum) e o caminho é
+  # o da base real, que só aqui aparece fora de um bloco de documentação. Cada linha que
+  # carrega o dado plantado traz o marcador que a isenta do próprio portão — e o marcador
+  # só isenta dentro de scripts/tests/.
+  "scripts/check-vazamento.sh" "vazamento" "vazamento-nome-de-pessoa-em-campo-de-pessoa"
+  "echo '{ \"id\": \"T-08\", \"responsavel\": \"Marina Solano\", \"texto\": \"Fechar o relatorio mensal de faturamento\", \"data_conclusao\": \"2026-05-09\" }' >> docs/produto/dados/base-sintetica.json"  # SABOTAGEM-SINTETICA — dado fictício plantado de propósito nesta linha
+  "[V1] docs/produto/dados/base-sintetica.json"
+
+  "scripts/check-vazamento.sh" "vazamento" "vazamento-nome-de-pessoa-em-coluna-de-tabela"
+  "sed -i 's,| Participante |,| Otavio Brandao |,' docs/produto/jornada.md"  # SABOTAGEM-SINTETICA — dado fictício plantado de propósito nesta linha
+  "[V1] docs/produto/jornada.md"
+
+  "scripts/check-vazamento.sh" "vazamento" "vazamento-registro-no-formato-da-base-da-irma"
+  "echo '{ \"id\": \"T-07\", \"texto\": \"Revisar o plano de aulas\", \"responsavel\": \"P-01\", \"data_inclusao\": \"2026-03-02\", \"data_conclusao\": \"2026-04-11\", \"duracao_real\": 40 }' >> docs/produto/dados/base-sintetica.json"  # SABOTAGEM-SINTETICA — dado fictício plantado de propósito nesta linha
+  "[V2] docs/produto/dados/base-sintetica.json"
+
+  "scripts/check-vazamento.sh" "vazamento" "vazamento-base-real-lida-por-codigo"
+  "sed -i 's,docs/produto/dados/base-sintetica.json,/home/user/gestaodeprioridades/prototipo/dados/fixture.json,' scripts/gera-base.py"  # SABOTAGEM-SINTETICA — dado fictício plantado de propósito nesta linha
+  "[V3] scripts/gera-base.py"
 )
 
 falhas=0

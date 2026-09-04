@@ -40,6 +40,7 @@ temporário criado com `mktemp -d` e sabota a cópia.
 | `adrs-sucessao/` | `scripts/check-adrs-sucessao.sh` | dois ADRs sintéticos, um sucedendo o outro, com o par declarado nos dois lados, índice e registro |
 | `rounds/` | `scripts/check-rounds.sh` | dois rounds com os sete campos, uma dependência acíclica e dois defeitos com um destino cada |
 | `specs/` | `scripts/check-specs.sh` | um ciclo sintético com os quatro artefatos, as quinze seções, as duas tabelas de Constitution Check, a cauda e nota 96,7 na régua de prontidão do ADR 0004 §5 |
+| `vazamento/` | `scripts/check-vazamento.sh` | uma base sintética declarada (personas de papel, organização fictícia), uma jornada cuja coluna de responsável guarda **papel**, um gerador que lê só a base local — e, de propósito, um ADR com bloco de evidência **citando o caminho da base real da irmã**: é o controle de regressão do critério antigo, que confundia citação com vazamento |
 
 Base 100% sintética, por regra do ADR 0006: personas fictícias (**Facilitadora TOC**,
 "Instituição Horizonte"), nenhum nome, enunciado ou data de pessoa real. A regra vale aqui
@@ -49,7 +50,7 @@ como vale em spec e em captura — fixture é exatamente onde a dívida da irmã
 ## As sabotagens
 
 A tabela viva está em `scripts/tests/run-sabotagem.sh` (a mutação e o trecho exigido moram
-juntos, para não divergirem). Em resumo, 23 mutações cobrindo:
+juntos, para não divergirem). Em resumo, 27 mutações cobrindo:
 
 - **`check-caminhos.sh`** — caminho nosso inexistente; caminho de repositório não isento.
 - **`check-adrs-sucessao.sh`** — antigo sem `Superseded by`; ADR sem `Princípios tocados`;
@@ -62,6 +63,25 @@ juntos, para não divergirem). Em resumo, 23 mutações cobrindo:
   princípio vazia; artefato condicional não declarado; cauda incompleta; **tabela de DoD
   sem nenhuma linha executável** — esta última passa no piso mecânico e cai só na régua de
   prontidão, por Testabilidade.
+- **`check-vazamento.sh`** — nome próprio de pessoa num campo de pessoa; nome próprio numa
+  coluna de responsável de tabela; registro no formato da base real da irmã (quatro campos
+  do esquema dela no mesmo registro, que é como enunciado de trabalho e data de desempenho
+  viajam mesmo sem nome); base real da irmã lida por código `*.py` deste repositório.
+
+### Os nomes plantados são inventados, e isso foi verificado
+
+As quatro mutações do `check-vazamento.sh` plantam um vazamento **de verdade** — é a única
+forma de provar que o portão o vê. Os nomes usados são **inventados**, e a não-colisão com
+a base real da irmã foi executada antes de escrevê-los, comparando conjuntos e imprimindo
+apenas booleanos (`False`, `False`): nenhum dado dela foi copiado para cá, que é o ADR 0006
+aplicado ao próprio teste da regra.
+
+O dado plantado vive na **linha de mutação** do executor, e cada uma dessas linhas carrega
+o marcador `SABOTAGEM-SINTETICA`. Ele é a **única isenção** do `check-vazamento.sh`, e é
+estreita nas duas pontas: vale só dentro de `scripts/tests/` e só na linha que o carrega.
+Fora dali não isenta nada; dentro dali, uma linha sem ele é achado como qualquer outra —
+foi assim que o portão pegou uma das próprias linhas de mutação enquanto esta suíte era
+escrita.
 
 ## Um achado que este diretório já pagou
 
