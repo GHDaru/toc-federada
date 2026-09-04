@@ -31,45 +31,62 @@
 | **011** | Fundações da aplicação | E8.3 consolidada, E8.4, E1.4 avançado | plena |
 | **012** | Jornadas e autodeclaração | jornadas consolidadas, matriz de aderência APH, autodeclaração Nível 2 em ADR, site atualizado | plena |
 
-## Ciclo 001 — Fundação e planejamento (entregue — aguardando o gate humano)
+## Ciclo 001 — Fundação e planejamento (fechado do lado do agente — aguardando o gate humano)
 
 Acertar a herança antes de qualquer outra coisa: a linhagem lida e **medida** (não
 lembrada), a constituição do projeto, as decisões estruturais em ADR com alternativas
 numeradas, o mapa de módulos, os rounds e as 12 specs — para que nenhuma geração 5ª
 comece do zero de novo (defeito D-10 da [`produto/visao.md`](produto/visao.md)).
 
-**Estado em 2026-09-03: o corpus está entregue e os portões rodaram; a aprovação não
-existe ainda.** A evidência completa — comando, código de saída e denominador de cada
-portão — está em
+**Estado em 2026-09-04: o corpus está entregue, revisado, corrigido e fechado do lado do
+agente; a aprovação não existe ainda.** A evidência completa — comando, código de saída e
+denominador de cada portão — está em
 [`../specs/001-fundacao-e-planejamento/qa-report.md`](../specs/001-fundacao-e-planejamento/qa-report.md).
-Foram **17 verificações distintas: 15 verdes e 2 vermelhas**, as duas diagnosticadas com
-causa raiz e **nenhuma afrouxada**. O ciclo **não está promovido**: enquanto o Product
-Steward não assinar, ele está entregue, não aprovado — e nada do ciclo 002 começa.
+Foram **18 verificações distintas: 17 verdes e 1 vermelha**. A vermelha que restou é
+**externa** (conformidade do método, §4.1 do relatório). A que virou verde não foi
+afrouxada: o critério media *caminho citado* quando dizia medir *vazamento*, e foi
+**reescrito para medir conteúdo**, com a troca declarada na spec e provada por quatro
+sabotagens. O ciclo **não está promovido**: enquanto o Product Steward não assinar, ele
+está fechado do lado do agente, não aprovado — e nada do ciclo 002 começa.
 
-- Portão humano — **ABERTO, indelegável**: o Product Steward ratifica a constituição, os
-  8 ADRs e as respostas às cinco perguntas da
-  [`produto/visao.md`](produto/visao.md) §7 (ou o adiamento explícito de cada uma), decide
-  os dois achados vermelhos e autoriza a promoção `dev` → `main`.
+- Portão humano — **ABERTO, indelegável**: são **sete itens**, tabelados no §8 do
+  `qa-report.md` — ratificar a constituição e os 8 ADRs; responder as cinco perguntas da
+  [`produto/visao.md`](produto/visao.md) §7 e as três dúvidas do `## Clarify`; ratificar o
+  critério 11 reescrito; autorizar a entrega da mensagem 002 ao método; aceitar ou recusar
+  as sete dívidas do §9; e autorizar a promoção. **O procedimento executável da promoção —
+  comando, variáveis de ambiente, o que fica gravado e como reverter — está em**
+  [`governance/como-fechar-um-ciclo.md`](governance/como-fechar-um-ciclo.md), escrito por
+  um agente que não a executou e não pode executá-la.
 - Portão de revisão — **cumprido**: a revisão independente foi um **gauntlet de crítica às
   cegas**, 10 peças julgadas por críticos em contexto fresco contra dois corpora externos
   (o da irmã `gestaodeprioridades` e o do PROJETO_ECS). Placar: 9 vitórias na primeira
   rodada, **uma derrota real** — a visão de produto, por circularidade da base autoral —,
   retrabalho dirigido pela lacuna nomeada e vitória no rejulgamento: **10/10**. Os achados
   que ficaram abertos estão listados no `qa-report.md` §5, não foram apagados.
-- Portões executáveis — **verdes, com o denominador na saída** (regra R2):
-  `scripts/check-install.sh` (7 camadas, 6 skills) · `scripts/check-links.sh`
-  (`checked: 337`) · `scripts/check-caminhos.sh` (74 arquivos, 572 caminhos) ·
+- Portões executáveis — **verdes, com o denominador na saída** (regra R2, medidos em
+  2026-09-04): `scripts/check-install.sh` (7 camadas, 6 skills) · `scripts/check-links.sh`
+  (`checked: 342`) · `scripts/check-caminhos.sh` (76 arquivos, 701 caminhos) ·
   `scripts/check-specs.sh` (12 ciclos, 628 verificações) · `scripts/check-rounds.sh`
   (11 rounds, 77 conferências) · `scripts/check-adrs-sucessao.sh` (8 ADRs, 32
-  verificações) · `scripts/tests/run-sabotagem.sh` (4 bases aceitas, 23 sabotagens
+  verificações) · `scripts/check-vazamento.sh` (195 arquivos, 51 485 linhas, 2 557
+  registros JSON) · `scripts/tests/run-sabotagem.sh` (5 bases aceitas, 27 sabotagens
   reprovadas) · `python3 docs/produto/dados/medir-base.py` (base sintética válida).
-- Portões executáveis — **vermelhos, declarados em vez de contornados**:
+  Os denominadores que dependem do tamanho do corpus sobem quando ele cresce — é o
+  comportamento que a regra R2 pede, não instabilidade.
+- Portão executável — **um vermelho, declarado em vez de contornado**:
   `scripts/check-conformance.sh 001` sai 1 por causa **externa** (os pisos do script são
   números absolutos de ciclo do repositório canônico do método, e um repositório que
-  começa em 001 nunca os alcança — P1 impede consertar lá, então foi relatado e parado);
-  e a **linha 11 da DoD** conta 1 onde espera 0, porque casa o *caminho* citado no bloco
-  de evidência do ADR 0006 — um comando que imprime só contagens — e não conteúdo
-  vazado. Os dois aguardam decisão no gate humano.
+  começa em 001 nunca os alcança — P1 impede consertar lá, então foi relatado e parado em
+  `mensagens/002-para-maestro-pisos-absolutos-de-ciclo.md`). Consequência prática: o
+  `scripts/promote-main.sh` **aborta no próprio portão de conformidade**, e a rota manual
+  que o script autoriza está escrita em
+  [`governance/como-fechar-um-ciclo.md`](governance/como-fechar-um-ciclo.md) §4 e §5.
+- O segundo vermelho **foi corrigido pela ponta certa e não existe mais**: a linha 11 da
+  DoD casava o *caminho* citado no bloco de evidência do ADR 0006 quando dizia medir
+  vazamento de dado real de pessoa. O critério foi reescrito para medir **conteúdo**
+  (portão `scripts/check-vazamento.sh`, três sinais), a troca está declarada na
+  `spec.md`, e quatro sabotagens plantam vazamento fictício e o veem reprovar. O que
+  falta é **ratificação**, não execução.
 - Portão de honestidade — **cumprido**: nenhum selo 🟢 sem `arquivo:linha`; nenhuma
   contagem sem a saída colada; nenhuma caixa marcada sem a evidência escrita ao lado.
 
@@ -95,9 +112,13 @@ interface, não vira produção.
 
 ### O que o ciclo 002 não pode começar sem
 
-- O gate humano do ciclo 001 fechado — em particular a **pergunta 1** da
-  [`produto/visao.md`](produto/visao.md) §7 (colaboração por projeto ou isolamento por
-  usuário) respondida, porque ela muda as telas de projeto do E1.1.
+- O gate humano do ciclo 001 fechado — os sete itens do §8 do
+  [`../specs/001-fundacao-e-planejamento/qa-report.md`](../specs/001-fundacao-e-planejamento/qa-report.md)
+  assinados e a promoção autorizada pelo procedimento de
+  [`governance/como-fechar-um-ciclo.md`](governance/como-fechar-um-ciclo.md). Em
+  particular a **pergunta 1** da [`produto/visao.md`](produto/visao.md) §7 (colaboração
+  por projeto ou isolamento por usuário) respondida, porque ela muda as telas de projeto
+  do E1.1.
 - As specs dos módulos M1–M3 aprovadas ao menos em rascunho ratificado (os requisitos de
   interface saem delas).
 

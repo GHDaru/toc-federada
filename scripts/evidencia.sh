@@ -38,6 +38,7 @@ PORTOES=(
   "scripts/check-specs.sh|specs: artefatos, seções, taxonomia e cauda|ciclos examinados|verificações:"
   "scripts/check-links.sh|links relativos do repositório|checked:"
   "scripts/check-install.sh|método Maestro instalado e coerente|checked:|^  ok:"
+  "scripts/check-vazamento.sh|vazamento de dado real de pessoa (RNF-03 · ADR 0006)|arquivos varridos|sinais aplicados|campos de pessoa vigiados"
 )
 
 falhados=0

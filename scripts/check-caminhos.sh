@@ -33,7 +33,16 @@ FORA = (
     "docs/governance/MAESTRO-LICENSE",
     "docs/governance/MAESTRO-THIRD-PARTY-NOTICES.md",
 )
+# Transcripts are not ours to edit. The independent-review verdicts under
+# specs/*/revisao-independente/ are VERBATIM copies of what an outside critic wrote while
+# comparing our documents against another repository's — so they cite that repository's
+# paths, which do not exist here, and correcting them would destroy the one property that
+# makes them worth keeping: being literal. Same precedent as the installed method surface
+# above. The index README.md IS ours and stays in.
+
 ARQUIVOS = [a for a in ARQUIVOS if a not in FORA]
+ARQUIVOS = [a for a in ARQUIVOS
+            if "/revisao-independente/" not in a or a.endswith("/README.md")]
 
 # A path: has a slash, ends in a known extension (optionally with :line[-line] suffix),
 # or is a directory citation ending in "/".

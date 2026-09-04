@@ -91,31 +91,67 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
   `constants.ts` idênticos nas quatro gerações), e mediu: **0 falso positivo, 1 falso
   negativo (K-03)**. Um defeito real nas checagens, achado por um conjunto que não foi
   escrito para elas.
-- **Suíte de sabotagem** (`scripts/tests/run-sabotagem.sh`): os quatro portões deste
-  projeto provados **não lenientes** — `bases válidas aceitas: 4/4` e `sabotagens
-  declaradas: 23 · reprovadas pelo motivo certo: 23/23`, cada sabotagem sobre uma cópia
-  em `/tmp`, sem tocar o repositório. Código de saída 0.
+- **Suíte de sabotagem** (`scripts/tests/run-sabotagem.sh`): os cinco portões deste
+  projeto provados **não lenientes** — `portões cobertos: 5 · bases válidas aceitas: 5/5`
+  e `sabotagens declaradas: 27 · reprovadas pelo motivo certo: 27/27`, cada sabotagem
+  sobre uma cópia em `/tmp`, sem tocar o repositório. Código de saída 0. As quatro últimas
+  são as do `scripts/check-vazamento.sh`, o portão que substituiu a linha 11 da DoD.
 - **Agregador de evidência** (`scripts/evidencia.sh`): roda a bateria e emite a tabela com
   comando, código de saída e **denominador** de cada portão (regra R2) —
   `Portões executados: 6 · verdes: 6 · vermelhos: 0`.
 - **`qa-report.md` do ciclo 001 preenchido com evidência real**
-  (`specs/001-fundacao-e-planejamento/qa-report.md`): **17 verificações distintas, 15
-  verdes e 2 vermelhas**, toda saída colada literalmente; o veredito do gauntlet (10 peças
+  (`specs/001-fundacao-e-planejamento/qa-report.md`): **18 verificações distintas, 17
+  verdes e 1 vermelha**, toda saída colada literalmente; o veredito do gauntlet (10 peças
   julgadas às cegas contra o corpus da irmã `gestaodeprioridades` e o PROJETO_ECS — 9
   vitórias na primeira rodada, a visão de produto derrotada, retrabalhada e vencedora no
   rejulgamento, fechando 10/10); e a cauda com `TAIL:review`, `TAIL:security` e
   `TAIL:mutation` escritos. `TAIL:gate` fica **em branco de propósito**: o gate humano é
   do Product Steward e é indelegável.
+- **Critério 11 da DoD reescrito, e provado por sabotagem** (`scripts/check-vazamento.sh`):
+  ele media a *string do caminho* da base da irmã `gestaodeprioridades` quando dizia medir
+  **vazamento de dado real de pessoa**, e por isso reprovava a própria evidência do ADR
+  0006 — um comando que imprime só contagens. O critério novo mede **conteúdo**, em três
+  sinais: nome próprio em campo de pessoa, registro no formato do esquema da irmã (quatro
+  ou mais chaves no mesmo registro) e base real lida por código que não é `*.md`. Ele varre
+  `arquivos varridos: 195 · linhas varridas: 51485 · registros JSON inspecionados: 2557` e
+  sai 0; e **reprova quatro sabotagens** que plantam vazamento fictício. A troca está
+  declarada na `specs/001-fundacao-e-planejamento/spec.md`. Não é afrouxamento: o critério
+  novo é **mais largo** que o antigo — pega três classes que o antigo não via.
+- **Verificador executável dos rounds** (`scripts/check-rounds.sh`): os sete campos
+  obrigatórios por round, o grafo de dependências e a alocação exaustiva dos defeitos
+  D-NN passaram a ser conferidos por máquina — `rounds examinados: 11 · conferências de
+  campo: 77 · arestas de dependência: 15 · ciclos encontrados: 0 · defeitos medidos: 12 ·
+  alocados a round: 10 · declarados sem round: 2`, código de saída 0, e cinco sabotagens
+  provando que ele reprova. Era a dívida declarada em "Conhecido" deste mesmo ciclo.
+- **Procedimento de fechamento de ciclo** (`docs/governance/como-fechar-um-ciclo.md`): o
+  que o Product Steward confere antes de assinar (os sete itens do §8 do `qa-report.md`),
+  o estado real das branches deste repositório (a branch de trabalho **não** se chama
+  `dev` e a `main` local **não existe** — as duas medidas com `git rev-parse`), o comando
+  exato de promoção com `MAESTRO_DEV_BRANCH`, o que o `scripts/promote-main.sh` grava em
+  `docs/records/decisoes.jsonl`, e como reverter. O comportamento do script foi **medido
+  num clone temporário com repositório remoto falso**, não descrito de memória: ele aborta
+  hoje no portão de conformidade, e a rota manual que o próprio script autoriza está
+  escrita. Nenhum agente executou a promoção — aprovar merge é portão humano inegociável, e
+  quem executou não aprova o que executou.
 
 ### Conhecido
 
-- **O gate humano do ciclo 001 está aberto**: constituição, ADRs e as cinco perguntas da
-  visão §7 aguardam o Product Steward. Nada abaixo do ciclo 002 começa antes disso.
-- **A aptidão executável de `docs/produto/rounds.md` é dívida declarada** (🔴): o
-  verificador dos seis campos e da alocação D-NN não existe ainda; a revisão
-  independente do ciclo 001 confere manualmente até ele entrar (candidato: fechamento do
-  ciclo 002).
-- **Dois portões vermelhos, os dois diagnosticados e nenhum afrouxado** (detalhe em
+- **O gate humano do ciclo 001 está aberto**: são sete itens, tabelados no §8 de
+  `specs/001-fundacao-e-planejamento/qa-report.md` — ratificar a constituição e os oito
+  ADRs; responder as cinco perguntas da visão §7 e as três dúvidas do `## Clarify`;
+  ratificar o critério 11 reescrito; autorizar a entrega da mensagem 002 ao método;
+  aceitar ou recusar as sete dívidas do §9; e autorizar a promoção. O procedimento está
+  em `docs/governance/como-fechar-um-ciclo.md`. Nada abaixo do ciclo 002 começa antes
+  disso, e **nenhum agente executou a promoção**.
+- **A promoção não roda pelo caminho feliz hoje**: o `scripts/promote-main.sh` chama
+  `scripts/check-conformance.sh` sem argumento no seu passo 3 e aborta, porque o portão do
+  método sai 1 (`✗ no cycle in range (floor 42) — the gate checked nothing.`). O próprio
+  script prevê o caso e autoriza a rota manual quando a dívida está decidida e registrada
+  — ela está (Dv-3 do §9). Some-se a isso que a branch de trabalho não se chama `dev` e a
+  `main` local não existe neste clone: as duas coisas exigem uma variável de ambiente e um
+  `git branch` antes de promover. Tudo medido e escrito em
+  `docs/governance/como-fechar-um-ciclo.md`.
+- **Um portão vermelho, diagnosticado e não afrouxado** (detalhe em
   `specs/001-fundacao-e-planejamento/qa-report.md` §4):
   - `scripts/check-conformance.sh 001` sai **1** por causa **externa**: os pisos do script
     são números **absolutos** de ciclo da história do repositório canônico do método
@@ -127,13 +163,28 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
     é **leitura** (P1): **relatado e parado**, pendente a mensagem externa. Apertando os
     pisos para 1 — o que o próprio script permite, porque seus knobs só admitem apertar —
     o veredito substantivo aparece e é sobre o conteúdo, não sobre o piso.
-  - A **linha 11 da DoD** conta `1` onde a spec espera `0`. A única ocorrência é o
-    **caminho** citado no bloco de evidência do ADR 0006, num comando que imprime apenas
-    contagens (`tarefas: 114`) e nunca conteúdo. Corpo de ADR committado não se reescreve
-    e portão não se afrouxa: fica **aberto para o gate humano** decidir entre isentar o
-    arquivo explicitamente ou reescrever o critério para casar conteúdo em vez de caminho.
-- **RNF-01 (português no projeto, inglês na superfície instalável) não tem portão
-  executável** — hoje é verificado por revisão. Dívida declarada, candidata ao ciclo 002.
+  - O **segundo vermelho deixou de existir**: a linha 11 da DoD contava `1` onde a spec
+    esperava `0`, e a única ocorrência era o **caminho** citado no bloco de evidência do
+    ADR 0006 — um comando que imprime só contagens (`tarefas: 114`) e nunca conteúdo.
+    Corpo de ADR committado não se reescreve e portão não se afrouxa; sobrou a rota certa,
+    que era reescrever o **critério** para medir o que ele dizia medir. Feito, declarado na
+    spec e provado por quatro sabotagens. **O que aguarda o Product Steward é a
+    ratificação da troca de critério, não a execução dela.**
+- **Sete dívidas declaradas com dono e ciclo**, tabeladas no §9 de
+  `specs/001-fundacao-e-planejamento/qa-report.md`. As que mudam o próximo ciclo:
+  - **RNF-01 (português no projeto, inglês na superfície instalável) não tem portão
+    executável** — hoje é verificado por leitura. Dono: construtor do ciclo 002.
+  - **`docs/produto/rounds.md:18` ainda declara que o verificador executável dos rounds
+    "ainda não existe"** — e ele existe, passou com 77 conferências de campo e foi
+    sabotado cinco vezes. O arquivo ficou fora dos lotes do fechamento; corrigir é uma
+    linha, na abertura do ciclo 002. (Esta entrada do `CHANGELOG.md`, que carregava a
+    mesma afirmação vencida, **foi corrigida acima**.)
+  - **A seção "Fora de escopo" é pontuada e não bloqueante** no `scripts/check-specs.sh`:
+    perdê-la custa 8 dos 15 pontos de Escopo e a spec continua passando no corte ≥ 80.
+    Apertar exige a sabotagem que veja o portão reprovar — trabalho de ciclo.
+  - **A circularidade da base autoral está mitigada, não resolvida** (9 enunciados de
+    controle externos, 4 das 11 características de UDE indecidíveis por função pura).
+    Fecha só com corpus de oficina real, e isso esbarra no ADR 0006 — vai para o ciclo 005.
 - **Três bloqueios externos** condicionam o ciclo 003 e dois o alcance do 006 — todos de
   fora deste repositório, todos com caminho citado em `docs/produto/rounds.md`; a regra
   é re-medir na abertura do ciclo afetado, não assumir que caíram.
