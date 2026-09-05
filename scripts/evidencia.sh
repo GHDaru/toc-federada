@@ -39,6 +39,10 @@ PORTOES=(
   "scripts/check-links.sh|links relativos do repositório|checked:"
   "scripts/check-install.sh|método Maestro instalado e coerente|checked:|^  ok:"
   "scripts/check-vazamento.sh|vazamento de dado real de pessoa (RNF-03 · ADR 0006)|arquivos varridos|sinais aplicados|campos de pessoa vigiados"
+  # Entrou quando o serviço nasceu: sem esta linha o agregador diria "todos os portões
+  # verdes" enquanto NADA teria olhado para a fronteira entre domínio e adaptador (P3) —
+  # que é exatamente o defeito que a regra R2 nomeia.
+  "scripts/check-arquitetura.sh|arquitetura hexagonal: contratos do import-linter (P3)|contratos declarados|^Analyzed"
 )
 
 falhados=0

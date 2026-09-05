@@ -1,0 +1,101 @@
+[project]
+name = "toc-api"
+version = "0.1.0"
+description = "Serviço da aplicação toc-federada — Processos de Pensamento da Teoria das Restrições"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0.36",
+    "psycopg[binary]>=3.2",
+    "alembic>=1.14",
+    "pydantic>=2.9",
+    "opentelemetry-sdk>=1.29",
+    "opentelemetry-api>=1.29",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.28",
+    "import-linter>=2.1",
+    "pytest-cov>=7.1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/toc_api"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "integracao: exige o PostgreSQL real (DATABASE_URL); pulado quando ele não responde",
+]
+
+# ---------------------------------------------------------------------------
+# import-linter — a função de aptidão do P3 (DDD + hexagonal).
+#
+# Por que os contratos são de tipo `forbidden` e não só `layers`: um contrato de camadas
+# ordena os módulos DO PACOTE entre si, e o `dominio` passaria verde importando
+# `sqlalchemy` — que é exatamente a violação que o P3 proíbe ("domínio e aplicação puros;
+# zero import de SQLAlchemy, Pydantic, FastAPI ou httpx"). Com
+# `include_external_packages = true`, o pacote de terceiro entra no grafo e pode ser
+# nomeado em `forbidden_modules`. É por isso que existem os três contratos, e não um.
+# ---------------------------------------------------------------------------
+[tool.importlinter]
+root_package = "toc_api"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "P3-1 · O dominio nao importa nada de fora de si"
+type = "forbidden"
+source_modules = ["toc_api.dominio"]
+forbidden_modules = [
+    "toc_api.aplicacao",
+    "toc_api.infra",
+    "toc_api.http",
+    "toc_api.alembic",
+    "sqlalchemy",
+    "alembic",
+    "psycopg",
+    "fastapi",
+    "starlette",
+    "pydantic",
+    "httpx",
+    "opentelemetry",
+    "uvicorn",
+]
+
+[[tool.importlinter.contracts]]
+name = "P3-2 · A aplicacao nao importa infra nem http nem framework"
+type = "forbidden"
+source_modules = ["toc_api.aplicacao"]
+forbidden_modules = [
+    "toc_api.infra",
+    "toc_api.http",
+    "toc_api.alembic",
+    "sqlalchemy",
+    "alembic",
+    "psycopg",
+    "fastapi",
+    "starlette",
+    "pydantic",
+    "httpx",
+    "opentelemetry",
+    "uvicorn",
+]
+
+[[tool.importlinter.contracts]]
+name = "P3-3 · A dependencia aponta para dentro (http -> infra -> aplicacao -> dominio)"
+type = "layers"
+layers = [
+    "toc_api.http",
+    "toc_api.infra",
+    "toc_api.aplicacao",
+    "toc_api.dominio",
+]

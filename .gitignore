@@ -1,0 +1,14 @@
+# Ambientes e caches — nada disto é fonte.
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+node_modules/
+
+# Nunca versionar configuração de ambiente: cadeia de conexão e credencial vivem em
+# variável de ambiente do servidor, jamais em arquivo do repositório (P7).
+.env
+.env.*
+!.env.example

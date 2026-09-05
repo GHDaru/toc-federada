@@ -90,7 +90,14 @@ ELENCO = (
 ELENCO_NOMES = {n.lower() for n, _ in ELENCO}
 
 MARCADOR = "SABOTAGEM-SINTETICA"
-IGNORA_DIR = {".git", "__pycache__", "node_modules"}
+# Diretórios que não são conteúdo NOSSO: metadados do controle de versão, cache e código
+# de terceiro baixado. `.venv` entrou quando o serviço nasceu (`apps/api/.venv`), pelo mesmo
+# motivo pelo qual `node_modules` já estava aqui: o `.dist-info` de um pacote de terceiro
+# lista os autores dele — pessoas reais, num arquivo que não é versionado (ver `.gitignore`)
+# e que ninguém deste projeto escreveu. Manter a varredura sobre ele não protegeria dado
+# nenhum; só ensinaria a ignorar o vermelho, que é o defeito que a regra R2 nomeia.
+# NENHUM arquivo versionado é isentado por esta linha.
+IGNORA_DIR = {".git", "__pycache__", "node_modules", ".venv", ".pytest_cache", ".ruff_cache"}
 IGNORA_EXT = {".pyc", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf", ".ico", ".woff", ".woff2"}
 
 def isento(caminho, linha):
