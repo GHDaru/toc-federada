@@ -43,6 +43,15 @@ PORTOES=(
   # verdes" enquanto NADA teria olhado para a fronteira entre domínio e adaptador (P3) —
   # que é exatamente o defeito que a regra R2 nomeia.
   "scripts/check-arquitetura.sh|arquitetura hexagonal: contratos do import-linter (P3)|contratos declarados|^Analyzed"
+  # Os quatro da federação (specs 003 e 006). Entraram com o módulo M7, pelo mesmo motivo
+  # do de arquitetura: sem eles o agregador diria "todos os portões verdes" enquanto NADA
+  # teria olhado para a fronteira — nem para o manifesto que circula na admissão, nem para
+  # a sabotagem que o APH-7.2 (Aplicação ↔ Harness) nomeia, nem para os três defeitos de
+  # canal que a norma registrou, nem para os 11 checks executáveis do Nível 1.
+  "scripts/check-manifesto.sh|manifesto × schema normativo do Anexo B + sabotagens|telas declaradas|sabotagens aplicadas"
+  "scripts/check-politica.sh|política de autorização: a sabotagem do APH-7.2 não vaza|arquivos de produção varridos|arquivos que compõem"
+  "scripts/check-canal.sh|canal ghd.* (§B.2): envelope, trava dupla, targetOrigin|arquivos de teste encontrados|^# (tests|pass|fail)"
+  "scripts/check-conformidade-aph.sh|conformidade APH Nível 1 (11 checks, caixa-preta)|serviço de pé|^Veredito:"
 )
 
 falhados=0

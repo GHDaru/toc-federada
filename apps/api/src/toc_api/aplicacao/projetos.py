@@ -103,3 +103,33 @@ class RestaurarProjeto(_ComRepositorio):
         projeto.restaurar(em=self._exigir_relogio().agora())
         self._repositorio.salvar(projeto)
         return projeto
+
+
+class AbrirProjeto(_ComRepositorio):
+    """RF-03: metadados, nós e arestas num carregamento consistente.
+
+    Existe como caso de uso, e não como consulta solta do roteador, porque **ler também é
+    operação governada**: exige `toc:read`, e a verificação de capacidade acontece na
+    camada de aplicação (Anexo B §B.7.2 do Padrão APH — Aplicação ↔ Harness). Uma rota que
+    falasse com o repositório direto passaria por fora dela.
+    """
+
+    nome = "abrir_projeto"
+
+    def executar(self, *, dono: DonoDoProjeto, projeto_id: UUID) -> Projeto:
+        return self._carregar(dono, projeto_id)
+
+
+class ListarLixeira(_ComRepositorio):
+    """RF-07: só os projetos excluídos, com a data de exclusão.
+
+    Separado de `ListarProjetos(incluir_excluidos=True)` de propósito: aquele devolve
+    ativos **e** excluídos juntos, que não é a lixeira de tela nenhuma. Filtrar no
+    roteador funcionaria e seria regra de negócio fora do lugar.
+    """
+
+    nome = "listar_lixeira"
+
+    def executar(self, *, dono: DonoDoProjeto) -> list[Projeto]:
+        todos = self._repositorio.listar(dono.inquilino_id, incluir_excluidos=True)
+        return [p for p in todos if p.excluido_em is not None]

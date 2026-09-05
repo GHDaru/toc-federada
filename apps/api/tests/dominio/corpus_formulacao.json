@@ -1,0 +1,151 @@
+{
+  "versao": "1.0.0",
+  "sobre": "Corpus sintético das heurísticas de formulação da Nuvem de Conflito (RNF-08 da spec 007). Ampliar a heurística exige ampliar este corpus: `test_formulacao.py` reprova código de aviso sem caso. Nenhum dado real de pessoa (ADR 0006) — a instituição e o dilema são fictícios.",
+  "casos": [
+    {
+      "papel": "A",
+      "idioma": "pt",
+      "texto": "Sustentabilidade da Instituição Horizonte",
+      "avisos": [],
+      "porque": "substantivo com complemento — a forma canônica de A"
+    },
+    {
+      "papel": "B",
+      "idioma": "pt",
+      "texto": "Receita nova no próximo semestre",
+      "avisos": [],
+      "porque": "substantivo com adjetivo — a forma canônica de B"
+    },
+    {
+      "papel": "C",
+      "idioma": "pt",
+      "texto": "Reputação acadêmica preservada",
+      "avisos": [],
+      "porque": "substantivo com adjetivo — a forma canônica de C"
+    },
+    {
+      "papel": "A",
+      "idioma": "pt",
+      "texto": "Lugar de acolhimento estudantil",
+      "avisos": [],
+      "porque": "'lugar' termina em -ar e NÃO é infinitivo: o caso que a lista de exceção do léxico existe para não estragar"
+    },
+    {
+      "papel": "D",
+      "idioma": "pt",
+      "texto": "Abrir turmas em três cidades novas",
+      "avisos": [],
+      "porque": "infinitivo verbal — a forma canônica de D"
+    },
+    {
+      "papel": "D_PRIME",
+      "idioma": "pt",
+      "texto": "Não abrir turmas em três cidades novas",
+      "texto_de_d": "Abrir turmas em três cidades novas",
+      "avisos": [],
+      "porque": "negação explícita de D, e infinitivo depois do marcador"
+    },
+    {
+      "papel": "D",
+      "idioma": "pt",
+      "texto": "Qualidade",
+      "avisos": ["d_pede_infinitivo"],
+      "porque": "US-05 da spec: substantivo onde o método pede ação"
+    },
+    {
+      "papel": "A",
+      "idioma": "pt",
+      "texto": "Abrir turmas em três cidades novas",
+      "avisos": ["pede_substantivo"],
+      "porque": "ação onde o método pede substantivo"
+    },
+    {
+      "papel": "B",
+      "idioma": "pt",
+      "texto": "Contratar professores efetivos",
+      "avisos": ["pede_substantivo"],
+      "porque": "ação onde o método pede substantivo"
+    },
+    {
+      "papel": "C",
+      "idioma": "pt",
+      "texto": "Reduzir a evasão no primeiro ano",
+      "avisos": ["pede_substantivo"],
+      "porque": "ação onde o método pede substantivo"
+    },
+    {
+      "papel": "D_PRIME",
+      "idioma": "pt",
+      "texto": "Cautela orçamentária",
+      "texto_de_d": "Abrir turmas em três cidades novas",
+      "avisos": ["d_pede_infinitivo"],
+      "porque": "substantivo em D′ avisa; a negação fica INDETERMINADA (sem marcador e sem palavra em comum) e indeterminado não gera aviso (RF-10)"
+    },
+    {
+      "papel": "D_PRIME",
+      "idioma": "pt",
+      "texto": "Abrir turmas em uma cidade nova",
+      "texto_de_d": "Abrir turmas em três cidades novas",
+      "avisos": ["d_linha_nao_nega_d"],
+      "porque": "duas ações positivas sobre o mesmo assunto: D′ não nega nem exclui D"
+    },
+    {
+      "papel": "A",
+      "idioma": "en",
+      "texto": "Sustainability of the Horizon Institute",
+      "avisos": [],
+      "porque": "noun phrase — canonical form of A"
+    },
+    {
+      "papel": "B",
+      "idioma": "en",
+      "texto": "New revenue next semester",
+      "avisos": [],
+      "porque": "noun phrase — canonical form of B"
+    },
+    {
+      "papel": "D",
+      "idioma": "en",
+      "texto": "To open classes in three new cities",
+      "avisos": [],
+      "porque": "marked infinitive — the canonical form of D in English"
+    },
+    {
+      "papel": "D_PRIME",
+      "idioma": "en",
+      "texto": "Not to open classes in three new cities",
+      "texto_de_d": "To open classes in three new cities",
+      "avisos": [],
+      "porque": "explicit negation of D, marked infinitive after the marker"
+    },
+    {
+      "papel": "D",
+      "idioma": "en",
+      "texto": "Quality",
+      "avisos": ["d_pede_infinitivo"],
+      "porque": "noun where the method asks for an action"
+    },
+    {
+      "papel": "A",
+      "idioma": "en",
+      "texto": "To open classes in three new cities",
+      "avisos": ["pede_substantivo"],
+      "porque": "action where the method asks for a noun"
+    },
+    {
+      "papel": "C",
+      "idioma": "en",
+      "texto": "To preserve academic reputation",
+      "avisos": ["pede_substantivo"],
+      "porque": "action where the method asks for a noun"
+    },
+    {
+      "papel": "D_PRIME",
+      "idioma": "en",
+      "texto": "To open classes in one new city",
+      "texto_de_d": "To open classes in three new cities",
+      "avisos": ["d_linha_nao_nega_d"],
+      "porque": "two positive actions on the same subject: D′ neither negates nor excludes D"
+    }
+  ]
+}

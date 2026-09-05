@@ -233,3 +233,143 @@ class AnaliseEstruturalGerada(EventoDeDominio):
 
     resumo: dict = field(default_factory=dict)
     tipo_de_acao: str = "ara.analisar"
+
+
+# -- M3 · Nuvem de Conflito (spec 007) --------------------------------------------------
+# Mesma decisão do M2: os eventos do M3 moram AQUI, e não num `eventos_nc.py`, porque a
+# fila do agregado é uma só e a ordem entre `PremissaRegistrada` e `InjecaoRegistrada` é
+# informação, não acidente.
+#
+# Dois campos aparecem em todo evento de conteúdo deste módulo e não existiam no M1/M2:
+# `origem` (`humano` | `geracao`) e `proposta_id`. Eles são a RF-25 da spec 007 — "os
+# eventos resultantes DEVEM declarar a origem (`geracao`, com a proposta) — distinguível
+# de edição humana para sempre". Sem eles, um mês depois ninguém sabe qual premissa o
+# grupo escreveu e qual veio de proposta aceita.
+#
+# O que NÃO está aqui é decisão registrada: `GeracaoProposta` e `GeracaoRecusada` não são
+# eventos do agregado, porque **recusar não escreve nada no agregado** (RNF-06). Os dois
+# vivem no registro de propostas e no traço da federação (ciclo 006), que é onde a
+# história da governança mora.
+
+ORIGEM_HUMANA = "humano"
+ORIGEM_DE_GERACAO = "geracao"
+
+
+@dataclass(frozen=True, slots=True)
+class NuvemCriada(EventoDeDominio):
+    """RF-02: a nuvem nasce inteira — o evento diz com quantas peças."""
+
+    entidades: int = 0
+    arestas: int = 0
+    tipo_de_acao: str = "nc.criar"
+
+
+@dataclass(frozen=True, slots=True)
+class NuvemDerivadaDeUde(EventoDeDominio):
+    """INT-05: a costura M2 → M3, tipada e datada, no lado que nasceu dela."""
+
+    origem_ferramenta: str = ""
+    origem_projeto_id: UUID | None = None
+    udes: tuple[UUID, ...] = ()
+    tipo_de_acao: str = "nc.derivar_de_ude"
+
+
+@dataclass(frozen=True, slots=True)
+class EntidadeEditada(EventoDeDominio):
+    papel: str = ""
+    origem: str = ORIGEM_HUMANA
+    proposta_id: str | None = None
+    tipo_de_acao: str = "nc.editar_entidade"
+
+
+@dataclass(frozen=True, slots=True)
+class RacionalEditado(EventoDeDominio):
+    origem: str = ORIGEM_HUMANA
+    proposta_id: str | None = None
+    tipo_de_acao: str = "nc.editar_racional"
+
+
+@dataclass(frozen=True, slots=True)
+class PremissaRegistrada(EventoDeDominio):
+    premissa_id: UUID | None = None
+    aresta: str = ""
+    origem: str = ORIGEM_HUMANA
+    proposta_id: str | None = None
+    tipo_de_acao: str = "nc.registrar_premissa"
+
+
+@dataclass(frozen=True, slots=True)
+class PremissaEditada(EventoDeDominio):
+    premissa_id: UUID | None = None
+    campo: str = "texto"
+    origem: str = ORIGEM_HUMANA
+    proposta_id: str | None = None
+    tipo_de_acao: str = "nc.editar_premissa"
+
+
+@dataclass(frozen=True, slots=True)
+class PremissaDesafiada(EventoDeDominio):
+    """RF-13: desafiar é registrar QUEM deixou de acreditar e POR QUÊ."""
+
+    premissa_id: UUID | None = None
+    justificativa: str = ""
+    tipo_de_acao: str = "nc.desafiar_premissa"
+
+
+@dataclass(frozen=True, slots=True)
+class PremissaRevigorada(EventoDeDominio):
+    premissa_id: UUID | None = None
+    tipo_de_acao: str = "nc.revigorar_premissa"
+
+
+@dataclass(frozen=True, slots=True)
+class PremissaArquivada(EventoDeDominio):
+    """RF-15: o evento carrega QUANTAS injeções foram junto — nunca em silêncio."""
+
+    premissa_id: UUID | None = None
+    injecoes_arquivadas: int = 0
+    tipo_de_acao: str = "nc.arquivar_premissa"
+
+
+@dataclass(frozen=True, slots=True)
+class InjecaoRegistrada(EventoDeDominio):
+    injecao_id: UUID | None = None
+    premissa_id: UUID | None = None
+    origem: str = ORIGEM_HUMANA
+    proposta_id: str | None = None
+    tipo_de_acao: str = "nc.registrar_injecao"
+
+
+@dataclass(frozen=True, slots=True)
+class InjecaoEditada(EventoDeDominio):
+    injecao_id: UUID | None = None
+    origem: str = ORIGEM_HUMANA
+    proposta_id: str | None = None
+    tipo_de_acao: str = "nc.editar_injecao"
+
+
+@dataclass(frozen=True, slots=True)
+class InjecaoReclassificada(EventoDeDominio):
+    injecao_id: UUID | None = None
+    separacao: str | None = None
+    tipo_de_acao: str = "nc.classificar_injecao"
+
+
+@dataclass(frozen=True, slots=True)
+class StatusDeInjecaoMudou(EventoDeDominio):
+    injecao_id: UUID | None = None
+    de: str = ""
+    para: str = ""
+    justificativa: str = ""
+    tipo_de_acao: str = "nc.mudar_status_de_injecao"
+
+
+@dataclass(frozen=True, slots=True)
+class GeracaoAplicada(EventoDeDominio):
+    """RF-25: o que a proposta aceita escreveu, em grandeza, com o identificador dela."""
+
+    proposta_id: str | None = None
+    entidades: int = 0
+    premissas: int = 0
+    injecoes: int = 0
+    tipo_de_acao: str = "nc.aplicar_geracao"

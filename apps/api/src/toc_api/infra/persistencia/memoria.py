@@ -21,6 +21,7 @@ class RepositorioDeProjetosEmMemoria:
     def __init__(self) -> None:
         self._itens: dict[UUID, Projeto] = {}
         self._aras: dict[UUID, object] = {}
+        self._nuvens: dict[UUID, object] = {}
 
     def salvar(self, projeto: Projeto) -> None:
         # Cópia na fronteira: sem isso, mutar o agregado devolvido mutaria o "banco" sem
@@ -29,6 +30,9 @@ class RepositorioDeProjetosEmMemoria:
         ara = self._aras.get(projeto.id)
         if ara is not None:
             ara.projeto = self._itens[projeto.id]
+        nuvem = self._nuvens.get(projeto.id)
+        if nuvem is not None:
+            nuvem.projeto = self._itens[projeto.id]
 
     def obter(self, inquilino_id: str, projeto_id: UUID) -> Projeto | None:
         achado = self._itens.get(projeto_id)
@@ -63,6 +67,21 @@ class RepositorioDeProjetosEmMemoria:
 
     def obter_ara(self, inquilino_id: str, projeto_id: UUID):
         achado = self._aras.get(projeto_id)
+        if achado is None or achado.projeto.dono.inquilino_id != inquilino_id:
+            return None
+        return deepcopy(achado)
+
+    # -- Nuvem de Conflito (M3) ------------------------------------------------------
+    # O duplo em memória também conforma à porta `RepositorioDeNuvens`, pelo mesmo motivo
+    # da ARA: um backend que só atende parte das portas falharia em produção e passaria em
+    # desenvolvimento.
+
+    def salvar_nuvem(self, nuvem) -> None:
+        self._nuvens[nuvem.projeto.id] = deepcopy(nuvem)
+        self._itens[nuvem.projeto.id] = self._nuvens[nuvem.projeto.id].projeto
+
+    def obter_nuvem(self, inquilino_id: str, projeto_id: UUID):
+        achado = self._nuvens.get(projeto_id)
         if achado is None or achado.projeto.dono.inquilino_id != inquilino_id:
             return None
         return deepcopy(achado)

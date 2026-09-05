@@ -9,10 +9,12 @@ fato de tipo e não de disciplina.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import ContextManager, Protocol, runtime_checkable
+from typing import Any, ContextManager, Mapping, Protocol, Sequence, runtime_checkable
 from uuid import UUID
 
 from .ara import ProjetoARA
+from .federacao.principal import Principal
+from .nuvem import NuvemDeConflito
 from .projeto import Projeto
 
 
@@ -80,3 +82,93 @@ class RepositorioDeARA(Protocol):
     def salvar_ara(self, ara: "ProjetoARA") -> None: ...
 
     def obter_ara(self, inquilino_id: str, projeto_id: UUID) -> "ProjetoARA | None": ...
+
+
+@runtime_checkable
+class ProvedorDeIdentidade(Protocol):
+    """Troca o token da fundação por um `Principal` — ou por nada (P2, Anexo B §B.6).
+
+    Esta aplicação **não tem login**: não há entidade usuário, não há senha e não há
+    sessão local. O que existe é esta porta, e do outro lado dela mora a introspecção do
+    hospedeiro (`POST /auth/introspect`). O adaptador real é da borda; o domínio só
+    conhece a forma.
+
+    **Devolve `None` para todo caso que não seja identidade ativa**, sem distinguir
+    "inexistente" de "expirado" de "já consumido". Não é preguiça: o §B.6.5 do Anexo B
+    proíbe a distinção, porque ela é "oráculo para quem testa tokens". Uma porta com três
+    exceções diferentes por motivo reintroduziria o oráculo do lado de dentro.
+
+    **Como o adaptador real se encaixa aqui.** A troca de verdade é a
+    `PortaDeIntrospeccao.trocar_grant` de `dominio/federacao/portas.py`, que devolve o
+    mesmo `Principal` e **levanta** `IntrospeccaoInvalida` em vez de devolver `None`. Um
+    adaptador desta porta é aquele embrulhado num `try/except` de uma linha. As duas
+    formas coexistem de propósito: a de lá é a semântica da federação (o erro tem código
+    estável e vai para o traço), a daqui é a que a borda HTTP consome, onde toda recusa
+    vira o mesmo `401` sem motivo (§B.6.5).
+
+    Síncrona por decisão declarada: os casos de uso desta aplicação são síncronos, e o
+    FastAPI roda handler síncrono em pool de trabalho. Um adaptador real com `httpx`
+    usa o cliente síncrono; se algum dia a troca precisar ser assíncrona, muda-se a porta
+    e os dois lados, nunca só um.
+    """
+
+    def identificar(self, token: str) -> "Principal | None": ...
+
+
+@runtime_checkable
+class RepositorioDeNuvens(Protocol):
+    """Persistência do projeto do tipo Nuvem de Conflito (NC), M3.
+
+    Porta SEPARADA da `RepositorioDeARA` pelo mesmo motivo que aquela é separada da do M1
+    (spec 004, RN-04): cada ferramenta acrescenta a sua semântica **sobre** o núcleo, e uma
+    porta única obrigaria a assinatura a mencionar premissa, injeção e separação TRIZ
+    (Teoria da Resolução Inventiva de Problemas) para quem não tem nada com isso. O
+    adaptador pode implementar as três; o domínio continua com três.
+
+    A regra do inquilino não tem exceção: primeiro parâmetro posicional, sem valor padrão.
+    """
+
+    def salvar_nuvem(self, nuvem: "NuvemDeConflito") -> None: ...
+
+    def obter_nuvem(self, inquilino_id: str, projeto_id: UUID) -> "NuvemDeConflito | None": ...
+
+
+@runtime_checkable
+class RepositorioDaCosturaM2M3(RepositorioDeARA, RepositorioDeNuvens, Protocol):
+    """As duas portas juntas — a forma que o encadeamento M2 → M3 exige (INT-05).
+
+    Derivar uma nuvem **lê** uma Árvore da Realidade Atual (ARA) e **grava** uma Nuvem de
+    Conflito. Declarar a exigência como um `Protocol` composto é o que impede o caso de uso
+    de receber um repositório que só sabe metade do caminho — e é mais honesto do que um
+    `Any` com comentário pedindo cuidado.
+    """
+
+
+@runtime_checkable
+class MotorDeGeracaoDeNuvem(Protocol):
+    """A porta da assistência do M3 — e o que ela devolve **não é texto** (RF-21).
+
+    **Não é um provedor de modelo** (ADR 0007: nenhum SDK — *Software Development Kit* —
+    de provedor no produto). É a porta pela qual a assistência chega; quem fala com modelo
+    é a fundação, pelo catálogo governado. O adaptador deste ciclo é determinístico e
+    local, e declara-se como tal.
+
+    O tipo de retorno é a lição inteira do ciclo: `Mapping`, nunca `str`. Na 4ª geração da
+    linhagem a geração devolvia markdown cru (`tocbuilderv3/services/geminiService.ts:173`)
+    e um parser por expressão regular tentava reconstruir a nuvem — devolvendo `null`
+    inteiro a qualquer variação de formato. Aqui a estrutura é o contrato, e quem a valida
+    é `toc_api.dominio.geracao.ResultadoDeGeracao`, no servidor, antes de a proposta
+    existir (RF-22, RNF-04).
+    """
+
+    def gerar_nuvem(
+        self, *, narrativa: str, contexto: Mapping[str, Any]
+    ) -> Mapping[str, Any]: ...
+
+    def sugerir_premissas(
+        self, *, aresta: str, narrativa: str, contexto: Mapping[str, Any]
+    ) -> Sequence[Mapping[str, Any]]: ...
+
+    def sugerir_injecoes(
+        self, *, premissa: str, contexto: Mapping[str, Any]
+    ) -> Sequence[Mapping[str, Any]]: ...

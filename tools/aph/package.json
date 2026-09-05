@@ -1,0 +1,10 @@
+{
+  "name": "toc-aph-conformidade",
+  "private": true,
+  "type": "module",
+  "description": "Ambiente de execucao da suite de conformidade APH do repositorio GHDaru/protocolos, SEM escrever nele (P1). Os dois simbolicos apontam para o original; as dependencias vivem aqui.",
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

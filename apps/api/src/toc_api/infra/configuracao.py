@@ -39,6 +39,9 @@ class Configuracao:
     ambiente: str = "desenvolvimento"
     otel_ligado: bool = False
     otel_endpoint: str | None = None
+    #: Registro JSON `token → persona` do adaptador FALSO de identidade. Só tem
+    #: efeito em `desenvolvimento`/`teste`; personas são fictícias (ADR 0006).
+    identidades_falsas: str | None = None
 
     @classmethod
     def do_ambiente(cls, ambiente: Mapping[str, str]) -> "Configuracao":
@@ -55,6 +58,7 @@ class Configuracao:
             ambiente=(ambiente.get("TOC_AMBIENTE") or "desenvolvimento").strip(),
             otel_ligado=(ambiente.get("OTEL_LIGADO") or "").strip().lower() in VERDADEIROS,
             otel_endpoint=(ambiente.get("OTEL_EXPORTER_OTLP_ENDPOINT") or "").strip() or None,
+            identidades_falsas=ambiente.get("TOC_IDENTIDADES_FALSAS"),
         )
 
     @property

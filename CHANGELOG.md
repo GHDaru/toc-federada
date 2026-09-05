@@ -5,6 +5,56 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Ciclo 007 — Nuvem de Conflito (M3, spec 007 · serviço)
+
+- **Agregado `NuvemDeConflito`** (`apps/api/src/toc_api/dominio/nuvem.py`): topologia
+  fixa de 5 entidades (A, B, C, D, D′) e 7 arestas (`A_B`, `A_C`, `B_D`, `C_D_PRIME`,
+  `D_C`, `D_PRIME_B`, `D_D_PRIME`), criadas na origem e **indestrutíveis** (RN-01,
+  RF-03); a chave da aresta é derivada do par de papéis e a classe (necessidade,
+  pré-requisito, perigo, conflito) da chave (RN-02); leitura por extenso montada dos
+  textos atuais (RF-07). Sobre o núcleo do M1 **por composição**, como o M2.
+- **Premissa como entidade de primeira classe** (RF-12..RF-15): várias por aresta,
+  ordenadas, com estado `vigente`/`desafiada` (justificativa obrigatória) e
+  arquivamento que leva as injeções junto **dizendo quantas**. Premissa vazia é erro no
+  domínio e no banco.
+- **Injeção ligada a premissa** (RN-04): não existe construtor de injeção sem premissa
+  viva; máquina de estados `candidata → escolhida | descartada` com retorno justificado
+  (RN-08); classificação por separação TRIZ e cobertura das 5 separações no conflito
+  D↯D′ (RN-07); `ReferenciaDeSemeadura` vazia ao escolher (RF-20, INT-06).
+- **Encadeamento M2 → M3** (`derivar_nuvem_de_udes`, INT-05): a nuvem nasce a partir de
+  Efeitos Indesejáveis da Árvore da Realidade Atual, com `ReferenciaDeOrigem` **tipada**
+  (ferramenta, projeto e nós), dono herdado do agregado de origem e a ARA lida, nunca
+  escrita. É a costura que nenhuma das quatro gerações da linhagem tinha: lá, ARA e
+  Nuvem eram dois bancos simulados sem referência entre si
+  (`tocbuilderv3/services/mockApiService.ts:10-14`).
+- **Geração assistida com contrato, não com parser**: `ResultadoDeGeracao` validado
+  contra esquema JSON versionado (`apps/api/src/toc_api/dominio/geracao.py`), recusa em falha fechada
+  com código estável (`VERSAO_DESCONHECIDA`, `FORA_DO_ESQUEMA`), porta
+  `MotorDeGeracaoDeNuvem` e adaptador **local determinístico declarado como tal** —
+  nenhum SDK de provedor no produto (ADR 0007). O contraexemplo medido é o parser por
+  expressão regular do v3, que devolvia `null` inteiro a qualquer variação de formato.
+- **Três ações governadas** no catálogo `toc.*` (`toc.generate_conflict_cloud`,
+  `toc.suggest_assumptions`, `toc.suggest_injections`), todas `confirm`: nascem
+  `action_proposal`, o `input_schema` da primeira embute o esquema do resultado (a
+  validação acontece antes de a proposta existir), e **recusar deixa o projeto byte a
+  byte intacto** — provado por comparação de bytes do estado serializado. Sem
+  `toc:write` as três não existem para o principal (RF-27). O manifesto versionado
+  (`specs/006-acoes-governadas-e-snapshot/contracts/manifesto.json`) passou de 8 para 11
+  ações, aceito pelo schema normativo com 0 erro.
+- **Heurísticas de formulação** (`apps/api/src/toc_api/dominio/formulacao.py`, RF-09..RF-11): léxico
+  versionado pt/en, aviso pedagógico com explicação e exemplo, nunca bloqueio, e
+  `indeterminado` honesto quando a heurística não alcança o caso — com corpus sintético
+  próprio (`apps/api/tests/dominio/corpus_formulacao.json`, 20 casos: 10 bem e 10 mal formulados).
+- **Persistência**: migração Alembic **0005** com `upgrade` e `downgrade` (tabelas
+  `nc_nuvem`, `nc_premissa`, `nc_injecao`), invariantes impostas também pelo banco
+  (premissa vazia, desafio sem justificativa, injeção sem premissa, status e separação
+  fora do vocabulário) e testes de integração contra o PostgreSQL real.
+- **Superfície HTTP** sob `/toc/nc` (20 operações): nenhuma cria ou exclui entidade ou
+  aresta — a ausência é medida no OpenAPI publicado —, visão de solução com as **sete**
+  posições (o defeito do v3, que renderizava cinco, virou caso de teste), vista tabular,
+  validação com completude e avisos, e a rota de geração que devolve pré-visualização
+  sem aplicar nada.
+
 ### Ciclo 001 — Fundação e planejamento (entregue, aguardando gate humano)
 
 - **Método Maestro instalado** pelo instalador oficial (`bin/maestro init` do canônico)

@@ -210,3 +210,18 @@ class AnalisarArvore(_SobreARA):
     def anotar_resultado(self, span: SpanDeTraco, resultado: RelatorioEstrutural) -> None:
         for chave, valor in resultado.resumo().items():
             span.atributo(f"toc.{chave}", valor)
+
+
+class AbrirProjetoARA(_ComRepositorioDeARA):
+    """A leitura do M2: o projeto do M1 mais ficha, status, parecer, exame e conector.
+
+    Pela porta separada `RepositorioDeARA` — o M1 continua sem conhecer semântica da
+    Teoria das Restrições (TOC), que é a RN-04 da spec 004. Como todo caso de uso de
+    leitura, existe para que a verificação de capacidade (`toc:read`) tenha por onde
+    acontecer na camada de aplicação, e não na rota (Anexo B §B.7.2).
+    """
+
+    nome = "abrir_projeto_ara"
+
+    def executar(self, *, dono: DonoDoProjeto, projeto_id: UUID) -> ProjetoARA:
+        return self._carregar(dono, projeto_id)

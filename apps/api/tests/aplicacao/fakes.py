@@ -118,3 +118,61 @@ class RepositorioDeARAFalso(RepositorioDeProjetosFalso):
         if ara is None or ara.projeto.dono.inquilino_id != inquilino_id:
             return None
         return ara
+
+
+@dataclass
+class RepositorioDeNuvemFalso(RepositorioDeARAFalso):
+    """O mesmo duplo, também conforme à porta `RepositorioDeNuvens` (M3).
+
+    Guarda a `NuvemDeConflito` inteira — racional, premissas, injeções e a referência de
+    origem — e mantém `itens` apontando para o MESMO `Projeto` que a nuvem embrulha. É a
+    razão de ele herdar do duplo da ARA e não nascer sozinho: a derivação M2 → M3 lê uma
+    Árvore da Realidade Atual (ARA) e grava uma Nuvem de Conflito (NC) **na mesma
+    transação de leitura do caso de uso**, e um duplo que não soubesse os dois lados
+    esconderia justamente o encadeamento que o ciclo 007 entrega.
+    """
+
+    nuvens: dict[UUID, object] = field(default_factory=dict)
+
+    def salvar(self, projeto: Projeto) -> None:
+        super().salvar(projeto)
+        nuvem = self.nuvens.get(projeto.id)
+        if nuvem is not None and nuvem.projeto is not projeto:
+            nuvem.projeto = projeto
+
+    def salvar_nuvem(self, nuvem) -> None:
+        self.nuvens[nuvem.projeto.id] = nuvem
+        self.itens[nuvem.projeto.id] = nuvem.projeto
+
+    def obter_nuvem(self, inquilino_id: str, projeto_id: UUID):
+        nuvem = self.nuvens.get(projeto_id)
+        if nuvem is None or nuvem.projeto.dono.inquilino_id != inquilino_id:
+            return None
+        return nuvem
+
+
+@dataclass
+class MotorDeGeracaoFalso:
+    """Duplo da porta `MotorDeGeracaoDeNuvem` — determinístico e sem provedor nenhum.
+
+    O `resultado` é devolvido tal e qual: é assim que o teste exercita tanto o caminho
+    feliz quanto a **falha fechada** (basta devolver estrutura torta e ver a recusa
+    acontecer antes de qualquer escrita).
+    """
+
+    resultado: dict = field(default_factory=dict)
+    premissas: tuple = ()
+    injecoes: tuple = ()
+    chamadas: list[tuple[str, str]] = field(default_factory=list)
+
+    def gerar_nuvem(self, *, narrativa: str, contexto: dict) -> dict:
+        self.chamadas.append(("gerar_nuvem", narrativa))
+        return self.resultado
+
+    def sugerir_premissas(self, *, aresta: str, narrativa: str, contexto: dict) -> tuple:
+        self.chamadas.append(("sugerir_premissas", aresta))
+        return self.premissas
+
+    def sugerir_injecoes(self, *, premissa: str, contexto: dict) -> tuple:
+        self.chamadas.append(("sugerir_injecoes", premissa))
+        return self.injecoes

@@ -39,6 +39,17 @@ from ...dominio.ara import (
     reidratar_ara,
 )
 from ...dominio.grafo import ArestaCausal, No
+from ...dominio.nuvem import (
+    EstadoDaPremissa,
+    Injecao,
+    NuvemDeConflito,
+    Premissa,
+    ReferenciaDeOrigem,
+    ReferenciaDeSemeadura,
+    SeparacaoTRIZ,
+    StatusDeInjecao,
+    reidratar_nuvem,
+)
 from ...dominio.identidade import DonoDoProjeto
 from ...dominio.projeto import Projeto
 from ...dominio.valores import PosicaoNoCanvas
@@ -46,6 +57,9 @@ from .tabelas import aresta_causal as tabela_aresta
 from .tabelas import conector_e as tabela_conector
 from .tabelas import conector_e_aresta as tabela_conector_aresta
 from .tabelas import elo_exame as tabela_exame
+from .tabelas import nc_injecao as tabela_injecao
+from .tabelas import nc_nuvem as tabela_nuvem
+from .tabelas import nc_premissa as tabela_premissa
 from .tabelas import no as tabela_no
 from .tabelas import projeto as tabela_projeto
 from .tabelas import tenant_ref as tabela_tenant
@@ -456,6 +470,190 @@ class RepositorioDeProjetosSQL:
             pareceres=pareceres,
             exames=exames,
             conectores=conectores,
+        )
+
+    # -- Nuvem de Conflito (M3, spec 007) ---------------------------------------------
+    #
+    # Mesma disciplina do M2: reconciliação, nunca apagar-e-reinserir. Aqui ela vale por um
+    # motivo a mais — `nc_injecao.premissa_id` tem `ON DELETE CASCADE`, então apagar todas
+    # as premissas para reinseri-las levaria junto injeções que ninguém tocou, e a
+    # invariante RN-04 (injeção referencia premissa viva) se cumpriria por destruição.
+    #
+    # A ordem também é imposta pelas chaves estrangeiras: projeto → grafo (as 5 entidades e
+    # as 7 arestas são nó e aresta do M1) → nuvem → premissas → injeções.
+
+    def salvar_nuvem(self, nuvem: NuvemDeConflito) -> None:
+        projeto = nuvem.projeto
+        with self._sessao.begin() as s:
+            self._gravar_projeto(s, projeto)
+            self._reconciliar_grafo(s, projeto)
+            self._reconciliar_nuvem(s, nuvem)
+
+    def _reconciliar_nuvem(self, s, nuvem: NuvemDeConflito) -> None:
+        projeto_id = nuvem.projeto.id
+        origem = nuvem.origem
+        valores = {
+            "projeto_id": projeto_id,
+            "racional": nuvem.racional,
+            "origem_ferramenta": origem.ferramenta if origem else None,
+            "origem_projeto_id": origem.projeto_id if origem else None,
+            "origem_nos": list(origem.nos) if origem else [],
+        }
+        s.execute(
+            insert_pg(tabela_nuvem)
+            .values(**valores)
+            .on_conflict_do_update(
+                index_elements=[tabela_nuvem.c.projeto_id],
+                set_={k: v for k, v in valores.items() if k != "projeto_id"},
+            )
+        )
+
+        # Premissas e injeções ARQUIVADAS continuam no agregado (RF-15: arquivar não
+        # apaga), então a reconciliação escreve todas — o que sai da lista é o que o
+        # agregado deixou de conhecer, e aí a linha vai embora mesmo.
+        todas_as_premissas = list(nuvem._premissas.values())
+        ids_de_premissa = [p.id for p in todas_as_premissas]
+        todas_as_injecoes = list(nuvem._injecoes.values())
+        ids_de_injecao = [i.id for i in todas_as_injecoes]
+
+        s.execute(
+            delete(tabela_injecao).where(
+                tabela_injecao.c.projeto_id == projeto_id,
+                tabela_injecao.c.id.notin_(ids_de_injecao) if ids_de_injecao else true(),
+            )
+        )
+        s.execute(
+            delete(tabela_premissa).where(
+                tabela_premissa.c.projeto_id == projeto_id,
+                tabela_premissa.c.id.notin_(ids_de_premissa) if ids_de_premissa else true(),
+            )
+        )
+
+        arestas_por_chave = {
+            nuvem.chave_da_aresta(a.id): a.id for a in nuvem.projeto.arestas
+        }
+        for premissa in todas_as_premissas:
+            linha = {
+                "id": premissa.id,
+                "projeto_id": projeto_id,
+                "aresta_id": arestas_por_chave[premissa.aresta],
+                "texto": premissa.texto,
+                "ordem": premissa.ordem,
+                "estado": premissa.estado.value,
+                "justificativa": premissa.justificativa,
+                "arquivada": premissa.arquivada,
+            }
+            s.execute(
+                insert_pg(tabela_premissa)
+                .values(**linha)
+                .on_conflict_do_update(
+                    index_elements=[tabela_premissa.c.id],
+                    set_={k: v for k, v in linha.items() if k != "id"},
+                )
+            )
+        for injecao in todas_as_injecoes:
+            linha = {
+                "id": injecao.id,
+                "projeto_id": projeto_id,
+                "premissa_id": injecao.premissa_id,
+                "texto": injecao.texto,
+                "status": injecao.status.value,
+                "separacao": injecao.separacao.value if injecao.separacao else None,
+                "arquivada": injecao.arquivada,
+                # A referência de semeadura EXISTE quando a injeção está escolhida; o que
+                # se grava é o destino, que o ciclo 008 preencherá (INT-06).
+                "semeadura_projeto_id": (
+                    injecao.semeadura.projeto_destino_id if injecao.semeadura else None
+                ),
+            }
+            s.execute(
+                insert_pg(tabela_injecao)
+                .values(**linha)
+                .on_conflict_do_update(
+                    index_elements=[tabela_injecao.c.id],
+                    set_={k: v for k, v in linha.items() if k != "id"},
+                )
+            )
+
+    def obter_nuvem(self, inquilino_id: str, projeto_id: UUID) -> NuvemDeConflito | None:
+        projeto = self.obter(inquilino_id, projeto_id)
+        if projeto is None:
+            return None
+        with self._sessao() as s:
+            cabecalho = s.execute(
+                select(tabela_nuvem).where(tabela_nuvem.c.projeto_id == projeto_id)
+            ).first()
+            linhas_de_premissa = s.execute(
+                select(tabela_premissa)
+                .where(tabela_premissa.c.projeto_id == projeto_id)
+                .order_by(tabela_premissa.c.ordem, tabela_premissa.c.id)
+            ).all()
+            linhas_de_injecao = s.execute(
+                select(tabela_injecao)
+                .where(tabela_injecao.c.projeto_id == projeto_id)
+                .order_by(tabela_injecao.c.id)
+            ).all()
+
+        if cabecalho is None:
+            # Projeto que não tem cabeçalho de nuvem não é uma Nuvem de Conflito. A
+            # resposta é `None` pelo mesmo motivo do inquilino: quem pergunta descobre que
+            # não achou, e não o que o projeto é.
+            return None
+
+        # A chave da aresta é derivada do par de papéis, e é o agregado quem sabe derivá-la
+        # — por isso a nuvem é montada com a topologia antes de as premissas entrarem.
+        provisoria = NuvemDeConflito(projeto=projeto)
+        chave_por_aresta = {
+            aresta.id: provisoria.chave_da_aresta(aresta.id) for aresta in projeto.arestas
+        }
+        premissas = [
+            Premissa(
+                id=linha.id,
+                aresta=chave_por_aresta[linha.aresta_id],
+                texto=linha.texto,
+                ordem=linha.ordem,
+                estado=EstadoDaPremissa(linha.estado),
+                justificativa=linha.justificativa,
+                arquivada=linha.arquivada,
+            )
+            for linha in linhas_de_premissa
+        ]
+        injecoes = []
+        for linha in linhas_de_injecao:
+            status = StatusDeInjecao(linha.status)
+            injecoes.append(
+                Injecao(
+                    id=linha.id,
+                    premissa_id=linha.premissa_id,
+                    texto=linha.texto,
+                    status=status,
+                    separacao=SeparacaoTRIZ(linha.separacao) if linha.separacao else None,
+                    arquivada=linha.arquivada,
+                    semeadura=(
+                        ReferenciaDeSemeadura(
+                            injecao_id=linha.id,
+                            projeto_destino_id=linha.semeadura_projeto_id,
+                        )
+                        if status is StatusDeInjecao.ESCOLHIDA
+                        else None
+                    ),
+                )
+            )
+        origem = (
+            ReferenciaDeOrigem(
+                ferramenta=cabecalho.origem_ferramenta,
+                projeto_id=cabecalho.origem_projeto_id,
+                nos=tuple(cabecalho.origem_nos or ()),
+            )
+            if cabecalho.origem_ferramenta
+            else None
+        )
+        return reidratar_nuvem(
+            projeto,
+            racional=cabecalho.racional or "",
+            premissas=premissas,
+            injecoes=injecoes,
+            origem=origem,
         )
 
     # -- administração ---------------------------------------------------------------

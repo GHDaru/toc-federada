@@ -1,0 +1,799 @@
+/*
+ * Tema próprio, claro e escuro, como variáveis CSS (Cascading Style Sheets) — RI-06 da
+ * spec 002. A linhagem não tinha tema nenhum para herdar (a medição do ciclo 001 deu zero
+ * ocorrências de `theme|darkMode|dark-mode` em `tocbuilderv3`), então isto nasce por
+ * decisão, não por cópia.
+ *
+ * Os QUATRO tokens que o inquilino pode vestir — `--toc-color-primary`, `--toc-color-surface`,
+ * `--toc-color-text`, `--toc-color-danger` — são exatamente os declarados em
+ * `theme.tokens_used` do manifesto, e chegam aplicados no elemento `.aplicacao`. Tudo o
+ * mais é nosso e cobre o que não vier: nenhum elemento fica sem cor (§B.4.3).
+ */
+
+:root {
+  --toc-espaco-1: 4px;
+  --toc-espaco-2: 8px;
+  --toc-espaco-3: 16px;
+  --toc-espaco-4: 24px;
+  --toc-raio: 8px;
+  --toc-fonte: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --toc-borda: #cbd5e1;
+  --toc-fundo: #f1f5f9;
+  --toc-suave: #64748b;
+  --toc-realce: #fef08a;
+  --toc-ok: #15803d;
+  --toc-atencao: #b45309;
+  --toc-sombra: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.aplicacao[data-esquema="escuro"] {
+  --toc-borda: #334155;
+  --toc-fundo: #020617;
+  --toc-suave: #94a3b8;
+  --toc-realce: #713f12;
+  --toc-ok: #4ade80;
+  --toc-atencao: #fbbf24;
+  --toc-sombra: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--toc-fonte);
+}
+
+.aplicacao {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--toc-fundo);
+  color: var(--toc-color-text);
+}
+
+/* --- casca (só fora do embarque, §B.8.1) --------------------------------------- */
+
+.casca-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--toc-espaco-3);
+  padding: var(--toc-espaco-3);
+  background: var(--toc-color-surface);
+  border-bottom: 1px solid var(--toc-borda);
+}
+
+.casca-cabecalho .marca {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.casca-cabecalho nav,
+.casca-idioma {
+  display: flex;
+  gap: var(--toc-espaco-2);
+}
+
+.casca-idioma {
+  margin-left: auto;
+}
+
+.casca-rodape {
+  padding: var(--toc-espaco-2) var(--toc-espaco-3);
+  color: var(--toc-suave);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--toc-borda);
+}
+
+.conteudo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- controles ------------------------------------------------------------------ */
+
+button {
+  font: inherit;
+  padding: var(--toc-espaco-1) var(--toc-espaco-3);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  background: var(--toc-color-surface);
+  color: var(--toc-color-text);
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--toc-color-primary);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Foco SEMPRE visível: operação por teclado é requisito, não cortesia (RI-11/RI-14). */
+:focus-visible {
+  outline: 3px solid var(--toc-color-primary);
+  outline-offset: 2px;
+}
+
+button[aria-pressed="true"],
+button[aria-current="true"],
+button[role="radio"][aria-checked="true"] {
+  background: var(--toc-color-primary);
+  color: var(--toc-color-surface);
+  border-color: var(--toc-color-primary);
+}
+
+button.perigo {
+  color: var(--toc-color-danger);
+  border-color: var(--toc-color-danger);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  padding: var(--toc-espaco-1) var(--toc-espaco-2);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  background: var(--toc-color-surface);
+  color: var(--toc-color-text);
+  max-width: 100%;
+}
+
+/* Rótulo sempre ACIMA do campo. Com `inline-flex`, um `label for=…` seguido do campo
+   ficava ao lado dele e a leitura visual perdia o par rótulo→campo. */
+label {
+  display: block;
+  margin-bottom: var(--toc-espaco-1);
+  font-size: 0.85rem;
+  color: var(--toc-suave);
+}
+
+/* Exceção: rótulo que ENVOLVE uma caixa de seleção fica na mesma linha que ela. */
+label.escolha,
+fieldset label {
+  display: flex;
+  align-items: center;
+  gap: var(--toc-espaco-1);
+  margin-bottom: 0;
+}
+
+fieldset {
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-2);
+  margin: 0;
+}
+
+/* --- telas ---------------------------------------------------------------------- */
+
+.tela {
+  padding: var(--toc-espaco-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-3);
+  min-height: 0;
+  flex: 1;
+}
+
+.cabecalho-da-tela h1,
+.cabecalho-do-projeto h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.cabecalho-do-projeto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--toc-espaco-3);
+}
+
+.formulario-de-projeto,
+.linha-de-criacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--toc-espaco-2);
+  padding: var(--toc-espaco-3);
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  overflow: hidden;
+}
+
+.tabela th,
+.tabela td {
+  text-align: left;
+  padding: var(--toc-espaco-2);
+  border-bottom: 1px solid var(--toc-borda);
+  vertical-align: top;
+}
+
+/* Cabeçalho fixo ao rolar (RI-08 da spec 004). */
+.tabela thead.cabecalho-fixo th {
+  position: sticky;
+  top: 0;
+  background: var(--toc-color-surface);
+  z-index: 1;
+}
+
+.tabela tr.selecionada {
+  background: color-mix(in srgb, var(--toc-color-primary) 12%, transparent);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--toc-espaco-1);
+}
+
+.acoes.iguais button {
+  flex: 1;
+}
+
+.estado-vazio,
+.estado-de-erro,
+.carregando {
+  padding: var(--toc-espaco-4);
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  text-align: center;
+}
+
+.estado-de-erro {
+  border-color: var(--toc-color-danger);
+}
+
+p.erro,
+.aviso-de-federacao {
+  margin: 0;
+  padding: var(--toc-espaco-2) var(--toc-espaco-3);
+  border-radius: var(--toc-raio);
+  background: color-mix(in srgb, var(--toc-color-danger) 12%, transparent);
+  color: var(--toc-color-danger);
+}
+
+.aviso-de-federacao {
+  background: color-mix(in srgb, var(--toc-color-primary) 12%, transparent);
+  color: var(--toc-color-text);
+}
+
+/* --- área de trabalho: painel + canvas ------------------------------------------ */
+
+.area-de-trabalho {
+  display: flex;
+  gap: var(--toc-espaco-3);
+  align-items: stretch;
+  flex: 1;
+  min-height: 480px;
+}
+
+.painel {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.painel-alca {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+}
+
+.painel-alca:hover,
+.painel-alca:focus-visible {
+  background: color-mix(in srgb, var(--toc-color-primary) 30%, transparent);
+}
+
+.painel-abas {
+  display: flex;
+  gap: var(--toc-espaco-1);
+  padding: var(--toc-espaco-2);
+  border-bottom: 1px solid var(--toc-borda);
+}
+
+.painel-abas button {
+  flex: 1;
+}
+
+.painel-conteudo {
+  overflow: auto;
+  padding: var(--toc-espaco-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-2);
+}
+
+.canvas {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  overflow: hidden;
+}
+
+.canvas-barra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--toc-espaco-2);
+  padding: var(--toc-espaco-2);
+  border-bottom: 1px solid var(--toc-borda);
+}
+
+.canvas-barra .separador {
+  flex: 1;
+}
+
+.canvas-dica {
+  margin: 0;
+  padding: var(--toc-espaco-2);
+  background: color-mix(in srgb, var(--toc-color-primary) 10%, transparent);
+}
+
+.canvas-area {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  cursor: grab;
+  background-image: radial-gradient(var(--toc-borda) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.canvas-plano {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.canvas-arestas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  color: var(--toc-suave);
+}
+
+.canvas-arestas g {
+  pointer-events: auto;
+}
+
+.aresta-traco {
+  stroke: var(--toc-suave);
+  stroke-width: 2;
+}
+
+.aresta.selecionada .aresta-traco {
+  stroke: var(--toc-color-primary);
+  stroke-width: 3;
+}
+
+.aresta-rotulo {
+  fill: var(--toc-suave);
+  font-size: 12px;
+}
+
+.no-do-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.no-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-1);
+  width: 100%;
+  text-align: left;
+  padding: var(--toc-espaco-2);
+  box-shadow: var(--toc-sombra);
+}
+
+.no-do-canvas.selecionado .no-corpo {
+  border-color: var(--toc-color-primary);
+  box-shadow: 0 0 0 2px var(--toc-color-primary);
+}
+
+.no-titulo {
+  font-weight: 600;
+}
+
+.no-corpo .selo {
+  font-size: 0.65rem;
+  align-self: flex-start;
+  max-width: 100%;
+}
+
+.no-descricao,
+.dica,
+.ajuda,
+.vazio,
+.sem-ude,
+.contagem {
+  color: var(--toc-suave);
+  font-size: 0.85rem;
+}
+
+/* --- selos e status -------------------------------------------------------------- */
+
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--toc-espaco-1);
+  padding: 0 var(--toc-espaco-2);
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.75rem;
+}
+
+/* Cor E texto: a cor reforça, o texto informa (RI-01 da spec 005). */
+.selo-pendente { color: var(--toc-suave); }
+.selo-requer_refinamento { color: var(--toc-atencao); }
+.selo-validado { color: var(--toc-ok); }
+.selo-rejeitado { color: var(--toc-color-danger); }
+
+.coluna-de-ude {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--toc-espaco-1);
+}
+
+.escolha {
+  font-size: 0.75rem;
+}
+
+/* O selo do UDE cabe numa linha só; quando não couber, quebra sem cobrir o vizinho. */
+.selo {
+  flex-wrap: wrap;
+}
+
+/* --- fichas ---------------------------------------------------------------------- */
+
+.ficha,
+.relatorio {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-2);
+  padding: var(--toc-espaco-3);
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  overflow: auto;
+}
+
+.ficha-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--toc-espaco-2);
+}
+
+.ficha-cabecalho h2 {
+  margin: 0;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.criterios,
+.pareceres,
+.premissas,
+.injecoes,
+.posicoes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-2);
+}
+
+.criterio {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--toc-espaco-2);
+  align-items: baseline;
+  padding: var(--toc-espaco-2);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+}
+
+.criterio.nao_atende {
+  border-color: var(--toc-color-danger);
+}
+
+.criterio.atende {
+  border-color: var(--toc-ok);
+}
+
+.criterio-motivo,
+.criterio-trecho {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--toc-suave);
+  font-size: 0.85rem;
+}
+
+mark {
+  background: var(--toc-realce);
+  color: inherit;
+}
+
+.veredito-bom { color: var(--toc-ok); }
+.veredito-ruim { color: var(--toc-color-danger); }
+
+.premissa {
+  padding: var(--toc-espaco-2);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+}
+
+.premissa.desafiada {
+  border-style: dashed;
+  border-color: var(--toc-atencao);
+}
+
+/* --- diálogo --------------------------------------------------------------------- */
+
+.dialogo {
+  position: fixed;
+  inset: auto auto var(--toc-espaco-4) 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-2);
+  padding: var(--toc-espaco-3);
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-color-primary);
+  border-radius: var(--toc-raio);
+  box-shadow: var(--toc-sombra);
+  max-width: min(420px, 90vw);
+}
+
+.dialogo-acoes {
+  display: flex;
+  gap: var(--toc-espaco-2);
+  justify-content: flex-end;
+}
+
+/* --- nuvem de conflito ------------------------------------------------------------ */
+
+.area-da-nuvem {
+  display: flex;
+  gap: var(--toc-espaco-3);
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.diagrama-da-nuvem {
+  position: relative;
+  flex: 1;
+  min-width: 320px;
+  min-height: 440px;
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  overflow: auto;
+}
+
+.nuvem-arestas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--toc-suave);
+  pointer-events: none;
+}
+
+.traco {
+  stroke: var(--toc-suave);
+  stroke-width: 2;
+}
+
+.traco-perigo,
+.traco-conflito {
+  stroke: var(--toc-color-danger);
+}
+
+.nuvem-plano {
+  position: relative;
+  margin: var(--toc-espaco-3);
+}
+
+.entidade,
+.legenda-da-aresta {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.entidade {
+  padding: var(--toc-espaco-2);
+  background: var(--toc-color-surface);
+  border: 2px solid var(--toc-color-primary);
+  border-radius: var(--toc-raio);
+  box-shadow: var(--toc-sombra);
+}
+
+.entidade-papel {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--toc-suave);
+}
+
+.entidade-texto {
+  margin: var(--toc-espaco-1) 0 0;
+}
+
+.aviso-gatilho {
+  color: var(--toc-atencao);
+  border-color: var(--toc-atencao);
+  padding: 0 var(--toc-espaco-1);
+}
+
+.aviso-detalhe {
+  position: absolute;
+  z-index: 5;
+  width: 260px;
+  list-style: none;
+  margin: var(--toc-espaco-1) 0 0;
+  padding: var(--toc-espaco-2);
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-atencao);
+  border-radius: var(--toc-raio);
+  font-size: 0.85rem;
+}
+
+.legenda-da-aresta button {
+  display: flex;
+  align-items: baseline;
+  gap: var(--toc-espaco-1);
+  max-width: 190px;
+  padding: 2px var(--toc-espaco-2);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: var(--toc-color-surface);
+  text-align: left;
+}
+
+.legenda-da-aresta .contagem {
+  color: var(--toc-suave);
+}
+
+/* Visível para leitor de tela, fora do desenho. Não é `display: none`: o conteúdo
+   continua no documento e continua sendo lido. */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.legenda-da-aresta .raio {
+  color: var(--toc-color-danger);
+  font-size: 0.9rem;
+}
+
+.legenda-da-aresta .classe {
+  font-weight: 600;
+}
+
+.legenda-da-aresta.perigo .classe,
+.legenda-da-aresta.conflito .classe {
+  color: var(--toc-color-danger);
+}
+
+.legenda-da-aresta.aberta button {
+  border-color: var(--toc-color-primary);
+  box-shadow: 0 0 0 2px var(--toc-color-primary);
+}
+
+.posicao {
+  padding: var(--toc-espaco-2);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+}
+
+.posicao.pendente {
+  border-style: dashed;
+  border-color: var(--toc-atencao);
+}
+
+/* --- iframe estreito: 420px é a largura de referência (RI-03 da spec 002) ---------- */
+
+@media (max-width: 720px) {
+  .area-de-trabalho,
+  .area-da-nuvem {
+    flex-direction: column;
+  }
+
+  /* Na largura estreita a vista tabular é a projeção primária (RI-05 da spec 002): ela
+     vem primeiro, ocupa a largura toda, e o canvas fica abaixo, ainda navegável. */
+  .painel {
+    width: 100% !important;
+    order: -1;
+  }
+
+  .painel-alca {
+    display: none;
+  }
+
+  .canvas {
+    min-height: 320px;
+  }
+
+  .ficha,
+  .relatorio {
+    width: 100%;
+  }
+
+  /* Em 420px nada pode transbordar para os lados: a rolagem é vertical, e uma tabela que
+     empurra a página é o defeito que a largura de referência existe para pegar. */
+  .tela {
+    padding: var(--toc-espaco-2);
+  }
+
+  input,
+  select,
+  textarea,
+  .formulario-de-projeto label,
+  .linha-de-criacao label {
+    width: 100%;
+  }
+
+  .tabela {
+    table-layout: fixed;
+  }
+
+  .tabela th,
+  .tabela td {
+    padding: var(--toc-espaco-1);
+    word-break: break-word;
+  }
+
+  .acoes {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
