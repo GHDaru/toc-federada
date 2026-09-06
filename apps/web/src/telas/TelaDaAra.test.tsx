@@ -72,10 +72,10 @@ describe("tela da ARA — fluxo feliz", () => {
     const base = clienteFalso();
     const reformular = vi.fn(async () => ARA.projeto.nos[0]!);
     const editarNo = vi.fn(async () => ARA.projeto.nos[0]!);
-    abrir({
-      ara: { ...base.ara, reformular },
-      grafo: { ...base.grafo, editarNo },
-    });
+    // Os dois duplos vivem no MESMO namespace `ara`: desde a correção da porta dos
+    // fundos do agregado, o grafo de uma Árvore da Realidade Atual só muda pela raiz
+    // dela, e `cliente.grafo.*` recusa sobre projeto de ferramenta.
+    abrir({ ara: { ...base.ara, reformular, editarNo } });
     await userEvent.dblClick(await screen.findByRole("button", { name: /Prazos são perdidos/ }));
     // O campo do canvas, e não o da ficha: selecionar o nó abre a ficha do UDE junto.
     const campo = screen.getByLabelText("Editar nó");
@@ -91,7 +91,7 @@ describe("tela da ARA — desfazer por episódio (RI-06 da spec 004)", () => {
     const base = clienteFalso();
     const moverNo = vi.fn(async (_projeto: string, _no: string, _posicao: { x: number; y: number }) =>
       ARA.projeto.nos[0]!);
-    abrir({ grafo: { ...base.grafo, moverNo } });
+    abrir({ ara: { ...base.ara, moverNo } });
     await screen.findByRole("button", { name: /Prazos são perdidos/ });
 
     // A linha do painel move o nó por teclado: é o caminho que não exige arrastar.
@@ -272,7 +272,7 @@ describe("tela da ARA — painel do nó e conectores E", () => {
   it("abre o painel lateral do nó (não modal) e salva a descrição", async () => {
     const base = clienteFalso();
     const editarNo = vi.fn(async () => ARA.projeto.nos[1]!);
-    abrir({ grafo: { ...base.grafo, editarNo } });
+    abrir({ ara: { ...base.ara, editarNo } });
     await screen.findByRole("button", { name: /Prazos são perdidos/ });
     // `n2` não é UDE: editar o texto dele é edição crua, e a descrição vive no painel.
     const linha = screen.getByRole("row", { name: /Retrabalho consome a equipe/ });

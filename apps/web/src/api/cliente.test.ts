@@ -106,6 +106,41 @@ describe("cliente da API", () => {
     ]);
   });
 
+  it("leva a geração ao gate por proposta governada — nunca escrevendo direto", async () => {
+    // O laço da assistência: aceitar não é a tela escrever no estado. É criar uma
+    // proposta de ação, que atravessa a máquina de estados no servidor, e depois
+    // confirmá-la. Duas rotas, dois verbos, e nenhum comando de escrita da nuvem no meio.
+    const buscar = vi.fn(async () =>
+      respostaJson({ proposal_id: "prop-1", estado: "awaiting_approval" }, 201),
+    );
+    const cliente = clienteCom(buscar as unknown as typeof fetch);
+
+    await cliente.propostas.criar({
+      action_id: "toc.generate_conflict_cloud",
+      args: { projeto_id: "p2", resultado: { versao: "1.0.0" } },
+    });
+    await cliente.propostas.decidir("prop-1", true);
+    await cliente.propostas.decidir("prop-1", false);
+
+    const chamadas = buscar.mock.calls.map((c) => {
+      const [url, opcoes] = c as unknown as [string, RequestInit];
+      return [url, opcoes.method, JSON.parse(String(opcoes.body))];
+    });
+    expect(chamadas).toEqual([
+      [
+        "/toc/propostas",
+        "POST",
+        {
+          action_id: "toc.generate_conflict_cloud",
+          args: { projeto_id: "p2", resultado: { versao: "1.0.0" } },
+          origem: "ia",
+        },
+      ],
+      ["/toc/propostas/prop-1/decisao", "POST", { aprovado: true }],
+      ["/toc/propostas/prop-1/decisao", "POST", { aprovado: false }],
+    ]);
+  });
+
   it("troca o grant por sessão em POST /toc/embarque e devolve a identidade", async () => {
     const buscar = vi.fn(async () =>
       respostaJson(

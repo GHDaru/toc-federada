@@ -52,7 +52,11 @@ export type EspacoDeCodigo =
   | "estado_do_exame"
   | "estado_da_premissa"
   | "status_da_injecao"
-  | "separacao";
+  | "separacao"
+  // Os dois da governança: `origem` (`humano` | `ia`) e o desfecho do §A.3 do Anexo A —
+  // os dois chegam do servidor como código fechado, e a tela nunca os inventa.
+  | "origem_da_proposta"
+  | "desfecho";
 
 export function traduzirCom(
   dicionario: Dicionario,

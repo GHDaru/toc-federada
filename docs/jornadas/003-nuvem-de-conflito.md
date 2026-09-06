@@ -126,8 +126,9 @@ conteúdo:
 Abaixo do aviso vem o identificador da ação do catálogo — `toc.generate_conflict_cloud` —,
 o racional, e um diff **Posição × Hoje × Proposto** para as cinco entidades, seguido das
 sugestões de premissa por aresta (`A_B`, `A_C`, `B_D`, `C_D_PRIME`, `D_C`, `D_PRIME_B`,
-`D_D_PRIME`) e da separação TRIZ sugerida para o conflito. O único botão de decisão visível
-é **Recusar** — e recusar deixa o projeto exatamente como estava.
+`D_D_PRIME`) e da separação TRIZ sugerida para o conflito. **Aceitar** e **Recusar** estão
+lado a lado, com o mesmo peso: recusar fecha a prévia e deixa o projeto exatamente como
+estava — não houve escrita para desfazer.
 
 **É aqui que esta aplicação difere da linhagem que ela sucede.** Na 4ª geração, a mesma
 operação era uma chamada de rede a um provedor de modelo de linguagem feita **do
@@ -135,6 +136,62 @@ navegador**, com a chave no cliente (`tocbuilderv3/services/geminiService.ts:16`
 o modelo devolvia era gravado. Aqui não há cliente de provedor na interface: a geração é do
 servidor, é ação nomeada do catálogo, e a escrita passa por proposta com portão humano
 (ADR 0007 e P7).
+
+### 8 · Aceitar leva ao gate — a proposta nasce e **espera**
+
+Clicar em **Aceitar** não escreve nada: cria a proposta de ação no servidor, que nasce
+`proposed`, vai a `awaiting_approval` e para ali. A superfície de confirmação aparece com o
+que o servidor registrou — a ação, a origem, o vencimento — e com as duas decisões de mesmo
+peso:
+
+![O gate da proposta](capturas/003-nuvem-de-conflito/08-gate-da-proposta.png)
+
+> Confirmar a proposta · Aguardando a sua decisão
+> A escrita acontece no servidor, pela ação governada, depois desta decisão.
+
+Medido enquanto a proposta esperava, não estimado:
+
+```text
+  · proposta criada e aguardando decisão · nuvem intacta enquanto espera: true · linhas de traço antes da decisão: 0
+```
+
+A nuvem lida do serviço **enquanto a proposta espera** é byte a byte a mesma de antes de
+propor, e o traço ainda está vazio: não há desfecho, porque ainda não houve decisão.
+
+> **A origem — "Assistência" — é dado, e não desvio de fluxo** (RI-02 da spec 006). Uma
+> proposta de origem `humano` mostraria "Pessoa" nessa mesma linha e seguiria exatamente o
+> mesmo caminho: no instante em que a origem virar `if`, as duas telas divergem e a menos
+> testada é a de mais risco.
+
+### 9 · Confirmar aplica — e a nuvem muda porque foi **relida** do serviço
+
+![A nuvem depois da confirmação](capturas/003-nuvem-de-conflito/09-nuvem-depois-da-confirmacao.png)
+
+> Aplicado à nuvem. 5 entidade(s), 7 premissa(s) e 1 injeção(ões) aplicadas
+
+O objetivo comum (A) e a ação oposta (D′) passaram a ser o texto que a prévia propunha, e
+cada aresta mostra agora `2/2` premissas — as sete que o grupo tinha escrito **mais** as
+sete que a geração acrescentou: premissa da assistência **acumula**, nunca sobrescreve o
+que o grupo validou (RN-05 da spec 007).
+
+```text
+  · confirmada: 2 de 5 entidades reescritas · premissas 7 → 14 · traço da ação: ["executed"]
+```
+
+Duas entidades reescritas e cinco aplicadas não se contradizem: a geração propôs texto para
+as cinco, e três delas já diziam o mesmo que a proposta — a contagem de cima é do que
+**mudou**, a de dentro do desfecho é do que foi **aplicado**.
+
+A tela não escreveu nada disso. Ela pediu a decisão ao servidor, e o que aparece é o que ela
+**releu** dele depois — é a diferença que o defeito D-07 da linhagem nomeia.
+
+### 10 · E sobrevive à recarga
+
+![A nuvem depois de recarregar](capturas/003-nuvem-de-conflito/10-sobrevive-a-recarga.png)
+
+A página é recarregada e a nuvem é reaberta pela lista, como quem usa faria: o texto novo e
+as catorze premissas continuam lá, porque quem guardou foi o PostgreSQL do serviço. O campo
+da narrativa volta vazio — o que era estado de tela some, e o que era estado do domínio fica.
 
 ## O que esta jornada prova
 
@@ -146,23 +203,33 @@ servidor, é ação nomeada do catálogo, e a escrita passa por proposta com por
 | A visão de solução declara as posições **sem** injeção | captura 04 — cinco "Sem injeção" |
 | O mesmo dado tem quatro projeções (conflito, solução, lado a lado, tabela) | capturas 01, 04, 05 e 06 |
 | Gerar **não** escreve: devolve diff e o identificador da ação governada | captura 07 — "Nada foi aplicado…" + `toc.generate_conflict_cloud` |
+| Aceitar leva ao gate e a proposta **espera** sem escrever | captura 08; `nuvem intacta enquanto espera: true · linhas de traço antes da decisão: 0` |
+| Confirmar aplica pela ação governada, com traço | captura 09; `premissas 7 → 14 · traço da ação: ["executed"]` |
+| A mudança sobrevive à recarga — persistência do serviço, não estado de tela | captura 10 (página recarregada, nuvem reaberta pela lista) |
 | Nenhum segredo de provedor na interface | não há cliente de provedor em `apps/web`; a geração é rota do serviço |
 
 ## Avaliação heurística — 2026-09-06
 
 Avaliada por um agente, em contexto de construção, sobre as capturas geradas nesta mesma
-data. **Não houve teste com pessoa usuária.**
+data. **Não houve teste com pessoa usuária.** Esta rodada revisita a avaliação anterior do
+mesmo dia depois de o laço da assistência fechar (capturas 08 a 10): os achados A-02 e A-03
+saíram corrigidos, e as capturas novas trouxeram dois achados novos (A-06 e A-07).
 
 | # | Achado | Heurística | Severidade | Destino |
 |---|---|---|---|---|
 | A-01 | A leitura das arestas concatena as frases das entidades sem tratar a pontuação: *"…alta taxa de conclusão., precisamos de A instituição precisa…"* e *"…docente titular alocado. não podem coexistir"*. A visão de solução inteira é feita dessas leituras, então o defeito aparece sete vezes na mesma tela | Correspondência com o mundo real / estética | Média | 📝 registrado |
-| A-02 | A pré-visualização da geração abre numa coluna estreita à esquerda enquanto a metade direita da janela fica vazia; o diff Hoje × Proposto fica com três a quatro palavras por linha | Estética e design minimalista | Média | 📝 registrado |
-| A-03 | Na pré-visualização, o único botão de decisão é **Recusar** — não há "Aceitar" nenhum, e a tela não explica por onde a proposta seria aplicada. Está **coerente** com a regra (quem escreve é a ação governada com portão humano), mas quem lê a tela fica sem o próximo passo | Ajuda e documentação | Média | 📝 registrado |
+| A-02 | ~~A pré-visualização da geração abre numa coluna estreita à esquerda enquanto a metade direita da janela fica vazia; o diff Hoje × Proposto fica com três a quatro palavras por linha~~ — **corrigido em 2026-09-06**: a prévia e a superfície de confirmação passaram a `min(880px, 100%)`, porque as duas são leitura para decidir e não formulário lateral (`apps/web/src/estilos.css`) | Estética e design minimalista | Média | ✅ corrigido |
+| A-03 | ~~Na pré-visualização, o único botão de decisão é **Recusar** — não há "Aceitar" nenhum, e a tela não explica por onde a proposta seria aplicada~~ — **corrigido em 2026-09-06**: "Aceitar" leva a proposta ao gate governado (`POST /toc/propostas`), a superfície de confirmação decide e a nuvem muda; capturas 08 a 10 e ADR 0009 | Ajuda e documentação | Média | ✅ corrigido |
 | A-04 | O texto da injeção e a sua classificação aparecem grudados na visão de solução (*"…antes da matrícula.Separação no tempo · Candidata"*), sem separador | Estética | Baixa | 📝 registrado |
 | A-05 | A linha de origem repete o identificador universal do projeto de origem em todas as visões (ver achado A-01 da jornada [J-07](007-a-travessia.md)) | Correspondência com o mundo real | Média | 📝 registrado em J-07 |
+| A-06 | O vencimento da proposta aparece como instante absoluto (`9/6/2026, 2:14:22 AM`), em formato do sistema e em inglês; quem decide quer saber **quanto tempo resta**, não a hora exata em outro idioma | Correspondência com o mundo real | Baixa | 📝 registrado |
+| A-07 | Depois de confirmar, a superfície de desfecho fica até alguém clicar em "Fechar", e o diagrama mudado aparece abaixo dela — quem não rolar a página pode não ver que a nuvem mudou | Visibilidade do estado do sistema | Baixa | 📝 registrado |
 | ✅ | A completude (`7 de 7`) fica no cabeçalho, com salto direto para as pendentes | Visibilidade do estado do sistema | — | conforme |
 | ✅ | As posições sem injeção são declaradas em vez de omitidas | Visibilidade do estado do sistema | — | conforme |
 | ✅ | Gerar não aplica, e a tela diz isso antes do conteúdo | Prevenção de erro / controle e liberdade | — | conforme |
+| ✅ | Aceitar e confirmar são passos distintos: o primeiro é sobre o conteúdo, o segundo é sobre a autorização — e o segundo mostra o que o servidor registrou | Prevenção de erro / visibilidade | — | conforme |
+| ✅ | Confirmar e recusar têm o mesmo peso visual nas duas superfícies (mesma classe de botão) | Controle e liberdade | — | conforme |
+| ✅ | O desfecho aparece com todas as letras, inclusive na recusa — nunca em silêncio | Visibilidade do estado do sistema | — | conforme |
 | ✅ | A topologia é fixa e não há arrastar: quem usa edita texto | Prevenção de erro | — | conforme |
 | ✅ | Desafiar premissa exige justificativa; arquivar responde quantas injeções foram junto | Prevenção de erro / visibilidade | — | conforme |
 

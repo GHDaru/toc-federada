@@ -63,6 +63,11 @@ CORPOS = {
     ("DELETE", "/toc/projetos/{projeto_id}/arestas/{aresta_id}"): None,
     ("POST", "/toc/ara/projetos"): {"nome": "Tentativa ARA"},
     ("POST", "/toc/ara/projetos/{projeto_id}/efeitos"): {"titulo": BOM},
+    ("PATCH", "/toc/ara/projetos/{projeto_id}/nos/{no_id}"): {"titulo": SEGUNDO},
+    ("DELETE", "/toc/ara/projetos/{projeto_id}/nos/{no_id}"): None,
+    ("POST", "/toc/ara/projetos/{projeto_id}/arestas"): "@ligar",
+    ("PATCH", "/toc/ara/projetos/{projeto_id}/arestas/{aresta_id}"): {"rotulo": "porque"},
+    ("DELETE", "/toc/ara/projetos/{projeto_id}/arestas/{aresta_id}"): None,
     ("POST", "/toc/ara/projetos/{projeto_id}/nos/{no_id}/ude"): {},
     ("DELETE", "/toc/ara/projetos/{projeto_id}/nos/{no_id}/ude"): None,
     ("PUT", "/toc/ara/projetos/{projeto_id}/nos/{no_id}/ficha"): {"area_impactada": "X"},
@@ -114,12 +119,14 @@ def cenario(plena):
         ).json()
 
     a, b, c = efeito(BOM), efeito(SEGUNDO), efeito(TERCEIRO)
+    # Pela rota da ARA: a genérica do M1 recusa sobre projeto de ferramenta desde a
+    # correção da porta dos fundos do agregado, e é isso que se quer.
     ac = plena.post(
-        f"/toc/projetos/{projeto['id']}/arestas",
+        f"/toc/ara/projetos/{projeto['id']}/arestas",
         json={"origem_id": a["id"], "destino_id": c["id"]},
     ).json()
     bc = plena.post(
-        f"/toc/projetos/{projeto['id']}/arestas",
+        f"/toc/ara/projetos/{projeto['id']}/arestas",
         json={"origem_id": b["id"], "destino_id": c["id"]},
     ).json()
     plena.post(f"/toc/ara/projetos/{projeto['id']}/nos/{a['id']}/ude", json={})
@@ -155,7 +162,7 @@ def test_a_tabela_de_amostras_cobre_TODA_rota_publicada(app):
     print(f"\nrotas publicadas sob /toc: {len(publicadas)}")
     assert faltando == [], f"rota publicada sem amostra de pedido: {faltando}"
     assert sobrando == [], f"amostra para rota que não existe: {sobrando}"
-    assert len(publicadas) >= 26
+    assert len(publicadas) >= 31
 
 
 def test_toda_rota_recusa_quem_nao_tem_capacidade_nenhuma(app, sem_capacidade, cenario):

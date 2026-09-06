@@ -5,11 +5,17 @@
  * de Problemas · **IA** — inteligência artificial · **RF/RI** — requisito funcional / de
  * interface.
  *
- * **Não existe botão que aplique aqui, e a ausência é o requisito.** `POST …/geracoes`
- * devolve a nuvem proposta validada contra o esquema versionado e o `action_id` da ação
- * governada; a escrita é da proposta que atravessa a máquina de estados no servidor, com
- * gate humano (RF-21, RF-23, RF-24 da spec 007; ADR 0007). Recusar, por isso, é de graça:
- * nada foi tocado.
+ * **Nenhum botão daqui escreve na nuvem, e isso continua sendo o requisito** —
+ * `POST …/geracoes` devolve a nuvem proposta validada contra o esquema versionado e o
+ * `action_id` da ação governada, e a escrita é da proposta que atravessa a máquina de
+ * estados no servidor (RF-21, RF-23, RF-25 da spec 007; ADR 0007).
+ *
+ * **O que mudou:** havia só "Recusar". A pessoa via o diff e não tinha como aceitá-lo — a
+ * regra estava certa e a interface era um beco sem saída, com a funcionalidade mais
+ * vistosa do produto sem conclusão. Agora "Aceitar" existe e faz o que a spec manda:
+ * **leva a proposta ao gate governado** (`aoAceitar`), que a cria no servidor e a submete
+ * à superfície de confirmação. Aceitar aqui não é aplicar; é pedir para decidir. Recusar
+ * continua de graça, porque continua não havendo escrita para desfazer (RF-24).
  *
  * O componente também não confia no formato: o resultado chega como objeto aberto e é
  * lido com verificação campo a campo. Um resultado estranho vira tela vazia com o aviso,
@@ -63,9 +69,24 @@ export interface PreviaDaGeracaoProps {
   /** O texto que a nuvem tem HOJE, por papel — é o outro lado do diff. */
   textosAtuais: Partial<Record<PapelDaEntidade, string>>;
   aoFechar(): void;
+  /**
+   * Leva este resultado ao gate: cria a proposta de ação no servidor. **Opcional de
+   * propósito** — quem não pode escrever não recebe a função, e a prévia continua honesta
+   * mostrando só "Recusar" em vez de oferecer um caminho que o servidor recusaria (RF-27:
+   * sem a capacidade de escrita, a ação mutadora nem existe no catálogo).
+   */
+  aoAceitar?(): void;
+  /** Uma proposta já viajando: o botão para de aceitar clique. */
+  ocupada?: boolean;
 }
 
-export function PreviaDaGeracao({ geracao, textosAtuais, aoFechar }: PreviaDaGeracaoProps) {
+export function PreviaDaGeracao({
+  geracao,
+  textosAtuais,
+  aoFechar,
+  aoAceitar,
+  ocupada = false,
+}: PreviaDaGeracaoProps) {
   const { t, tc } = useI18n();
   const resultado = objeto(geracao.resultado);
   const entidades = objeto(resultado.entidades);
@@ -76,9 +97,24 @@ export function PreviaDaGeracao({ geracao, textosAtuais, aoFechar }: PreviaDaGer
     <section className="ficha previa-da-geracao" aria-label={t("nuvem.gerar_previa")}>
       <div className="ficha-cabecalho">
         <h2>{t("nuvem.gerar_previa")}</h2>
-        <button type="button" onClick={aoFechar}>
-          {t("nuvem.recusar")}
-        </button>
+        {/* Aceitar e recusar, mesma classe e lado a lado: peso visual igual (RI-06). */}
+        <div className="decisao">
+          {aoAceitar ? (
+            <button
+              type="button"
+              className="botao-de-decisao"
+              disabled={ocupada}
+              onClick={() => {
+                if (!ocupada) aoAceitar();
+              }}
+            >
+              {t("nuvem.aceitar")}
+            </button>
+          ) : null}
+          <button type="button" className="botao-de-decisao" onClick={aoFechar}>
+            {t("nuvem.recusar")}
+          </button>
+        </div>
       </div>
 
       <p className="aviso-de-proposta">{t("nuvem.nada_aplicado")}</p>

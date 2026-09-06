@@ -1,9 +1,9 @@
 {
-  "gerado_em": "2026-09-06T00:26:19.645Z",
+  "gerado_em": "2026-09-06T02:08:44.299Z",
   "script": "docs/jornadas/scripts/capturar-telas.mjs",
   "base_sintetica": "docs/produto/dados/analise-horizonte.json v1.0.0",
-  "capturas": 33,
-  "bytes": 5144889,
+  "capturas": 36,
+  "bytes": 5771779,
   "medidas": {
     "pedidosAoHospedeiro": 5,
     "saude": {
@@ -31,9 +31,9 @@
     "cascaEmbarcada": 0,
     "canvas": {
       "altura_da_janela": 900,
-      "altura_da_area_do_canvas": 2761,
-      "transformacao_do_plano": "translate(14.561px, 1143.08px) scale(0.557317)",
-      "topo_do_primeiro_no": 1497
+      "altura_da_area_do_canvas": 2762,
+      "transformacao_do_plano": "translate(14.561px, 1143.33px) scale(0.557317)",
+      "topo_do_primeiro_no": 1414
     },
     "resumo_por_status": {
       "pendente": 3,
@@ -46,6 +46,15 @@
       "titulo_no_servidor": "A instituição responde 31% das mensagens de aluno em até cinco dias úteis.",
       "aprovado_nos_decidiveis": true,
       "reprovacoes": 0
+    },
+    "propostaNaoEscreve": true,
+    "geracaoAplicada": {
+      "entidades_reescritas": 2,
+      "premissas_antes": 7,
+      "premissas_depois": 14,
+      "traco": [
+        "executed"
+      ]
     }
   },
   "falhas": [],
@@ -89,8 +98,8 @@
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/02-projeto-criado.png",
-      "bytes": 62427,
-      "sha256": "8dc19ff5aa3766b35680e410097892d0a9b988d9bf584cedc6df16449012919f"
+      "bytes": 62353,
+      "sha256": "cfcf47158304cd75fd31311558b688c6a7b356748db3c0acc7bde76562979492"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
@@ -101,74 +110,74 @@
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/04-arvore-da-horizonte.png",
-      "bytes": 478808,
-      "sha256": "6566e6a7f4a5c4e23de85f9920522d23489bfd893d2a2180ce49c2c91e519537"
+      "bytes": 480616,
+      "sha256": "ebb0628bdb4f8ea52193558d33b0ed9e5a811d90212cda3b3760ecee7fac91fc"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/05-canvas-abaixo-da-dobra.png",
-      "bytes": 135138,
-      "sha256": "375730e56426036ebcb7ba31597a2f316ab46777b9dec797f2d46b1632d74bff"
+      "bytes": 140115,
+      "sha256": "56af033326cb2905967bc799a61cdbfc3c7bf0b62e707e3bfc04b02ca90a1b8f"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/06-painel-de-arestas.png",
-      "bytes": 210996,
-      "sha256": "027159f17c87391cc1385bbb95f6dec30fabf71a775e01c834dd0ca9bff216aa"
+      "bytes": 211019,
+      "sha256": "f06dcb061e0d1cf5488e0c07b7d924bbdae2316e7191a5133b6f3a87a9cc29ff"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/07-ficha-de-ude-reprovado.png",
-      "bytes": 149301,
-      "sha256": "6876c86464dada555ee063af9b323d1398522fa7f85344d4df5c4e8d2cc42f07"
+      "bytes": 149305,
+      "sha256": "a4283ee9b849bd8fcd8b11177d046f67909ee119adc2ec26e36ff06342cf1764"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/08-ficha-logo-apos-reformular.png",
-      "bytes": 150907,
-      "sha256": "97172343eba70be2d4b98fe3c14916981bf1818591ce430be26b9059f75f0335"
+      "bytes": 150911,
+      "sha256": "bb87eb5fa16603192c0617348135a138f14c16e551f1606a932cd68b52c28d4d"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/09-ficha-reaberta-com-veredito-novo.png",
-      "bytes": 148989,
-      "sha256": "ec7ee0a01e6fef6ab44b7fe78cd970afcd879c87d677ec3a2180dcc677613716"
+      "bytes": 148993,
+      "sha256": "6d1c00d4e4a51a036694216f6deeef99cec2ee358b60bdbb36064b9d0360457d"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/10-ficha-de-ude-aprovado.png",
-      "bytes": 145319,
-      "sha256": "dbe946385352e12213254d8b4aa14aa8b0a043aeca2e387e9802c36c5b9c3386"
+      "bytes": 145323,
+      "sha256": "3313665ba65edfa002d9126453e738af24b45d96120661b4470cd3c440758387"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/11-parecer-e-status-validado.png",
-      "bytes": 152849,
-      "sha256": "5d75994b730cd69880f880217122daa3485507e90e129d6c6d8e730beff7fce0"
+      "bytes": 152852,
+      "sha256": "60cf54f5f604cf59e87090900a8601d3b5d5f6b7e4d590bf873ba4f5702ad7f6"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/12-resumo-por-status-filtrado.png",
-      "bytes": 101171,
-      "sha256": "d4a114e54cf640f382e2a681c5052983068bf6c346869ef61eb33c0623af722c"
+      "bytes": 100930,
+      "sha256": "19d0cee4f3bbc3563bc129eeff6091db45575ad5aca8314c2a25f9820dfc68d2"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/13-exame-de-elo.png",
-      "bytes": 37442,
-      "sha256": "aa02a5d5f341bf4fe96a27ea053166c5afa1a09105ee492d533d5ebea2273ba3"
+      "bytes": 39586,
+      "sha256": "35e7884610bf6eefc4136dc61c8717098d19306eb2c96ec492815c277202a071"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/14-relatorio-estrutural.png",
-      "bytes": 217209,
-      "sha256": "0d7caffbe39c2ad34a50153f1e11ded0730ee8c178395a220716ca8dedf83bdb"
+      "bytes": 213677,
+      "sha256": "902f86ac8a2909bf5f08e3368a69d27616d2ef51be6b6ca11d45c83fc45ad7a7"
     },
     {
       "jornada": "007-a-travessia",
       "captura": "007-a-travessia/01-udes-escolhidos-na-ara.png",
-      "bytes": 607507,
-      "sha256": "8130211cc31d4efd153d4fd346a55277570686016c95cd1d4fa9f87fbd53f1ca"
+      "bytes": 607276,
+      "sha256": "5f3b623f2b02acc571de2e64feda0171c689798a5df8d29ab4a2ca8ce3f85719"
     },
     {
       "jornada": "007-a-travessia",
@@ -179,26 +188,26 @@
     {
       "jornada": "007-a-travessia",
       "captura": "007-a-travessia/03-nuvem-derivada.png",
-      "bytes": 112304,
-      "sha256": "10b763ee348abc77047619bfff0b3ad23a4348385de41b1e1b74b41e700a58bd"
+      "bytes": 112613,
+      "sha256": "035dd9d002f52bc70cd7bed1ca565bc5b8a62bdc54a211b45903b24d3f0adcea"
     },
     {
       "jornada": "007-a-travessia",
       "captura": "007-a-travessia/04-linha-de-origem.png",
-      "bytes": 12014,
-      "sha256": "48d4df57574ad740fb3034bb19d8b0b38f6122c93ef55bfe9856978d8e1bfbb1"
+      "bytes": 12294,
+      "sha256": "2deee474c1446d1e5ceab3acdeff825e1e0ee30b714a41bc99a3a39b63b99ca9"
     },
     {
       "jornada": "007-a-travessia",
       "captura": "007-a-travessia/05-ara-intacta-depois-da-derivacao.png",
-      "bytes": 511955,
-      "sha256": "0bf91acf45cf2c6bf455d1cf22eb7ba92a91aa5718f477a382d0fee5b486a3a6"
+      "bytes": 514963,
+      "sha256": "c840567e7f920e03e709a651e7a83c06d60e34279c8c02901de96a5fd90251e4"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/01-diagrama-do-conflito.png",
-      "bytes": 124951,
-      "sha256": "0c3c79d513ec7bb7f51f4da6729a994c7168e54b0d4c7a1a1f4f83bd52bc37db"
+      "bytes": 125246,
+      "sha256": "4cb0ef8aba30542ad841a000e6995c2da00c171902ab69f84d5070c10f40c7c3"
     },
     {
       "jornada": "003-nuvem-de-conflito",
@@ -215,32 +224,50 @@
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/04-visao-de-solucao.png",
-      "bytes": 189249,
-      "sha256": "f56d3eafdde8c25f6b36234c6a3f4eb667548d9b72d38a54be499968f805a1e9"
+      "bytes": 189573,
+      "sha256": "02656c16dcc1c7c11397faead445bc73fdc115e021b442d1d294c2d22b17b0e3"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/05-lado-a-lado.png",
-      "bytes": 257999,
-      "sha256": "2b11311491a9bfdb83d8e946362cb6a0522f0ebc9e3cf25379da821fdb62c62a"
+      "bytes": 258288,
+      "sha256": "3b2a1efd6a8a2b741513b6797193f2606cf4c102ac0805fae315e383aaf3fc76"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/06-vista-tabular.png",
-      "bytes": 283125,
-      "sha256": "a8c398b594868e865af9176431ebdd3a9d14e4b7c900bfcbccb8744d788c69a9"
+      "bytes": 283436,
+      "sha256": "4b4f34adc7d345018ebec0481c0b5e14534cebc1ce8be45f7626776770dc3465"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/07-previa-da-geracao.png",
-      "bytes": 406345,
-      "sha256": "0c76a78d11ebf4c00c4bd3f816561ad20c5d13ea95ec91d2c0398b5f41e5e166"
+      "bytes": 348247,
+      "sha256": "bd1928a96e5ed5f950d302112c0482f240ea1ed4d6cfbf224d48a02a78b39697"
+    },
+    {
+      "jornada": "003-nuvem-de-conflito",
+      "captura": "003-nuvem-de-conflito/08-gate-da-proposta.png",
+      "bytes": 380846,
+      "sha256": "232c754bc18fe6bb8d6bc53ed1f7df042e760a3e62882bee0748d088566aca10"
+    },
+    {
+      "jornada": "003-nuvem-de-conflito",
+      "captura": "003-nuvem-de-conflito/09-nuvem-depois-da-confirmacao.png",
+      "bytes": 162742,
+      "sha256": "0e25b2faa518d757b61115302a1191f53f8c5582e7686826033d928e74065886"
+    },
+    {
+      "jornada": "003-nuvem-de-conflito",
+      "captura": "003-nuvem-de-conflito/10-sobrevive-a-recarga.png",
+      "bytes": 131734,
+      "sha256": "cc719fa0468aa2df99ec1a631f1e13320954dd593092ebc859ec4428fcd71451"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/15-exclusao-nomeia-o-projeto.png",
-      "bytes": 97417,
-      "sha256": "f086b6b1d5322eb9a2a0ab39d4602f98f4760c4e1afecad4ed48ac0c72730397"
+      "bytes": 97374,
+      "sha256": "e8ddf4ea8de6d3f0e9305c663c0c49d0ed695460f057d64a6bb9b3abf5e14e8f"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",

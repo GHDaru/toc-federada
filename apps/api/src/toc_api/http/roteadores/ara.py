@@ -25,22 +25,28 @@ from fastapi import APIRouter, Response, status
 
 from ...aplicacao.ara import (
     AbrirProjetoARA,
+    AdicionarEfeito,
     AnalisarArvore,
     CriarProjetoARA,
     DesfazerConectorE,
     DesmarcarUde,
+    EditarArestaDaARA,
     EditarFichaDeUde,
+    EditarNoDaARA,
     ExaminarElo,
+    ExcluirArestaDaARA,
+    ExcluirNoDaARA,
     FormarConectorE,
+    LigarNaARA,
     MarcarUde,
+    MoverNoDaARA,
     MudarStatusDeUde,
+    RecolherNoDaARA,
     ReformularUde,
     RegistrarParecer,
     ValidarTextoDeUde,
 )
-from ...aplicacao.grafo import AdicionarNo
 from ...dominio.ara import (
-    TIPO_DE_NO_EFEITO,
     EstadoDoExame,
     OrigemDoParecer,
     ParecerDeJulgamento,
@@ -49,9 +55,14 @@ from ...dominio.erros import DadoInvalido
 from ..dependencias import ExecutorDependente
 from ..esquemas import (
     AraOut,
+    ArestaOut,
     ConectorIn,
     ConectorOut,
     CriarNoIn,
+    EditarArestaIn,
+    EditarNoIn,
+    ExclusaoDeNoOut,
+    LigarIn,
     CriarProjetoIn,
     ExameOut,
     ExaminarEloIn,
@@ -104,16 +115,111 @@ def abrir_ara(projeto_id: UUID, executor: ExecutorDependente) -> AraOut:
 def adicionar_efeito(
     projeto_id: UUID, corpo: CriarNoIn, executor: ExecutorDependente
 ) -> NoOut:
-    """O tipo é `efeito` e vem do servidor (F-15) — o cliente não o escolhe."""
+    """O tipo é `efeito` e vem do servidor (F-15) — o cliente não o escolhe.
+
+    Roda `AdicionarEfeito`, que passa pela raiz `ProjetoARA`. Antes rodava o
+    `AdicionarNo` genérico do M1 com o tipo certo no argumento: dava o mesmo nó e não era
+    a mesma coisa — era a ferramenta indo ao núcleo por fora da própria raiz, no mesmo
+    caminho que as rotas de `/toc/projetos` abriam para qualquer um.
+    """
     no = executor.rodar(
-        AdicionarNo,
+        AdicionarEfeito,
         projeto_id=projeto_id,
         titulo=corpo.titulo,
         descricao=corpo.descricao,
-        tipo=TIPO_DE_NO_EFEITO,
         posicao=corpo.posicao.para_dominio() if corpo.posicao else None,
     )
     return NoOut.de(no)
+
+
+@roteador.patch("/projetos/{projeto_id}/nos/{no_id}", response_model=NoOut)
+def editar_no_da_ara(
+    projeto_id: UUID, no_id: UUID, corpo: EditarNoIn, executor: ExecutorDependente
+) -> NoOut:
+    """O espelho do PATCH do M1, pela raiz — e com a revalidação que o M1 não conhece.
+
+    Mudar o TÍTULO de um Efeito Indesejável reexecuta a validação formal aqui dentro
+    (RF-10). Pela rota genérica, o veredito anterior ficava pendurado sobre um texto que
+    já não era o dele.
+    """
+    resultado = None
+    if corpo.titulo is not None or corpo.descricao is not None:
+        resultado = executor.rodar(
+            EditarNoDaARA,
+            projeto_id=projeto_id,
+            no_id=no_id,
+            titulo=corpo.titulo,
+            descricao=corpo.descricao,
+        )
+    if corpo.posicao is not None:
+        resultado = executor.rodar(
+            MoverNoDaARA,
+            projeto_id=projeto_id,
+            no_id=no_id,
+            posicao=corpo.posicao.para_dominio(),
+        )
+    if corpo.recolhido is not None:
+        resultado = executor.rodar(
+            RecolherNoDaARA, projeto_id=projeto_id, no_id=no_id, recolhido=corpo.recolhido
+        )
+    if resultado is None:
+        raise DadoInvalido(
+            "editar_no: informe ao menos um de titulo, descricao, posicao ou recolhido"
+        )
+    return NoOut.de(resultado)
+
+
+@roteador.delete("/projetos/{projeto_id}/nos/{no_id}", response_model=ExclusaoDeNoOut)
+def excluir_no_da_ara(
+    projeto_id: UUID, no_id: UUID, executor: ExecutorDependente
+) -> ExclusaoDeNoOut:
+    """Devolve o RAIO (RF-15). Pela raiz, a ficha do Efeito Indesejável é ARQUIVADA."""
+    removidas = executor.rodar(ExcluirNoDaARA, projeto_id=projeto_id, no_id=no_id)
+    return ExclusaoDeNoOut(no_id=no_id, arestas_removidas=list(removidas))
+
+
+# -- elos de suficiência ---------------------------------------------------------------
+
+
+@roteador.post(
+    "/projetos/{projeto_id}/arestas",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ArestaOut,
+)
+def ligar_na_ara(
+    projeto_id: UUID, corpo: LigarIn, executor: ExecutorDependente
+) -> ArestaOut:
+    """O elo nasce COM exame (`nao_examinado`) — é o que faz a suficiência ser dado."""
+    aresta = executor.rodar(
+        LigarNaARA,
+        projeto_id=projeto_id,
+        origem_id=corpo.origem_id,
+        destino_id=corpo.destino_id,
+        rotulo=corpo.rotulo,
+    )
+    return ArestaOut.de(aresta)
+
+
+@roteador.patch("/projetos/{projeto_id}/arestas/{aresta_id}", response_model=ArestaOut)
+def editar_aresta_da_ara(
+    projeto_id: UUID, aresta_id: UUID, corpo: EditarArestaIn, executor: ExecutorDependente
+) -> ArestaOut:
+    aresta = executor.rodar(
+        EditarArestaDaARA, projeto_id=projeto_id, aresta_id=aresta_id, rotulo=corpo.rotulo
+    )
+    return ArestaOut.de(aresta)
+
+
+@roteador.delete(
+    "/projetos/{projeto_id}/arestas/{aresta_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def excluir_aresta_da_ara(
+    projeto_id: UUID, aresta_id: UUID, executor: ExecutorDependente
+) -> Response:
+    """Leva junto o exame e a citação do elo em conector E (RN-11)."""
+    executor.rodar(ExcluirArestaDaARA, projeto_id=projeto_id, aresta_id=aresta_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # -- UDE: marcador, ficha, reformulação, parecer, status ------------------------------

@@ -49,10 +49,18 @@ export const CODIGOS = {
   TRANSICAO_INVALIDA: "INVALID_TRANSITION",
   MUTACAO_RECUSADA: "MUTATION_REFUSED",
   TOPOLOGIA_FIXA: "FIXED_TOPOLOGY",
+  /** O estado é de uma ferramenta e a chamada não veio pela raiz do agregado dela. */
+  EXIGE_RAIZ_DO_AGREGADO: "AGGREGATE_ROOT_REQUIRED",
   PREMISSA_INVALIDA: "INVALID_ASSUMPTION",
   INJECAO_INVALIDA: "INVALID_INJECTION",
   DERIVACAO_INVALIDA: "INVALID_DERIVATION",
   GERACAO_INVALIDA: "INVALID_GENERATION_RESULT",
+  /* Os quatro da governança: a ação some do catálogo de quem não pode (§B.7.3), a
+     proposta é de outro inquilino, ela venceu, ou a tela mudou entre propor e confirmar. */
+  ACAO_INDISPONIVEL: "ACTION_NOT_FOUND",
+  PROPOSTA_INEXISTENTE: "PROPOSAL_NOT_FOUND",
+  PROPOSTA_VENCIDA: "PROPOSAL_EXPIRED",
+  CONTEXTO_DEFASADO: "PROPOSAL_CONTEXT_STALE",
   DOMINIO_RECUSOU: "DOMAIN_REFUSED",
   /** Nossos, do cliente: a rede e a resposta ilegível também precisam de nome. */
   REDE_INDISPONIVEL: "REDE_INDISPONIVEL",

@@ -66,13 +66,48 @@ describe("prévia da geração", () => {
     expect(screen.getByText(/Titular remoto/)).toBeInTheDocument();
   });
 
-  it("recusar fecha a prévia — e não existe botão que escreva daqui", async () => {
+  it("recusar fecha a prévia sem custo nenhum — não houve escrita para desfazer", async () => {
     const aoFechar = vi.fn();
-    renderComIdioma(<PreviaDaGeracao geracao={GERACAO} textosAtuais={{}} aoFechar={aoFechar} />);
-    const rotulos = screen.getAllByRole("button").map((b) => b.textContent ?? "");
-    expect(rotulos.some((texto) => /aplicar|salvar|aceitar/i.test(texto))).toBe(false);
+    const aoAceitar = vi.fn();
+    renderComIdioma(
+      <PreviaDaGeracao
+        geracao={GERACAO}
+        textosAtuais={{}}
+        aoFechar={aoFechar}
+        aoAceitar={aoAceitar}
+      />,
+    );
     await userEvent.click(screen.getByRole("button", { name: /Recusar/ }));
     expect(aoFechar).toHaveBeenCalled();
+    expect(aoAceitar).not.toHaveBeenCalled();
+  });
+
+  // O defeito que este teste fecha: a prévia mostrava o diff e só oferecia "Recusar". Não
+  // havia, na interface, caminho para ACEITAR — a funcionalidade mais vistosa do produto
+  // não concluía. Aceitar **não** escreve daqui: leva a proposta ao gate governado, que é
+  // quem atravessa a máquina de estados no servidor (RF-23/RF-24 da spec 007).
+  it("aceitar existe, e leva a proposta ao gate — as duas ações com o mesmo peso", async () => {
+    const aoAceitar = vi.fn();
+    renderComIdioma(
+      <PreviaDaGeracao
+        geracao={GERACAO}
+        textosAtuais={{}}
+        aoFechar={vi.fn()}
+        aoAceitar={aoAceitar}
+      />,
+    );
+    const aceitar = screen.getByRole("button", { name: /Aceitar/ });
+    const recusar = screen.getByRole("button", { name: /Recusar/ });
+    expect(aceitar.className).toBe(recusar.className); // RI-06: mesmo peso visual
+
+    await userEvent.click(aceitar);
+    expect(aoAceitar).toHaveBeenCalledTimes(1);
+  });
+
+  it("sem o caminho de aceitar (só leitura), a prévia continua honesta e só recusa", () => {
+    renderComIdioma(<PreviaDaGeracao geracao={GERACAO} textosAtuais={{}} aoFechar={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: /Aceitar/ })).toBeNull();
+    expect(screen.getByRole("button", { name: /Recusar/ })).toBeInTheDocument();
   });
 
   it("sobrevive a um resultado sem as chaves esperadas, sem quebrar a tela", () => {

@@ -320,3 +320,50 @@ export interface SugestoesDeInjecao {
   sugestoes: SugestaoDeInjecao[];
   aviso: string;
 }
+
+/**
+ * O desfecho de UM alvo de um lote (APH-5.9(b) do Padrão APH — Aplicação ↔ Harness).
+ * Sete executaram e um não é **dado**, não prosa: é o que a superfície mostra item a item.
+ */
+export interface DesfechoDeAlvo {
+  target: string;
+  status: string;
+  message: string;
+}
+
+/**
+ * A proposta de ação — o objeto do gate humano (spec 006).
+ *
+ * Ela é o que torna "aceitar a geração" diferente de "a tela escreveu": o conteúdo
+ * assistido nasce proposta no servidor, atravessa a máquina de estados
+ * (`proposed → awaiting_approval → confirmed → executing → executed`) e só então vira
+ * escrita — com traço, inclusive quando é recusada.
+ *
+ * `estado` é onde ela está na máquina; `status` é o desfecho do §A.3 do Anexo A (vazio
+ * enquanto ela espera). Os dois viajam porque respondem perguntas diferentes.
+ * `origem` (`humano` | `ia`) é **dado exibido, nunca desvio de fluxo** (RI-02).
+ */
+export interface Proposta {
+  proposal_id: string;
+  action_id: string;
+  titulo: string;
+  risk: string;
+  requires_confirmation: boolean;
+  origem: string;
+  estado: string;
+  alvos: string[];
+  quantidade_de_alvos: number;
+  criada_em: string;
+  vence_em: string;
+  status: string | null;
+  mensagem: string;
+  outcomes: DesfechoDeAlvo[];
+}
+
+/** O corpo de `POST /toc/propostas` — o que a interface leva ao gate. */
+export interface PedidoDeProposta {
+  action_id: string;
+  args: Record<string, unknown>;
+  origem?: "humano" | "ia";
+  contexto_hash?: string | null;
+}

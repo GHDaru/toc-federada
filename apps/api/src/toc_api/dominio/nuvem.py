@@ -30,10 +30,11 @@ origem (o dilema veio de UDEs da ARA) e a semeadura (a injeção escolhida semea
 """
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Iterable, Mapping, Sequence
+from typing import TYPE_CHECKING, Iterable, Iterator, Mapping, Sequence
 from uuid import UUID, uuid4
 
 from .erros import DadoInvalido, MutacaoRecusada, NaoEncontrado
@@ -58,7 +59,7 @@ from .eventos import (
 from .formulacao import AvisoDeFormulacao, avaliar_formulacao
 from .grafo import ArestaCausal, No
 from .identidade import DonoDoProjeto
-from .projeto import Projeto
+from .projeto import Projeto, registrar_raiz_de_ferramenta
 from .valores import LIMITE_DESCRICAO, PosicaoNoCanvas, texto as texto_de_dominio
 
 if TYPE_CHECKING:  # pragma: no cover - só para o verificador de tipos
@@ -67,6 +68,11 @@ if TYPE_CHECKING:  # pragma: no cover - só para o verificador de tipos
 
 #: O tipo de projeto do M3 (spec 007, RF-01) — o M1 nunca precisa saber deste nome.
 FERRAMENTA_NC = "nc"
+
+#: A NC é a RAIZ do agregado do M3: o grafo de um projeto `nc` só muda por dentro
+#: dela (`Projeto._exigir_raiz`). O núcleo do M1 não importa este módulo — quem se
+#: anuncia é a ferramenta, e o nome serve à mensagem de recusa da borda.
+registrar_raiz_de_ferramenta(FERRAMENTA_NC, "NuvemDeConflito")
 
 LIMITE_PREMISSA = 1000
 LIMITE_INJECAO = 1000
@@ -394,6 +400,18 @@ class NuvemDeConflito:
             )
         self._exigir_topologia()
 
+    # -- a única porta para o `Projeto` contido ----------------------------------
+
+    @contextmanager
+    def _nucleo(self) -> Iterator[Projeto]:
+        """Abre o núcleo do M1 PARA A RAIZ. Toda delegação da nuvem passa por aqui.
+
+        Fora deste `with`, o `Projeto` de uma nuvem recusa mutação de grafo — é o que
+        fecha a porta dos fundos que as rotas genéricas de `/toc/projetos` abriam.
+        """
+        with self.projeto.sob_a_raiz() as nucleo:
+            yield nucleo
+
     # -- topologia: a invariante central (RN-01) ---------------------------------
 
     def _exigir_topologia(self) -> None:
@@ -526,7 +544,8 @@ class NuvemDeConflito:
         papel = PapelDaEntidade(papel)
         no = self.entidade(papel)
         # A validação de texto é do M1 (`editar_no`): reaproveitar é o ponto da composição.
-        self.projeto.editar_no(no.id, titulo=texto, em=em)
+        with self._nucleo() as nucleo:
+            nucleo.editar_no(no.id, titulo=texto, em=em)
         # `editar_no` já emitiu `NoEditado`; o evento do M3 é o que carrega o PAPEL e a
         # origem, que é o vocabulário desta ferramenta.
         self._emitir(
@@ -1011,23 +1030,26 @@ def novo_projeto_nc(
         criado_em=em,
         alterado_em=em,
     )
-    for papel in PapelDaEntidade:
-        x, y = POSICAO_CANONICA[papel]
-        projeto.adicionar_no(
-            titulo=TEXTO_DE_EXEMPLO[papel],
-            tipo=TIPO_DE_NO_POR_PAPEL[papel],
-            posicao=PosicaoNoCanvas(x, y),
-            em=em,
-        )
-    por_papel = {PAPEL_POR_TIPO_DE_NO[n.tipo]: n.id for n in projeto.nos}
-    for chave in ChaveDaAresta:
-        origem_papel, destino_papel = PAR_DA_ARESTA[chave]
-        projeto.ligar(
-            por_papel[origem_papel],
-            por_papel[destino_papel],
-            rotulo=chave.value,
-            em=em,
-        )
+    # A fábrica É a raiz nascendo: as 5 entidades e as 7 arestas são criadas de dentro
+    # dela, e por isso o núcleo as aceita. Fora daqui não há caminho que as crie.
+    with projeto.sob_a_raiz() as nucleo:
+        for papel in PapelDaEntidade:
+            x, y = POSICAO_CANONICA[papel]
+            nucleo.adicionar_no(
+                titulo=TEXTO_DE_EXEMPLO[papel],
+                tipo=TIPO_DE_NO_POR_PAPEL[papel],
+                posicao=PosicaoNoCanvas(x, y),
+                em=em,
+            )
+        por_papel = {PAPEL_POR_TIPO_DE_NO[n.tipo]: n.id for n in nucleo.nos}
+        for chave in ChaveDaAresta:
+            origem_papel, destino_papel = PAR_DA_ARESTA[chave]
+            nucleo.ligar(
+                por_papel[origem_papel],
+                por_papel[destino_papel],
+                rotulo=chave.value,
+                em=em,
+            )
     # A fila de eventos do M1 (5 `NoAdicionado` + 7 `ArestaLigada`) descreve a mecânica;
     # o que a ferramenta relata é UM ato — a nuvem nasceu inteira (RF-02).
     projeto.eventos = ()

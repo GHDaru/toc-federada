@@ -11,16 +11,17 @@ from datetime import datetime, timezone
 import pytest
 
 from toc_api.aplicacao.ara import (
+    AdicionarEfeito,
     AnalisarArvore,
     CriarProjetoARA,
     ExaminarElo,
+    LigarNaARA,
     MarcarUde,
     MudarStatusDeUde,
     RegistrarParecer,
     ReformularUde,
     ValidarTextoDeUde,
 )
-from toc_api.aplicacao.grafo import AdicionarNo, LigarNos
 from toc_api.dominio.ara import (
     EstadoDoExame,
     FichaDeUde,
@@ -73,7 +74,7 @@ def test_criar_projeto_ara_nasce_com_a_ferramenta_certa(cenario):
 
 def test_marcar_ude_valida_de_imediato_e_persiste_o_status(cenario):
     pecas, rastreador, projeto = cenario
-    no = AdicionarNo(**pecas).rodar(dono=DONO, projeto_id=projeto.id, titulo=RUIM)
+    no = AdicionarEfeito(**pecas).rodar(dono=DONO, projeto_id=projeto.id, titulo=RUIM)
     ficha = MarcarUde(**pecas).rodar(
         dono=DONO,
         projeto_id=projeto.id,
@@ -88,7 +89,7 @@ def test_marcar_ude_valida_de_imediato_e_persiste_o_status(cenario):
 
 def test_reformular_reexecuta_a_validacao_e_libera_o_caminho_do_validado(cenario):
     pecas, _, projeto = cenario
-    no = AdicionarNo(**pecas).rodar(dono=DONO, projeto_id=projeto.id, titulo=RUIM)
+    no = AdicionarEfeito(**pecas).rodar(dono=DONO, projeto_id=projeto.id, titulo=RUIM)
     MarcarUde(**pecas).rodar(dono=DONO, projeto_id=projeto.id, no_id=no.id)
 
     with pytest.raises(TransicaoDeStatusRecusada):
@@ -121,11 +122,11 @@ def test_reformular_reexecuta_a_validacao_e_libera_o_caminho_do_validado(cenario
 def test_a_ara_persistida_reabre_com_ficha_status_e_exame(cenario):
     """RF-05 da spec 004 aplicado ao M2: reabrir devolve o que foi gravado."""
     pecas, _, projeto = cenario
-    causa = AdicionarNo(**pecas).rodar(
+    causa = AdicionarEfeito(**pecas).rodar(
         dono=DONO, projeto_id=projeto.id, titulo="Os formulários chegam incompletos."
     )
-    efeito = AdicionarNo(**pecas).rodar(dono=DONO, projeto_id=projeto.id, titulo=BOM)
-    elo = LigarNos(**pecas).rodar(
+    efeito = AdicionarEfeito(**pecas).rodar(dono=DONO, projeto_id=projeto.id, titulo=BOM)
+    elo = LigarNaARA(**pecas).rodar(
         dono=DONO, projeto_id=projeto.id, origem_id=causa.id, destino_id=efeito.id
     )
     MarcarUde(**pecas).rodar(dono=DONO, projeto_id=projeto.id, no_id=efeito.id)
@@ -146,7 +147,7 @@ def test_a_ara_persistida_reabre_com_ficha_status_e_exame(cenario):
 
 def test_analisar_arvore_e_leitura_e_leva_o_resumo_para_o_traco(cenario):
     pecas, rastreador, projeto = cenario
-    adicionar, ligar = AdicionarNo(**pecas), LigarNos(**pecas)
+    adicionar, ligar = AdicionarEfeito(**pecas), LigarNaARA(**pecas)
     raiz = adicionar.rodar(
         dono=DONO, projeto_id=projeto.id, titulo="A conferência de matrícula é manual."
     )

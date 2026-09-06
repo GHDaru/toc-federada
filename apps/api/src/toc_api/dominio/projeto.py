@@ -25,12 +25,19 @@ resposta que o núcleo dá.
 """
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Iterator
 from uuid import UUID, uuid4
 
-from .erros import ArestaInvalida, MutacaoRecusada, NaoEncontrado
+from .erros import (
+    ArestaInvalida,
+    MutacaoForaDaRaiz,
+    MutacaoRecusada,
+    NaoEncontrado,
+)
 from .eventos import (
     ArestaEditada,
     ArestaExcluida,
@@ -59,6 +66,33 @@ from .valores import (
 
 LIMITE_NOME = 200
 
+#: `ferramenta → nome da raiz de agregado que governa o grafo dela`.
+#:
+#: **Por que existe, e por que a segurança NÃO depende dela.** O `Projeto` é o núcleo do
+#: M1 (Núcleo de Diagramas Lógicos) e não conhece semântica da Teoria das Restrições
+#: (TOC) — é a RN-04 da spec 004, e é ela que impede a sétima cópia de canvas. Então o
+#: núcleo não pode importar `ProjetoARA` nem `NuvemDeConflito` para saber quem o governa.
+#: O que ele sabe é mais simples e mais forte: **um projeto cuja ferramenta não é a
+#: genérica pertence a alguma raiz**, e o grafo dele só muda por dentro dela. Este mapa
+#: só empresta o NOME da raiz para a mensagem de recusa; uma ferramenta nova que esqueça
+#: de se registrar fica **bloqueada**, nunca liberada. Fail-closed por construção.
+RAIZ_POR_FERRAMENTA: dict[str, str] = {}
+
+
+def registrar_raiz_de_ferramenta(ferramenta: str, raiz: str) -> None:
+    """Cada raiz de ferramenta se anuncia ao ser importada (M2 em `ara`, M3 em `nuvem`)."""
+    RAIZ_POR_FERRAMENTA[ferramenta] = raiz
+
+
+def raiz_da_ferramenta(ferramenta: str) -> str:
+    """O nome da raiz que governa a ferramenta — ou uma descrição, se ela não se registrou."""
+    return RAIZ_POR_FERRAMENTA.get(ferramenta, f"a raiz da ferramenta {ferramenta!r}")
+
+
+def tem_raiz_propria(ferramenta: str) -> bool:
+    """Toda ferramenta que não é a genérica tem raiz própria. É a regra, não a exceção."""
+    return ferramenta != FERRAMENTA_GENERICA
+
 
 class EstadoDoProjeto(str, Enum):
     ATIVO = "ativo"
@@ -83,6 +117,11 @@ class Projeto:
     nos: tuple[No, ...] = ()
     arestas: tuple[ArestaCausal, ...] = ()
     eventos: tuple[EventoDeDominio, ...] = ()
+    #: Profundidade da entrada pela raiz da ferramenta. NÃO é estado de negócio: não
+    #: entra no construtor, não é comparado, não é persistido e vale zero em todo
+    #: agregado que volta do banco. É o contador do `sob_a_raiz`, e é contador (e não
+    #: booleano) porque uma raiz chama outra operação sua por dentro.
+    _profundidade_da_raiz: int = field(default=0, init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         self.nome = _texto(self.nome, campo="nome", minimo=1, maximo=LIMITE_NOME)
@@ -133,6 +172,41 @@ class Projeto:
     def ciclos(self) -> list[tuple[UUID, ...]]:
         return ciclos(tuple(n.id for n in self.nos), self.arestas)
 
+    # -- a raiz do agregado é o único caminho para o grafo ------------------------
+
+    @contextmanager
+    def sob_a_raiz(self) -> Iterator["Projeto"]:
+        """A chave da raiz da ferramenta. **Só o domínio a usa** — há portão para isso.
+
+        `ProjetoARA` e `NuvemDeConflito` contêm este `Projeto` e acrescentam invariantes
+        que ele não conhece. Enquanto qualquer chamador podia mutar o grafo direto,
+        existiam duas portas para o mesmo estado e as invariantes moravam numa só — o
+        agregado com porta dos fundos. Aqui a porta dos fundos não é fechada por um `if`
+        na borda: ela deixa de existir, porque quem guarda o grafo passa a exigir a raiz.
+
+        Quem chama isto de fora de `toc_api.dominio` está reabrindo o defeito, e
+        `scripts/check-raiz-do-agregado.sh` reprova.
+        """
+        self._profundidade_da_raiz += 1
+        try:
+            yield self
+        finally:
+            self._profundidade_da_raiz -= 1
+
+    def _exigir_raiz(self, operacao: str) -> None:
+        """Recusa toda mutação de grafo que não venha de dentro da raiz da ferramenta.
+
+        A genérica (`generico`) não tem raiz acima dela: nela o `Projeto` **é** a raiz, e
+        é por isso que o M1 não perde nada. Toda outra ferramenta é bloqueada por padrão,
+        registrada ou não — a ferramenta nova nasce fechada e se abre ao passar a
+        delegar por `sob_a_raiz`.
+        """
+        if self._profundidade_da_raiz or not tem_raiz_propria(self.ferramenta):
+            return
+        raise MutacaoForaDaRaiz(
+            operacao, self.ferramenta, raiz_da_ferramenta(self.ferramenta)
+        )
+
     # -- mutações de metadados ---------------------------------------------------
 
     def renomear(self, nome: str, *, em: datetime) -> None:
@@ -175,6 +249,7 @@ class Projeto:
         posicao: PosicaoNoCanvas | None = None,
         no_id: UUID | None = None,
     ) -> No:
+        self._exigir_raiz("adicionar_no")
         self._exigir_ativo("adicionar_no")
         novo = No(
             id=no_id or uuid4(),
@@ -198,6 +273,7 @@ class Projeto:
         titulo: str | None = None,
         descricao: str | None = None,
     ) -> No:
+        self._exigir_raiz("editar_no")
         self._exigir_ativo("editar_no")
         alvo = self.no(no_id)
         campos: list[str] = []
@@ -216,6 +292,7 @@ class Projeto:
         return alvo
 
     def mover_no(self, no_id: UUID, posicao: PosicaoNoCanvas, *, em: datetime) -> No:
+        self._exigir_raiz("mover_no")
         self._exigir_ativo("mover_no")
         alvo = self.no(no_id)
         alvo.posicao = posicao
@@ -224,6 +301,7 @@ class Projeto:
         return alvo
 
     def recolher_no(self, no_id: UUID, recolhido: bool, *, em: datetime) -> No:
+        self._exigir_raiz("recolher_no")
         self._exigir_ativo("recolher_no")
         alvo = self.no(no_id)
         alvo.recolhido = bool(recolhido)
@@ -233,6 +311,7 @@ class Projeto:
 
     def excluir_no(self, no_id: UUID, *, em: datetime) -> list[UUID]:
         """Remove o nó e SOMENTE as arestas que o tocam. Devolve o raio (RF-15/RF-16)."""
+        self._exigir_raiz("excluir_no")
         self._exigir_ativo("excluir_no")
         alvo = self.no(no_id)
         removidas = [a.id for a in self.arestas_incidentes(alvo.id)]
@@ -255,6 +334,7 @@ class Projeto:
         rotulo: str = "",
         aresta_id: UUID | None = None,
     ) -> ArestaCausal:
+        self._exigir_raiz("ligar")
         self._exigir_ativo("ligar")
         if not (self.tem_no(origem_id) and self.tem_no(destino_id)):
             raise ArestaInvalida(
@@ -285,6 +365,7 @@ class Projeto:
         return nova
 
     def editar_aresta(self, aresta_id: UUID, rotulo: str, *, em: datetime) -> ArestaCausal:
+        self._exigir_raiz("editar_aresta")
         self._exigir_ativo("editar_aresta")
         alvo = self.aresta(aresta_id)
         alvo.rotulo = _texto(rotulo, campo="rotulo", minimo=0, maximo=LIMITE_ROTULO)
@@ -293,6 +374,7 @@ class Projeto:
         return alvo
 
     def excluir_aresta(self, aresta_id: UUID, *, em: datetime) -> None:
+        self._exigir_raiz("excluir_aresta")
         self._exigir_ativo("excluir_aresta")
         alvo = self.aresta(aresta_id)
         self.arestas = tuple(a for a in self.arestas if a.id != alvo.id)

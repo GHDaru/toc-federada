@@ -20,9 +20,11 @@ O que este módulo corrige da linhagem, em uma frase por item:
 """
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from enum import Enum
+from typing import Iterator
 from uuid import UUID, uuid4
 
 from .analise import RelatorioEstrutural, analisar_estrutura
@@ -43,11 +45,17 @@ from .eventos import (
 )
 from .grafo import ArestaCausal, No
 from .identidade import DonoDoProjeto
-from .projeto import Projeto
+from .projeto import Projeto, registrar_raiz_de_ferramenta
 from .valores import PosicaoNoCanvas
 
 #: O tipo de projeto do M2 (spec 005, RF-01) — o M1 nunca precisa saber deste nome.
 FERRAMENTA_ARA = "ara"
+
+#: A ARA é a RAIZ do agregado do M2: o grafo de um projeto `ara` só muda por dentro
+#: dela (`Projeto._exigir_raiz`). Sem isto, `Projeto.ligar` criava elo sem exame,
+#: `Projeto.excluir_no` sumia com um Efeito Indesejável sem arquivar a ficha e
+#: `Projeto.excluir_aresta` deixava conector apontando para aresta que não existe mais.
+registrar_raiz_de_ferramenta(FERRAMENTA_ARA, "ProjetoARA")
 
 #: Todo nó da ARA é um **efeito**; "causa" é POSIÇÃO na cadeia, não tipo de nó (F-15).
 TIPO_DE_NO_EFEITO = "efeito"
@@ -165,6 +173,17 @@ class ProjetoARA:
 
     # -- delegação ao núcleo -----------------------------------------------------
 
+    @contextmanager
+    def _nucleo(self) -> Iterator[Projeto]:
+        """Abre o núcleo do M1 PARA A RAIZ. Toda delegação da ARA passa por aqui.
+
+        Fora deste `with`, o `Projeto` de uma ARA recusa mutação de grafo — é o que
+        fecha a porta dos fundos que as rotas genéricas de `/toc/projetos` abriam, e por
+        onde a própria interface da ferramenta estava passando.
+        """
+        with self.projeto.sob_a_raiz() as nucleo:
+            yield nucleo
+
     @property
     def nos(self) -> tuple[No, ...]:
         return self.projeto.nos
@@ -194,18 +213,20 @@ class ProjetoARA:
         no_id: UUID | None = None,
     ) -> No:
         """Nó da ARA. Todo nó é um efeito: causa é posição na cadeia, não tipo (F-15)."""
-        return self.projeto.adicionar_no(
-            titulo=titulo,
-            descricao=descricao,
-            tipo=TIPO_DE_NO_EFEITO,
-            posicao=posicao,
-            no_id=no_id,
-            em=em,
-        )
+        with self._nucleo() as nucleo:
+            return nucleo.adicionar_no(
+                titulo=titulo,
+                descricao=descricao,
+                tipo=TIPO_DE_NO_EFEITO,
+                posicao=posicao,
+                no_id=no_id,
+                em=em,
+            )
 
     def ligar(self, origem_id: UUID, destino_id: UUID, *, em: datetime, **kw):
         """Aresta de suficiência. Herda as invariantes do M1 sem exceção nova (RF-20)."""
-        aresta = self.projeto.ligar(origem_id, destino_id, em=em, **kw)
+        with self._nucleo() as nucleo:
+            aresta = nucleo.ligar(origem_id, destino_id, em=em, **kw)
         self._exames[aresta.id] = Exame()
         return aresta
 
@@ -215,7 +236,8 @@ class ProjetoARA:
         ficha = self._udes.get(no_id)
         pareceres = tuple(self._pareceres.get(no_id, ()))
         status = self._status.get(no_id)
-        removidas = self.projeto.excluir_no(no_id, em=em)
+        with self._nucleo() as nucleo:
+            removidas = nucleo.excluir_no(no_id, em=em)
         for aresta_id in removidas:
             self._exames.pop(aresta_id, None)
             self._soltar_das_conjuncoes(aresta_id)
@@ -229,6 +251,62 @@ class ProjetoARA:
                 no_id=no_id, ficha=ficha, pareceres=pareceres, status=status,
             )
         return removidas
+
+    # -- as operações de grafo que faltavam à raiz -------------------------------
+    #
+    # Não são conveniência: enquanto a ARA não as tinha, a interface da própria
+    # ferramenta chamava as rotas genéricas de `/toc/projetos` para mover, editar,
+    # rotular e apagar — e cada uma dessas chamadas passava por fora das invariantes
+    # abaixo. Uma raiz sem a operação que o produto precisa é uma raiz que o produto
+    # contorna.
+
+    def editar_no(
+        self,
+        no_id: UUID,
+        *,
+        em: datetime,
+        titulo: str | None = None,
+        descricao: str | None = None,
+    ) -> No:
+        """Edita o nó. Mudar o TÍTULO de um Efeito Indesejável REVALIDA (RF-10).
+
+        É a mesma garantia de `reformular`, agora sem porta alternativa: não existe
+        caminho em que o texto de um Efeito Indesejável mude e o veredito formal anterior
+        continue pendurado sobre ele.
+        """
+        anterior = self.projeto.no(no_id).titulo
+        with self._nucleo() as nucleo:
+            alvo = nucleo.editar_no(no_id, titulo=titulo, descricao=descricao, em=em)
+        if self.e_ude(no_id) and alvo.titulo != anterior:
+            self._revalidar(alvo, em=em, texto_anterior=anterior)
+        return alvo
+
+    def mover_no(self, no_id: UUID, posicao: PosicaoNoCanvas, *, em: datetime) -> No:
+        """Arrastar no canvas. Sem semântica da ARA acima — e ainda assim pela raiz."""
+        with self._nucleo() as nucleo:
+            return nucleo.mover_no(no_id, posicao, em=em)
+
+    def recolher_no(self, no_id: UUID, recolhido: bool, *, em: datetime) -> No:
+        with self._nucleo() as nucleo:
+            return nucleo.recolher_no(no_id, recolhido, em=em)
+
+    def editar_aresta(self, aresta_id: UUID, rotulo: str, *, em: datetime) -> ArestaCausal:
+        with self._nucleo() as nucleo:
+            return nucleo.editar_aresta(aresta_id, rotulo, em=em)
+
+    def excluir_aresta(self, aresta_id: UUID, *, em: datetime) -> None:
+        """Some com o elo E com o que dependia dele: o exame e a citação em conector.
+
+        A RN-11 diz que aresta que some leva junto o conector que a citava — "nunca deixa
+        referência órfã". `_soltar_das_conjuncoes` já existia e só rodava por dentro de
+        `excluir_no`: apagar a aresta sozinha não tinha caminho pela raiz, então o
+        produto apagava pela rota genérica e o conector ficava apontando para uma aresta
+        que não existe mais.
+        """
+        with self._nucleo() as nucleo:
+            nucleo.excluir_aresta(aresta_id, em=em)
+        self._exames.pop(aresta_id, None)
+        self._soltar_das_conjuncoes(aresta_id)
 
     # -- UDE: marcador, ficha e validação formal ---------------------------------
 
@@ -293,7 +371,8 @@ class ProjetoARA:
         isso que "reformular" é uma operação nomeada e não um `editar_no` qualquer.
         """
         anterior = self.projeto.no(no_id).titulo
-        alvo = self.projeto.editar_no(no_id, titulo=titulo, em=em)
+        with self._nucleo() as nucleo:
+            alvo = nucleo.editar_no(no_id, titulo=titulo, em=em)
         if self.e_ude(no_id):
             self._revalidar(alvo, em=em, texto_anterior=anterior)
         return alvo

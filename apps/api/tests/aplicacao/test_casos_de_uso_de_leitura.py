@@ -19,7 +19,12 @@ from uuid import uuid4
 
 import pytest
 
-from toc_api.aplicacao.ara import AbrirProjetoARA, CriarProjetoARA, MarcarUde
+from toc_api.aplicacao.ara import (
+    AbrirProjetoARA,
+    AdicionarEfeito,
+    CriarProjetoARA,
+    MarcarUde,
+)
 from toc_api.aplicacao.grafo import AdicionarNo, LigarNos
 from toc_api.aplicacao.projetos import (
     AbrirProjeto,
@@ -47,6 +52,7 @@ def pecas():
 
 
 def test_abrir_projeto_devolve_metadados_nos_e_arestas_num_carregamento_so(pecas):
+    """Projeto GENÉRICO: aqui o `Projeto` é a própria raiz, e a porta do M1 é a certa."""
     projeto = CriarProjeto(**pecas).rodar(dono=DONA, nome="Horizonte — diagrama")
     a = AdicionarNo(**pecas).rodar(
         dono=DONA, projeto_id=projeto.id, titulo="Os formulários chegam incompletos."
@@ -102,7 +108,7 @@ def test_listar_lixeira_de_outro_inquilino_nao_atravessa(pecas):
 
 def test_abrir_projeto_ara_devolve_a_semantica_do_m2_junto(pecas):
     projeto = CriarProjetoARA(**pecas).rodar(dono=DONA, nome="Horizonte — ARA")
-    no = AdicionarNo(**pecas).rodar(
+    no = AdicionarEfeito(**pecas).rodar(
         dono=DONA, projeto_id=projeto.id, titulo="A taxa de erros no processo X é de 15%."
     )
     MarcarUde(**pecas).rodar(dono=DONA, projeto_id=projeto.id, no_id=no.id)

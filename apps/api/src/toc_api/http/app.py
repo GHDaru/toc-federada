@@ -33,6 +33,7 @@ from .aph import INTERVALO_DO_TURNO_S, criar_router_aph
 from .roteadores import projetos as roteador_de_projetos
 from .roteadores import ara as roteador_da_ara
 from .roteadores import nuvem as roteador_da_nuvem
+from .roteadores import propostas as roteador_de_propostas
 
 
 @dataclass(frozen=True)
@@ -130,6 +131,9 @@ def criar_app(ambiente: dict[str, str] | None = None) -> FastAPI:
     app.include_router(roteador_de_projetos.roteador)
     app.include_router(roteador_da_ara.roteador)
     app.include_router(roteador_da_nuvem.roteador)
+    # O gate humano visto pela própria interface: a proposta de ação nasce e é
+    # decidida aqui, pelos MESMOS casos de uso que o fio usa (spec 006, RI-01).
+    app.include_router(roteador_de_propostas.roteador)
     # A superfície APH: fio do Anexo A (sessões, SSE, replay, cancelamento), catálogo
     # `toc.*`, decisão de proposta, borda federada e traço auditável.
     app.include_router(criar_router_aph(composicao))

@@ -40,6 +40,7 @@ BASES=(
   "scripts/check-specs.sh"          "specs"
   "scripts/check-vazamento.sh"      "vazamento"
   "scripts/check-jornadas.sh"       "jornadas"
+  "scripts/check-raiz-do-agregado.sh" "raiz-do-agregado"
 )
 
 # ── as sabotagens ───────────────────────────────────────────────────────────────
@@ -191,6 +192,22 @@ SABOTAGENS=(
   "scripts/check-jornadas.sh" "jornadas" "jornada-sem-comando-de-regeneracao"
   "sed -i '/capturar-telas.mjs/d' docs/jornadas/001-jornada-sintetica.md"
   "J4 001-jornada-sintetica.md: não declara o comando"
+
+  # --- check-raiz-do-agregado.sh (DDD · operação só pela raiz do agregado) ---
+  # As três mutações reabrem, cada uma à sua maneira, a porta dos fundos que o crítico
+  # achou: uma camada de fora pegando a chave do núcleo, uma mutação de grafo que perde a
+  # guarda, e uma ferramenta que deixa de se registrar como raiz.
+  "scripts/check-raiz-do-agregado.sh" "raiz-do-agregado" "chave-da-raiz-vazando-para-a-aplicacao"
+  "sed -i 's,return projeto.adicionar_no,with projeto.sob_a_raiz() as n: return n.adicionar_no,' apps/api/src/toc_api/aplicacao/grafo.py"
+  "alcançado fora de dominio/"
+
+  "scripts/check-raiz-do-agregado.sh" "raiz-do-agregado" "mutacao-de-grafo-sem-guarda"
+  "sed -i 's,self._exigir_raiz(.excluir_aresta.),pass,' apps/api/src/toc_api/dominio/projeto.py"
+  "mutação de grafo sem guarda de raiz: excluir_aresta"
+
+  "scripts/check-raiz-do-agregado.sh" "raiz-do-agregado" "ferramenta-que-nao-registra-a-raiz"
+  "sed -i '/^registrar_raiz_de_ferramenta(FERRAMENTA_NC/d' apps/api/src/toc_api/dominio/nuvem.py"
+  "esperava ao menos duas raízes registradas"
 )
 
 falhas=0
@@ -267,11 +284,59 @@ for ((i = 0; i < ${#SABOTAGENS[@]}; i += 5)); do
   fi
 done
 
+# ── Terceira metade: o portão que não tem fixture de arquivo ─────────────────────────
+# `check-conformidade-aph.sh` não lê um diretório: ele SOBE o serviço e mede pela rede. A
+# sabotagem dele, portanto, é de AMBIENTE — apontar a cadeia do banco para um banco que
+# não existe. Sem o conserto deste ciclo o portão respondia "11/11, APTO" nessa situação,
+# porque a suíte é caixa-preta e o serviço cai em `persistencia: memoria` sozinho: verde
+# legítimo sobre alvo errado, que é a regra R2 em pessoa. Agora ele recusa e diz por quê.
+#
+# Cinco campos, como as outras: nome · ambiente · argumentos · trecho exigido · código.
+echo
+echo "── Terceira metade: sabotagem por AMBIENTE (portão sem fixture de arquivo) ──"
+n_ambiente=0
+ambiente_ok=0
+
+sabota_ambiente() {  # $1 nome · $2 env · $3 args · $4 trecho exigido · $5 código exigido
+  n_ambiente=$((n_ambiente + 1))
+  local saida codigo
+  saida="$(cd "$RAIZ" && env $2 bash scripts/check-conformidade-aph.sh $3 2>&1)"
+  codigo=$?
+  [[ $VERBOSE -eq 1 ]] && printf '%s\n' "$saida"
+  if [[ "$codigo" != "$5" ]]; then
+    bad "$1: esperava saída $5, veio $codigo"
+    printf '%s\n' "$saida" | tail -12 | sed 's/^/      /'
+  elif ! printf '%s' "$saida" | grep -qF -- "$4"; then
+    bad "$1: saiu $codigo mas por OUTRO motivo; esperava a saída conter: $4"
+    printf '%s\n' "$saida" | tail -12 | sed 's/^/      /'
+  else
+    ok "$1 → check-conformidade-aph.sh saiu $codigo pelo motivo declarado"
+    ambiente_ok=$((ambiente_ok + 1))
+  fi
+}
+
+if [[ -f "$RAIZ/scripts/check-conformidade-aph.sh" ]]; then
+  sabota_ambiente "aph-alvo-em-memoria-recusado" \
+    "DATABASE_URL=postgresql+psycopg://toc@/banco_que_nao_existe?host=/var/run/postgresql&port=5433" \
+    "8121" \
+    "o alvo mediria em MEMÓRIA" \
+    3
+
+  sabota_ambiente "aph-alvo-em-memoria-carimbado-quando-pedido" \
+    "DATABASE_URL=postgresql+psycopg://toc@/banco_que_nao_existe?host=/var/run/postgresql&port=5433" \
+    "8122 --permitir-memoria" \
+    "MAS contra alvo em memória" \
+    1
+else
+  bad "scripts/check-conformidade-aph.sh não existe"
+fi
+
 # Regra R2: o verde diz QUANTO examinou.
 echo
 echo "── Sabotagem: quanto foi examinado ──"
 echo "  portões cobertos: $n_bases  ·  bases válidas aceitas: $bases_ok/$n_bases"
 echo "  sabotagens declaradas: $n_sabotagens  ·  reprovadas pelo motivo certo: $sabotagens_ok/$n_sabotagens"
+echo "  sabotagens de ambiente: $n_ambiente  ·  recusadas pelo motivo certo: $ambiente_ok/$n_ambiente"
 echo "  cada sabotagem roda sobre uma cópia em $TMP — o repositório não é tocado"
 
 if [[ $falhas -ne 0 ]]; then

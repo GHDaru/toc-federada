@@ -305,7 +305,7 @@ def test_a_borda_federada_valida_params_contra_o_input_schema(cliente: TestClien
     )
 
     assert resposta.status_code == 400
-    assert resposta.json()["error"]["code"] == "INVALID_ARGUMENTS"
+    assert resposta.json()["error"]["code"] == "INVALID_ARGUMENT"
 
 
 def test_verbo_mutador_pela_borda_federada_nasce_proposta_e_nao_executa(cliente: TestClient) -> None:
@@ -365,7 +365,7 @@ def test_o_corpo_da_decisao_segue_o_schema_fechado_do_a6(cliente: TestClient) ->
     )
 
     assert resposta.status_code == 400
-    assert resposta.json()["error"]["code"] == "INVALID_ARGUMENTS"
+    assert resposta.json()["error"]["code"] == "INVALID_ARGUMENT"
 
 
 def test_decidir_sem_approved_e_recusado(cliente: TestClient) -> None:
@@ -473,3 +473,136 @@ def test_o_traco_nunca_carrega_o_enunciado_do_no(cliente: TestClient) -> None:
 
     assert "UDE 1" in corpo, "o alvo do lote aparece por identificador, que é o vocabulário da ação"
     assert "projeto_id" not in corpo
+
+
+# --------------------------------------------------------------------------------------
+# Terminador do fio na decisão fora do turno (§A.1) — defeito achado por revisão
+# independente que executou. O §A.1 do Anexo A diz, palavra por palavra: "O stream termina
+# com o evento `done`, ou com `error`". São dois terminadores possíveis, **um por turno**;
+# emitir `error` e depois `done` é encerrar duas vezes, e o replay que o cliente reconstrói
+# passa a ter um evento que o stream nunca teve.
+# --------------------------------------------------------------------------------------
+
+
+def _propor_com_snapshot(cliente: TestClient, sessao: str) -> tuple[str, str]:
+    """Propõe pelo fio, COM snapshot — é o snapshot que dá `context_hash` à proposta.
+
+    Devolve `(proposal_id, context_hash)`. A borda federada (`/aph/actions/...`) não serve
+    aqui porque ela propõe sem contexto, e sem `context_hash` na proposta a guarda do
+    APH-5.4 nunca dispara.
+    """
+    _, _, texto = _stream(
+        cliente,
+        sessao,
+        {
+            "text": "criar no ude",
+            "args": {
+                "projeto_id": UUID_INEXISTENTE,
+                "nos": [{"titulo": "Entregas atrasam", "tipo": "ude"}],
+            },
+            "snapshot": SNAPSHOT_DA_ARA,
+        },
+        CABECALHO,
+    )
+    propostas = [e for e in _eventos(texto) if e["kind"] == "action_proposal"]
+    assert propostas, f"a mensagem não gerou proposta: {texto[:400]}"
+    payload = propostas[-1]["payload"]
+    assert payload.get("context_hash"), "proposta sem context_hash: a guarda do APH-5.4 não seria exercitada"
+    return payload["proposal_id"], payload["context_hash"]
+
+
+def test_decisao_com_contexto_divergente_devolve_o_codigo_do_a7(cliente: TestClient) -> None:
+    """APH-5.4: a tela mudou entre proposta e confirmação → `PROPOSAL_CONTEXT_STALE`.
+
+    O código é o do registro do §A.7, porque **o cliente discrimina por código**. Traduzir
+    a recusa em `DOMAIN_REFUSED` apagaria, do lado de quem chama, a diferença entre "refaça
+    a tela" e "o servidor recusou por outra coisa qualquer".
+    """
+    valida = _validador("erro.schema.json")
+    sessao = _abrir(cliente, CABECALHO)
+    proposta, hash_original = _propor_com_snapshot(cliente, sessao)
+
+    resposta = cliente.post(
+        f"/aph/sessions/{sessao}/proposals/{proposta}",
+        json={"approved": True, "context_hash": "0" * len(hash_original)},
+        headers=CABECALHO,
+    )
+
+    assert resposta.status_code == 409, resposta.text
+    erro = resposta.json()["error"]
+    valida.validate(erro)
+    assert erro["code"] == "PROPOSAL_CONTEXT_STALE", erro
+
+
+def test_o_error_da_recusa_encerra_o_turno_sozinho_sem_done_atras(cliente: TestClient) -> None:
+    """§A.1: um terminador por turno. `error` encerra — nada pode vir depois dele.
+
+    Este é o teste que reproduz o defeito: o `done` incondicional depois do evento fazia o
+    turno terminar duas vezes. O teste imprime quantos eventos examinou (regra R2).
+    """
+    valida = _validador("evento.schema.json")
+    sessao = _abrir(cliente, CABECALHO)
+    proposta, hash_original = _propor_com_snapshot(cliente, sessao)
+
+    cliente.post(
+        f"/aph/sessions/{sessao}/proposals/{proposta}",
+        json={"approved": True, "context_hash": "0" * len(hash_original)},
+        headers=CABECALHO,
+    )
+    eventos = cliente.get(
+        f"/aph/sessions/{sessao}/events", params={"after": 0}, headers=CABECALHO
+    ).json()
+
+    for evento in eventos:
+        valida.validate(evento)
+    recusas = [i for i, e in enumerate(eventos) if e["kind"] == "error"]
+    assert recusas, f"a recusa não chegou à conversa: {[e['kind'] for e in eventos]}"
+    for posicao in recusas:
+        depois = [e["kind"] for e in eventos[posicao + 1 :]]
+        assert "done" not in depois, (
+            "`done` depois de `error` no mesmo turno: o §A.1 tem dois terminadores "
+            f"possíveis e um só por turno — {[e['kind'] for e in eventos]}"
+        )
+    medida = f"terminador: {len(eventos)} evento(s) do log examinados, {len(recusas)} `error`"
+    print(medida)
+    assert eventos[-1]["kind"] == "error", medida
+
+
+def test_a_decisao_acrescenta_um_terminador_so_ao_log(cliente: TestClient) -> None:
+    """Uma decisão é um turno: os eventos que ela produz terminam uma vez, não uma por evento."""
+    sessao = _abrir(cliente, CABECALHO)
+    proposta = _propor_lote(cliente, 2)
+    antes = cliente.get(
+        f"/aph/sessions/{sessao}/events", params={"after": 0}, headers=CABECALHO
+    ).json()
+
+    cliente.post(
+        f"/aph/sessions/{sessao}/proposals/{proposta}", json={"approved": False}, headers=CABECALHO
+    )
+
+    depois = cliente.get(
+        f"/aph/sessions/{sessao}/events", params={"after": len(antes)}, headers=CABECALHO
+    ).json()
+    terminadores = [e["kind"] for e in depois if e["kind"] in {"done", "error"}]
+    assert len(terminadores) == 1, [e["kind"] for e in depois]
+
+
+def test_acrescentar_ao_log_nao_tenta_um_segundo_terminador() -> None:
+    """A reprodução direta, na função onde o defeito mora (`http/aph.py`).
+
+    `_acrescentar_ao_log` emitia `done` **incondicionalmente** depois do evento. Quando o
+    evento é `error` — que já é terminador (§A.1) —, o `done` é uma segunda tentativa de
+    encerrar o mesmo turno. O domínio recusa (`SessaoEncerrada`), e é essa recusa que
+    subia até a borda e virava `DOMAIN_REFUSED` no lugar do código do §A.7.
+    """
+    from toc_api.dominio.federacao.wire import ErroDoFio, SessaoDeConversa
+    from toc_api.http.aph import _acrescentar_ao_log
+
+    sessao = SessaoDeConversa(id="sessao-de-teste")
+    recusa = ErroDoFio(code="PROPOSAL_EXPIRED", message="venceu antes da decisão")
+
+    _acrescentar_ao_log(sessao, ("error", recusa.como_payload()))
+
+    kinds = [e.kind for e in sessao.eventos]
+    assert kinds == ["error"], f"§A.1: um terminador por turno, veio {kinds}"
+    assert sessao.turno_terminado

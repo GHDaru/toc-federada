@@ -26,9 +26,10 @@ from ..dominio.ara import (
 from ..dominio.analise import RelatorioEstrutural
 from ..dominio.criterios_ude import ValidacaoFormal, validar_formalmente
 from ..dominio.erros import NaoEncontrado
-from ..dominio.grafo import No
+from ..dominio.grafo import ArestaCausal, No
 from ..dominio.identidade import DonoDoProjeto
 from ..dominio.portas import Rastreador, Relogio, RepositorioDeARA, SpanDeTraco
+from ..dominio.valores import PosicaoNoCanvas
 from .casos_de_uso import CasoDeUso
 
 
@@ -113,6 +114,98 @@ class _ComStatusNoTraco(_SobreARA):
             "toc.criterios_reprovados",
             len(self._ara.validacao(self._no_id).reprovacoes),
         )
+
+
+# -- o grafo da ARA, pela raiz ----------------------------------------------------------
+#
+# Estes oito casos de uso existem porque a ferramenta precisa deles, e a única outra
+# maneira de tê-los era o cliente chamar `/toc/projetos/...` — que carrega o `Projeto`
+# CRU e passa por fora das invariantes do M2. A tela da ARA fazia exatamente isso. Uma
+# raiz sem a operação que o produto precisa é uma raiz que o produto contorna.
+
+
+class AdicionarEfeito(_SobreARA):
+    """RF-04 + F-15: nó da ARA, sempre do tipo `efeito`, criado PELA RAIZ."""
+
+    nome = "adicionar_efeito"
+
+    def agir(
+        self,
+        ara,
+        *,
+        em,
+        titulo: str,
+        descricao: str = "",
+        posicao: PosicaoNoCanvas | None = None,
+    ) -> No:
+        return ara.adicionar_efeito(
+            titulo=titulo, descricao=descricao, posicao=posicao, em=em
+        )
+
+
+class EditarNoDaARA(_SobreARA):
+    """Título e descrição. Título de Efeito Indesejável REVALIDA no mesmo ato (RF-10)."""
+
+    nome = "editar_no_da_ara"
+
+    def agir(
+        self, ara, *, em, no_id: UUID, titulo: str | None = None,
+        descricao: str | None = None,
+    ) -> No:
+        return ara.editar_no(no_id, titulo=titulo, descricao=descricao, em=em)
+
+
+class MoverNoDaARA(_SobreARA):
+    nome = "mover_no_da_ara"
+
+    def agir(self, ara, *, em, no_id: UUID, posicao: PosicaoNoCanvas) -> No:
+        return ara.mover_no(no_id, posicao, em=em)
+
+
+class RecolherNoDaARA(_SobreARA):
+    nome = "recolher_no_da_ara"
+
+    def agir(self, ara, *, em, no_id: UUID, recolhido: bool) -> No:
+        return ara.recolher_no(no_id, recolhido, em=em)
+
+
+class ExcluirNoDaARA(_SobreARA):
+    """Devolve o RAIO (RF-15) e ARQUIVA a ficha do Efeito Indesejável que sai (RF-05)."""
+
+    nome = "excluir_no_da_ara"
+
+    def agir(self, ara, *, em, no_id: UUID) -> list[UUID]:
+        return ara.excluir_no(no_id, em=em)
+
+    def anotar_resultado(self, span: SpanDeTraco, resultado) -> None:
+        span.atributo("toc.arestas_removidas", len(resultado))
+
+
+class LigarNaARA(_SobreARA):
+    """Elo de suficiência. Nasce com o exame `nao_examinado` — que é o ponto (RF-22)."""
+
+    nome = "ligar_na_ara"
+
+    def agir(
+        self, ara, *, em, origem_id: UUID, destino_id: UUID, rotulo: str = ""
+    ) -> ArestaCausal:
+        return ara.ligar(origem_id, destino_id, rotulo=rotulo, em=em)
+
+
+class EditarArestaDaARA(_SobreARA):
+    nome = "editar_aresta_da_ara"
+
+    def agir(self, ara, *, em, aresta_id: UUID, rotulo: str) -> ArestaCausal:
+        return ara.editar_aresta(aresta_id, rotulo, em=em)
+
+
+class ExcluirArestaDaARA(_SobreARA):
+    """Some com o elo, com o exame dele e com a citação dele em conector (RN-11)."""
+
+    nome = "excluir_aresta_da_ara"
+
+    def agir(self, ara, *, em, aresta_id: UUID) -> None:
+        ara.excluir_aresta(aresta_id, em=em)
 
 
 class MarcarUde(_ComStatusNoTraco):

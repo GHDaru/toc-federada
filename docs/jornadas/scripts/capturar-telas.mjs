@@ -420,7 +420,11 @@ async function semearAra(projetoId) {
     porId.set(no.id, criado.id);
   }
   for (const aresta of BASE.ara.arestas) {
-    await api(`/toc/projetos/${projetoId}/arestas`, {
+    // Pela rota da ARA, e não pela genérica do M1: desde a correção da porta dos fundos do
+    // agregado, o grafo de um projeto de ferramenta só muda pela raiz dele — a genérica
+    // responde `409 AGGREGATE_ROOT_REQUIRED`, e é o elo com exame de suficiência que se
+    // ganha aqui (RF-22 da spec 005).
+    await api(`/toc/ara/projetos/${projetoId}/arestas`, {
       metodo: "POST",
       corpo: { origem_id: porId.get(aresta.de), destino_id: porId.get(aresta.para), rotulo: "" },
     });
@@ -901,6 +905,53 @@ async function jornadaNuvem(navegador, { nuvemId }) {
   await pagina.waitForTimeout(1200);
   await capturar(jornada, "07-previa-da-geracao", pagina);
 
+  // 8. **aceitar leva ao gate, não à escrita**: a proposta nasce no servidor e ESPERA.
+  //    Medimos o estado da nuvem antes e depois para a jornada não afirmar de memória.
+  const antesDaProposta = await api(`/toc/nc/projetos/${nuvemId}`);
+  await pagina.getByRole("button", { name: "Aceitar" }).click();
+  await pagina.locator("section.superficie-de-confirmacao").waitFor({ timeout: 20000 });
+  const noGate = await api(`/toc/nc/projetos/${nuvemId}`);
+  medidas.propostaNaoEscreve =
+    JSON.stringify(noGate) === JSON.stringify(antesDaProposta);
+  const pendente = (await api("/aph/traco")).length;
+  await capturar(jornada, "08-gate-da-proposta", pagina);
+  log(
+    `  · proposta criada e aguardando decisão · nuvem intacta enquanto espera: ` +
+      `${medidas.propostaNaoEscreve} · linhas de traço antes da decisão: ${pendente}`,
+  );
+
+  // 9. **confirmar aplica** — e a tela mostra o que releu do serviço, nunca o que ela
+  //    guardou. É o laço que a 4ª geração nunca fechou pelo caminho certo.
+  await pagina.getByRole("button", { name: "Confirmar e aplicar" }).click();
+  await pagina.locator("p.desfecho").waitFor({ timeout: 20000 });
+  await pagina.waitForTimeout(600);
+  await capturar(jornada, "09-nuvem-depois-da-confirmacao", pagina);
+  const depoisDaConfirmacao = await api(`/toc/nc/projetos/${nuvemId}`);
+  const traco = await api("/aph/traco");
+  const daGeracao = traco.filter((t) => t.action_id === "toc.generate_conflict_cloud");
+  medidas.geracaoAplicada = {
+    entidades_reescritas: depoisDaConfirmacao.entidades.filter(
+      (e, i) => e.texto !== antesDaProposta.entidades[i].texto,
+    ).length,
+    premissas_antes: antesDaProposta.arestas.reduce((n, a) => n + a.premissas.length, 0),
+    premissas_depois: depoisDaConfirmacao.arestas.reduce((n, a) => n + a.premissas.length, 0),
+    traco: daGeracao.map((t) => t.desfecho),
+  };
+  log(
+    `  · confirmada: ${medidas.geracaoAplicada.entidades_reescritas} de 5 entidades reescritas` +
+      ` · premissas ${medidas.geracaoAplicada.premissas_antes} → ${medidas.geracaoAplicada.premissas_depois}` +
+      ` · traço da ação: ${JSON.stringify(medidas.geracaoAplicada.traco)}`,
+  );
+  if (medidas.geracaoAplicada.entidades_reescritas === 0) {
+    falhas.push({ jornada, captura: "09", erro: "confirmar não mudou a nuvem" });
+  }
+
+  // 10. e a mudança **sobrevive à recarga**: a tela é recarregada e a nuvem é reaberta do
+  //     serviço, sem estado de tela nenhum atravessando a fronteira.
+  await pagina.reload({ waitUntil: "networkidle" });
+  await abrirNuvem(pagina);
+  await capturar(jornada, "10-sobrevive-a-recarga", pagina);
+
   const validacao = await api(`/toc/nc/projetos/${nuvemId}/validacao`);
   log(
     `  · completude: ${validacao.completude.sustentadas} de ${validacao.completude.total} arestas com premissa` +
@@ -966,7 +1017,14 @@ async function principal() {
     log("  banco de desenvolvimento zerado (TRUNCATE … CASCADE)");
   }
 
-  rmSync(CAPTURAS, { recursive: true, force: true });
+  // A limpeza é TOTAL só na corrida total. Com `--jornada`, apagar a pasta inteira levaria
+  // junto as capturas das jornadas que esta corrida não vai gerar, e o `check-jornadas.sh`
+  // reprovaria por imagem citada e inexistente — que foi exatamente o que aconteceu na
+  // primeira tentativa de regenerar a J-03 sozinha. Numa corrida parcial, as capturas são
+  // sobrescritas pelo nome; captura órfã que sobre é justamente o que a invariante J1 pega.
+  if (!SO_A_JORNADA) {
+    rmSync(CAPTURAS, { recursive: true, force: true });
+  }
   mkdirSync(CAPTURAS, { recursive: true });
 
   subirVite(

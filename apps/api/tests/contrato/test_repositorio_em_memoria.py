@@ -8,7 +8,10 @@ PostgreSQL real em `tests/integracao/test_grafo_e_ara_no_postgres.py`.
 from datetime import datetime, timezone
 from uuid import uuid4
 
+import pytest
+
 from toc_api.dominio.ara import EstadoDoExame, FichaDeUde, novo_projeto_ara
+from toc_api.dominio.erros import MutacaoForaDaRaiz
 from toc_api.dominio.identidade import DonoDoProjeto
 from toc_api.dominio.projeto import Projeto
 from toc_api.infra.persistencia.memoria import RepositorioDeProjetosEmMemoria
@@ -86,15 +89,40 @@ def test_a_ara_vai_e_volta_com_ficha_status_e_exame():
     assert repositorio.obter_ara(ALVORADA.inquilino_id, ara.projeto.id) is None
 
 
-def test_gravar_o_projeto_mantem_a_ara_apontando_para_o_mesmo_agregado():
-    """Sem isto, um caso de uso do M1 e um do M2 trabalhariam sobre duas cópias."""
+def test_gravar_pela_raiz_e_ler_pelo_m1_devolve_o_mesmo_agregado():
+    """As duas portas de LEITURA veem o mesmo estado — e só uma delas escreve o grafo.
+
+    Este teste media, antes, o contrário: gravava um nó pelo `Projeto` cru devolvido por
+    `obter()` e conferia que a ARA o via. A propriedade "as duas visões apontam para o
+    mesmo agregado" continua e é o que se afirma aqui; o que mudou é que a ESCRITA do
+    grafo entra pela raiz `ProjetoARA`, e o `Projeto` cru recusa — que é a correção da
+    porta dos fundos.
+    """
+    repositorio = RepositorioDeProjetosEmMemoria()
+    ara = novo_projeto_ara(id=uuid4(), dono=HORIZONTE, nome="Horizonte — ARA", em=T0)
+    ara.adicionar_efeito(titulo=BOM, em=T0)
+    repositorio.salvar_ara(ara)
+
+    guardado = repositorio.obter(HORIZONTE.inquilino_id, ara.projeto.id)
+
+    assert [n.titulo for n in guardado.nos] == [BOM]
+    assert [n.tipo for n in guardado.nos] == ["efeito"]
+
+
+def test_o_projeto_cru_de_uma_ara_recusa_mutacao_de_grafo():
+    """A porta dos fundos do agregado, medida no adaptador que a servia.
+
+    `obter()` continua devolvendo o `Projeto` — leitura, lixeira e restauração dependem
+    dele. O que ele não faz mais é aceitar mutação de grafo: quem quiser mexer nos nós de
+    uma Árvore da Realidade Atual passa por `obter_ara()`.
+    """
     repositorio = RepositorioDeProjetosEmMemoria()
     ara = novo_projeto_ara(id=uuid4(), dono=HORIZONTE, nome="Horizonte — ARA", em=T0)
     repositorio.salvar_ara(ara)
 
     guardado = repositorio.obter(HORIZONTE.inquilino_id, ara.projeto.id)
-    guardado.adicionar_no(titulo=BOM, em=T0)
-    repositorio.salvar(guardado)
 
-    reaberta = repositorio.obter_ara(HORIZONTE.inquilino_id, ara.projeto.id)
-    assert [n.titulo for n in reaberta.nos] == [BOM]
+    with pytest.raises(MutacaoForaDaRaiz) as recusa:
+        guardado.adicionar_no(titulo=BOM, em=T0)
+    assert (recusa.value.ferramenta, recusa.value.raiz) == ("ara", "ProjetoARA")
+    assert repositorio.obter_ara(HORIZONTE.inquilino_id, ara.projeto.id).nos == ()

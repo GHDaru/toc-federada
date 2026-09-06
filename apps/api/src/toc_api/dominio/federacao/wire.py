@@ -58,10 +58,24 @@ REGISTRO_MINIMO_A7: tuple[str, ...] = (
 # Códigos próprios. O §A.7 permite ("PODE adicionar os seus") **desde que documentados** —
 # e é isto aqui a documentação, com o porquê de cada um, ao lado do registro mínimo que
 # eles estendem. Um código sem linha nesta tabela não é emitido: `ErroDoFio` recusa.
+#
+# **Este é o registro do serviço inteiro, não só do fio**, e a unificação é o conserto de
+# um defeito real: havia uma segunda tabela em `http/erros.py`, e as duas divergiram —
+# a borda APH emitia `INVALID_ARGUMENTS` enquanto a borda REST emitia `INVALID_ARGUMENT`
+# para a mesma situação, no mesmo serviço. Um cliente que compare o código por igualdade,
+# que é o uso que o §A.7 prescreve, trataria um e ignoraria o outro. O §A.2 do Anexo A já
+# dizia que os dois lados são o mesmo objeto — "Erros HTTP usam o corpo
+# `{"error": <Erro §A.7>}`" —, logo o registro também é um só. A varredura que impede a
+# divergência de voltar é `tests/contrato/test_registro_de_codigos_a7.py`.
 CODIGOS_PROPRIOS: dict[str, str] = {
+    # -- do fio e da fronteira federada ------------------------------------------------
     "SESSION_NOT_FOUND": "sessão inexistente ou de outro principal (§A.2, superfície de sessão)",
     "ACTION_NOT_FOUND": "action_id fora do catálogo composto para este principal (RF-09)",
-    "INVALID_ARGUMENTS": "args reprovados pelo input_schema da ação (RF-31)",
+    "INVALID_ARGUMENT": (
+        "valor que nunca poderia entrar: args reprovados pelo input_schema da ação "
+        "(RF-31), nome vazio, corpo fora do esquema declarado (400/422). Singular, e a "
+        "grafia é a que o cliente web já discrimina (`apps/web/src/api/erros.ts`)"
+    ),
     "PROPOSAL_NOT_FOUND": "proposta inexistente nesta sessão",
     "RATE_LIMITED": "limite de taxa da borda federada excedido (RNF-08)",
     "FUNDACAO_INDISPONIVEL": "introspecção fora do ar; falha fechada (spec 003, RF-10)",
@@ -69,6 +83,46 @@ CODIGOS_PROPRIOS: dict[str, str] = {
     "CREDENCIAL_RECUSADA": "o hospedeiro respondeu 401 à nossa credencial (spec 003, RF-11)",
     "SESSAO_EXPIRADA": "`expires_at` do principal venceu (spec 003, RF-13)",
     "ADMISSAO_INCOMPLETA": "parâmetro de admissão ausente (§B.4.1; ver contracts/parametros-de-admissao.md)",
+    # -- da borda REST (os mesmos códigos, o mesmo envelope §A.7) -----------------------
+    "UNAUTHENTICATED": (
+        "o pedido não trouxe identidade válida (401). Separado de UNAUTHORIZED porque o "
+        "§A.7 registra a confusão entre os dois como ressalva de lastro do laboratório A"
+    ),
+    "NOT_FOUND": (
+        "o recurso não existe PARA ESTE INQUILINO (404). O §A.7 não tem código para isto, "
+        "e a fronteira do inquilino responde 404 justamente para não confirmar existência"
+    ),
+    "INVALID_EDGE": "aresta que viola regra de grafo; `details.regra` diz qual (409, RF-18)",
+    "INVALID_CONNECTOR": "conector E que viola a RN-11; `details.regra` diz qual (409)",
+    "MUTATION_REFUSED": "operação válida em geral, recusada NESTE estado do agregado (409)",
+    "AGGREGATE_ROOT_REQUIRED": (
+        "o estado pertence a uma ferramenta e a mutação NÃO veio pela raiz do agregado "
+        "dela; `details.ferramenta` diz de quem é o estado e `details.raiz` diz qual é a "
+        "porta certa (409). Separado de MUTATION_REFUSED porque a correção do cliente é "
+        "outra: não é esperar outro estado, é chamar a rota da ferramenta"
+    ),
+    "FIXED_TOPOLOGY": (
+        "a Nuvem de Conflito tem topologia fixa: 5 entidades e 7 arestas que nascem "
+        "juntas e não se criam nem se destroem; `details.regra` diz qual (409, RN-01)"
+    ),
+    "INVALID_ASSUMPTION": (
+        "premissa recusada pelo domínio — vazia, arquivada, desafiada sem justificativa "
+        "ou reordenação incompleta; `details.regra` diz qual (409, RF-12/RF-13)"
+    ),
+    "INVALID_INJECTION": (
+        "injeção recusada pelo domínio — sem premissa viva ou já arquivada; "
+        "`details.regra` diz qual (409, RN-04)"
+    ),
+    "INVALID_DERIVATION": (
+        "a derivação de nuvem a partir de Efeitos Indesejáveis da Árvore da Realidade "
+        "Atual foi recusada; `details.regra` diz qual (409, INT-05)"
+    ),
+    "INVALID_GENERATION_RESULT": (
+        "o resultado da geração assistida não valida contra o esquema versionado e foi "
+        "recusado em falha fechada, antes de qualquer efeito (422, RF-22)"
+    ),
+    "DOMAIN_REFUSED": "recusa de domínio sem tradução mais específica (409)",
+    "METHOD_NOT_ALLOWED": "verbo fora dos declarados para a rota (405)",
 }
 
 CODIGOS: tuple[str, ...] = REGISTRO_MINIMO_A7 + tuple(sorted(CODIGOS_PROPRIOS))

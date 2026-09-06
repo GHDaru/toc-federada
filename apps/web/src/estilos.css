@@ -797,3 +797,73 @@ mark {
     align-items: stretch;
   }
 }
+
+/* --- decisão governada: a prévia da geração e a superfície de confirmação ------------ */
+
+/* As duas são LEITURA para decidir, e não formulário lateral: em 420px de largura o diff
+   "Hoje × Proposto" fica com três palavras por linha (achado A-02 da jornada J-03) e a
+   metade direita da janela fica vazia. Quem decide precisa ver a frase inteira. */
+.previa-da-geracao,
+.superficie-de-confirmacao {
+  width: min(880px, 100%);
+}
+
+/* Aceitar e recusar lado a lado, com o MESMO peso — requisito, não estética (RI-01 da
+   spec 006, RI-06 da 007). A classe é a mesma nos dois botões de propósito: um estilo
+   "primário" para o confirmar seria o desequilíbrio que a norma proíbe. */
+.decisao {
+  display: flex;
+  gap: var(--toc-espaco-2);
+  align-items: center;
+}
+
+.botao-de-decisao {
+  flex: 0 0 auto;
+}
+
+.dados-da-proposta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--toc-espaco-1) var(--toc-espaco-2);
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.dados-da-proposta dt {
+  font-weight: 600;
+  color: var(--toc-color-muted, inherit);
+}
+
+.dados-da-proposta dd {
+  margin: 0;
+}
+
+.resumo-da-proposta {
+  margin: 0;
+  font-weight: 600;
+}
+
+.alvos-da-proposta,
+.desfecho-por-alvo {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-1);
+  font-size: 0.85rem;
+}
+
+/* O desfecho é sempre visível — inclusive o negado (RI-04: recusa silenciosa é defeito).
+   A distinção nunca é só por cor: o texto diz o que aconteceu, com todas as letras. */
+.desfecho {
+  margin: 0;
+  padding: var(--toc-espaco-2);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+}
+
+.decidindo {
+  margin: 0;
+  font-size: 0.85rem;
+}

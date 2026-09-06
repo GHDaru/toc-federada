@@ -317,9 +317,9 @@ def criar_router_aph(composicao: Any) -> APIRouter:
         # Schema fechado do §A.6: campo fora destes é rejeitado.
         sobrando = sorted(set(corpo) - {"approved", "idempotency_key", "context_hash"})
         if sobrando:
-            return erro_http("INVALID_ARGUMENTS", f"campos fora do §A.6: {sobrando}", 400)
+            return erro_http("INVALID_ARGUMENT", f"campos fora do §A.6: {sobrando}", 400)
         if not isinstance(corpo.get("approved"), bool):
-            return erro_http("INVALID_ARGUMENTS", "`approved` é booleano obrigatório (§A.6)", 400)
+            return erro_http("INVALID_ARGUMENT", "`approved` é booleano obrigatório (§A.6)", 400)
 
         try:
             resultado = fed.decidir_proposta.rodar(
@@ -338,8 +338,7 @@ def criar_router_aph(composicao: Any) -> APIRouter:
             return erro_http(erro.codigo, erro.detalhe, erro.http)
 
         # O desfecho aparece na conversa (RF-21/RI-04): recusa silenciosa é defeito.
-        for kind, payload in resultado.eventos:
-            _acrescentar_ao_log(sessao, (kind, payload))
+        _acrescentar_ao_log(sessao, *resultado.eventos)
         return JSONResponse(
             content={"proposal_id": proposal_id, "status": resultado.proposta.desfecho.status}
         )
@@ -372,7 +371,7 @@ def criar_router_aph(composicao: Any) -> APIRouter:
             return corpo
         params = corpo.get("params")
         if params is None or not isinstance(params, dict):
-            return erro_http("INVALID_ARGUMENTS", "corpo esperado: {\"params\": {…}}", 400)
+            return erro_http("INVALID_ARGUMENT", "corpo esperado: {\"params\": {…}}", 400)
 
         try:
             resultado = fed.propor_acao.rodar(
@@ -381,7 +380,7 @@ def criar_router_aph(composicao: Any) -> APIRouter:
         except AcaoDesconhecida:
             return erro_http("ACTION_NOT_FOUND", "ação indisponível para este principal", 404)
         except (ArgumentosInvalidos, EsquemaNaoSuportado) as erro:
-            return erro_http("INVALID_ARGUMENTS", str(erro), 400)
+            return erro_http("INVALID_ARGUMENT", str(erro), 400)
         except AcaoSemTraco as erro:
             return erro_http("UNAUTHORIZED", str(erro), 503)
 
@@ -419,17 +418,32 @@ def resultado_de_erro(erro: TransicaoInvalida) -> tuple[str, dict]:
     return ("error", ErroDoFio(code=erro.codigo, message=erro.detalhe).como_payload())
 
 
-def _acrescentar_ao_log(sessao: SessaoDeConversa, passo: tuple[str, dict]) -> None:
-    """Acrescenta um evento fora do turno — a decisão acontece entre turnos.
+def _acrescentar_ao_log(sessao: SessaoDeConversa, *passos: tuple[str, dict]) -> None:
+    """Acrescenta um turno curto ao log — a decisão acontece **entre** turnos.
 
     O log é somente-acréscimo e o `seq` continua de onde parou; se o turno anterior já
-    terminou, abre-se um turno novo para o evento caber sem violar a regra do terminador.
+    terminou, abre-se um turno novo para os eventos caberem.
+
+    **Um terminador, não dois** (§A.1: "o stream termina com o evento `done`, ou com
+    `error`"). O `done` daqui era incondicional, e quando o evento era `error` — que já é
+    terminador — o turno tentava encerrar duas vezes. O domínio recusava a segunda
+    (`SessaoEncerrada`, `dominio/federacao/wire.py`), e a recusa subia até a borda: quem
+    tinha pedido uma confirmação com a tela desatualizada recebia `DOMAIN_REFUSED` com uma
+    mensagem interna, em vez do `PROPOSAL_CONTEXT_STALE` que o §A.7 nomeia. Defeito de
+    protocolo E de vazamento de mensagem, do mesmo `done`.
+
+    Por isso o terminador é condicional e os passos entram no MESMO turno: uma decisão é
+    um turno, não um turno por evento — emitir um `done` por evento faria o cliente ver a
+    conversa acabar várias vezes seguidas.
     """
-    if sessao.turno_terminado:
-        sessao.abrir_turno()
-    kind, payload = passo
-    sessao.emitir(kind, payload)
-    sessao.emitir("done", {})
+    if not passos:
+        return
+    for kind, payload in passos:
+        if sessao.turno_terminado:
+            sessao.abrir_turno()
+        sessao.emitir(kind, payload)
+    if not sessao.turno_terminado:
+        sessao.emitir("done", {})
 
 
 def _argumentos_do_texto(acao: Any, corpo: dict[str, Any]) -> dict[str, Any]:

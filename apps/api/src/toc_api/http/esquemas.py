@@ -19,7 +19,7 @@ dado, e dado de menos é mais barato de corrigir do que dado de mais.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -858,3 +858,96 @@ class DerivacaoIn(Pedido):
 
 
 SugestaoDePremissaOut.model_rebuild()
+
+
+# -- a proposta de ação, pela superfície da própria aplicação (spec 006, RI-01) ----------
+#
+# Por que estes três modelos existem, já que o fio do Anexo A também decide proposta: o
+# §A.6 decide **dentro de uma sessão de conversa**, que é o caminho do hospedeiro. A
+# interface desta aplicação não conversa para aceitar um diff que ela já mostrou inteiro —
+# ela precisa do identificador da proposta em **dado estruturado**, e a borda federada
+# (`POST /aph/actions/{action_id}`) devolve `{"result": <texto>}` por contrato do
+# hospedeiro. Ler o `proposal_id` de dentro de uma frase seria o cliente discriminando por
+# mensagem, que é exatamente o que o §A.7 proíbe. Mesmos casos de uso, mesma máquina de
+# estados, mesmo traço: o que muda é o consumidor.
+
+
+class PropostaIn(Pedido):
+    """O pedido que leva uma ação governada ao gate humano.
+
+    `origem` é **dado, nunca desvio de fluxo** (APH-5.9, ADR 0009 da irmã): ela descreve a
+    procedência do CONTEÚDO, que só o cliente conhece — o servidor não tem como saber se a
+    frase foi digitada por uma pessoa ou produzida pela assistência. O padrão é `ia`
+    porque esta superfície nasce para o conteúdo assistido; edição humana direta não passa
+    por proposta nenhuma, passa pelos comandos do agregado.
+    """
+
+    action_id: str
+    args: dict[str, Any] = Field(default_factory=dict)
+    origem: Literal["humano", "ia"] = "ia"
+    #: O `context_hash` do §A.4, quando a tela que originou a proposta o declara.
+    contexto_hash: str | None = None
+
+
+class DecisaoIn(Pedido):
+    """O gate humano: confirmar ou recusar. Mesmos campos do §A.6, mesmos significados."""
+
+    aprovado: bool
+    context_hash: str | None = None
+    idempotency_key: str | None = None
+
+
+class DesfechoDeAlvoOut(Resposta):
+    """APH-5.9(b): lote responde alvo a alvo — sete executaram e um não é dado, não prosa."""
+
+    target: str
+    status: str
+    message: str = ""
+
+
+class PropostaOut(Resposta):
+    """A proposta como a superfície de confirmação a mostra (RI-01/RI-03 da spec 006).
+
+    `alvos` e `quantidade_de_alvos` viajam **antes** da decisão porque a contagem de
+    afetados é o que a pessoa precisa ler para decidir; `status` e `outcomes` só existem
+    depois dela. `estado` é o da máquina de estados; `status` é o desfecho do §A.3 — os
+    dois aparecem porque respondem perguntas diferentes ("onde ela está" e "no que deu").
+    """
+
+    proposal_id: str
+    action_id: str
+    titulo: str
+    risk: str
+    requires_confirmation: bool
+    origem: str
+    estado: str
+    alvos: list[str]
+    quantidade_de_alvos: int
+    criada_em: datetime
+    vence_em: datetime
+    status: str | None = None
+    mensagem: str = ""
+    outcomes: list[DesfechoDeAlvoOut] = Field(default_factory=list)
+
+    @classmethod
+    def de(cls, proposta: Any, *, titulo: str) -> "PropostaOut":
+        desfecho = proposta.desfecho
+        return cls(
+            proposal_id=proposta.proposal_id,
+            action_id=proposta.action_id,
+            titulo=titulo,
+            risk=proposta.risk,
+            requires_confirmation=proposta.requer_confirmacao,
+            origem=proposta.origem.value,
+            estado=proposta.estado,
+            alvos=list(proposta.alvos),
+            quantidade_de_alvos=proposta.quantidade_de_alvos,
+            criada_em=proposta.criada_em,
+            vence_em=proposta.vence_em,
+            status=desfecho.status if desfecho else None,
+            mensagem=desfecho.mensagem if desfecho else "",
+            outcomes=[
+                DesfechoDeAlvoOut(target=alvo, status=status, message=msg)
+                for alvo, status, msg in (desfecho.outcomes if desfecho else ())
+            ],
+        )

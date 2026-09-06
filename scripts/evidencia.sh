@@ -44,6 +44,11 @@ PORTOES=(
   # verdes" enquanto NADA teria olhado para a fronteira entre domínio e adaptador (P3) —
   # que é exatamente o defeito que a regra R2 nomeia.
   "scripts/check-arquitetura.sh|arquitetura hexagonal: contratos do import-linter (P3)|contratos declarados|^Analyzed"
+  # Entrou com a correção da porta dos fundos do agregado: o `import-linter` mede
+  # DIREÇÃO de import e não vê uma camada de fora pegar a chave `sob_a_raiz` do núcleo —
+  # `aplicacao → dominio` é o sentido permitido. Sem esta linha, o agregador diria "todos
+  # os portões verdes" sobre um agregado que voltou a ter duas portas para o mesmo estado.
+  "scripts/check-raiz-do-agregado.sh|raiz do agregado: operação só pela raiz (DDD)|arquivos Python varridos|guardas .* encontradas|raízes de ferramenta registradas"
   # Os quatro da federação (specs 003 e 006). Entraram com o módulo M7, pelo mesmo motivo
   # do de arquitetura: sem eles o agregador diria "todos os portões verdes" enquanto NADA
   # teria olhado para a fronteira — nem para o manifesto que circula na admissão, nem para
@@ -52,7 +57,9 @@ PORTOES=(
   "scripts/check-manifesto.sh|manifesto × schema normativo do Anexo B + sabotagens|telas declaradas|sabotagens aplicadas"
   "scripts/check-politica.sh|política de autorização: a sabotagem do APH-7.2 não vaza|arquivos de produção varridos|arquivos que compõem"
   "scripts/check-canal.sh|canal ghd.* (§B.2): envelope, trava dupla, targetOrigin|arquivos de teste encontrados|^# (tests|pass|fail)"
-  "scripts/check-conformidade-aph.sh|conformidade APH Nível 1 (11 checks, caixa-preta)|serviço de pé|^Veredito:"
+  # O padrão pega a DECLARAÇÃO do alvo, não só o veredito: um 11/11 sem dizer contra o
+  # que mediu já passou por aqui verde com `persistencia: memoria` (regra R2).
+  "scripts/check-conformidade-aph.sh|conformidade APH Nível 1 (11 checks, caixa-preta)|· persistência|· migração|· natureza do turno|^Veredito:"
 )
 
 falhados=0

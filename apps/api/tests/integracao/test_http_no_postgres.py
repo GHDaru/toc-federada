@@ -70,10 +70,12 @@ def test_a_ara_inteira_sobrevive_a_um_processo_novo(url_postgres, esquema_migrad
     b = escrita.post(
         f"/toc/ara/projetos/{projeto['id']}/efeitos", json={"titulo": SEGUNDO}
     ).json()
-    aresta = escrita.post(
-        f"/toc/projetos/{projeto['id']}/arestas",
+    ligacao = escrita.post(
+        f"/toc/ara/projetos/{projeto['id']}/arestas",
         json={"origem_id": a["id"], "destino_id": b["id"]},
-    ).json()
+    )
+    assert ligacao.status_code == 201, ligacao.text
+    aresta = ligacao.json()
     escrita.post(f"/toc/ara/projetos/{projeto['id']}/nos/{b['id']}/ude", json={})
     escrita.post(
         f"/toc/ara/projetos/{projeto['id']}/nos/{b['id']}/pareceres",
@@ -134,3 +136,51 @@ def test_exclusao_suave_e_restauracao_atravessam_o_banco(url_postgres, esquema_m
     aberto = c.get(f"/toc/projetos/{projeto['id']}").json()
     assert aberto["estado"] == "ativo"
     assert [n["id"] for n in aberto["nos"]] == [no["id"]]
+
+
+def test_a_porta_dos_fundos_do_agregado_esta_fechada_no_banco_real(
+    url_postgres, esquema_migrado
+):
+    """A reprodução do crítico, agora onde o dado realmente mora.
+
+    Os testes de contrato medem a recusa sobre o repositório em memória. Aqui o alvo é a
+    linha do PostgreSQL: antes do conserto, `DELETE /toc/projetos/{id}/arestas/{id}` sobre
+    uma Nuvem de Conflito respondia `204 No Content`, a linha da aresta sumia de
+    `aresta_causal`, e a nuvem passava a responder `404` — projeto vivo no banco e
+    inalcançável pela ferramenta.
+    """
+    c = cliente(url_postgres, esquema_migrado, "tok-integra-facilitadora")
+    nuvem = c.post("/toc/nc/projetos", json={"nome": "Dilema da expansão"}).json()
+    conflito = next(a for a in nuvem["arestas"] if a["chave"] == "D_D_PRIME")
+    entidade_a = next(e for e in nuvem["entidades"] if e["papel"] == "A")
+
+    tentativas = [
+        ("DELETE", f"/toc/projetos/{nuvem['id']}/arestas/{conflito['aresta_id']}", None),
+        ("DELETE", f"/toc/projetos/{nuvem['id']}/nos/{entidade_a['no_id']}", None),
+        ("POST", f"/toc/projetos/{nuvem['id']}/nos", {"titulo": "Sexta entidade"}),
+        (
+            "PATCH",
+            f"/toc/projetos/{nuvem['id']}/nos/{entidade_a['no_id']}",
+            {"titulo": "por baixo da raiz"},
+        ),
+    ]
+    for metodo, caminho, corpo in tentativas:
+        r = c.request(metodo, caminho, json=corpo)
+        assert r.status_code == 409, f"{metodo} {caminho} respondeu {r.status_code}"
+        assert r.json()["error"]["code"] == "AGGREGATE_ROOT_REQUIRED", r.text
+
+    # O que importa não é o código: é o estado no banco, lido por um PROCESSO NOVO.
+    outra_aplicacao = cliente(url_postgres, esquema_migrado, "tok-integra-facilitadora")
+    depois = outra_aplicacao.get(f"/toc/nc/projetos/{nuvem['id']}")
+    assert depois.status_code == 200, depois.text
+    corpo = depois.json()
+    print(
+        f"tentativas recusadas: {len(tentativas)}; nuvem no banco depois: "
+        f"{len(corpo['entidades'])} entidades, {len(corpo['arestas'])} arestas"
+    )
+    assert len(corpo["entidades"]) == 5
+    assert len(corpo["arestas"]) == 7
+    assert sorted(a["chave"] for a in corpo["arestas"]) == [
+        "A_B", "A_C", "B_D", "C_D_PRIME", "D_C", "D_D_PRIME", "D_PRIME_B",
+    ]
+    assert corpo["entidades"][0]["texto"] == nuvem["entidades"][0]["texto"]

@@ -19,6 +19,7 @@ import type {
   Matriz,
   Nuvem,
   PapelDaEntidade,
+  Proposta,
   SeparacaoTRIZ,
   Solucao,
   StatusDeInjecao,
@@ -30,6 +31,7 @@ import { DiagramaDaNuvem } from "../componentes/nuvem/DiagramaDaNuvem";
 import { FichaDaAresta } from "../componentes/nuvem/FichaDaAresta";
 import { MatrizDaNuvem } from "../componentes/nuvem/MatrizDaNuvem";
 import { PreviaDaGeracao } from "../componentes/nuvem/PreviaDaGeracao";
+import { SuperficieDeConfirmacao } from "../componentes/federacao/SuperficieDeConfirmacao";
 import { VisaoDeSolucao } from "../componentes/nuvem/VisaoDeSolucao";
 import { useRecurso } from "../estado/useRecurso";
 import { useI18n } from "../i18n";
@@ -83,6 +85,10 @@ export function TelaDaNuvem({ cliente, projetoId, aoVoltar }: TelaDaNuvemProps) 
   const [erroDeAcao, setErroDeAcao] = useState<unknown>(null);
   const [narrativa, setNarrativa] = useState("");
   const [previa, setPrevia] = useState<Geracao | null>(null);
+  // O laço da assistência tem TRÊS estados na tela, e nenhum deles é "a tela escreveu":
+  // a prévia (diff, nada tocado), a proposta esperando decisão no servidor, e o desfecho.
+  const [proposta, setProposta] = useState<Proposta | null>(null);
+  const [decidindo, setDecidindo] = useState(false);
 
   function escolherVisao(nova: Visao) {
     setVisao(nova);
@@ -106,6 +112,30 @@ export function TelaDaNuvem({ cliente, projetoId, aoVoltar }: TelaDaNuvemProps) 
     },
     [recarregar],
   );
+
+  /**
+   * O gate humano. Confirmar executa no servidor e a nuvem é **relida** — o que aparece na
+   * tela vem do serviço, nunca de estado local aplicado aqui (é a diferença entre esta
+   * geração e a 4ª da linhagem, que gravava a resposta do modelo direto no estado da tela).
+   * Recusar encerra a proposta com traço: recusa silenciosa é defeito (RI-04 da spec 006).
+   */
+  async function decidir(aprovado: boolean) {
+    if (!proposta || decidindo) return;
+    setErroDeAcao(null);
+    setDecidindo(true);
+    try {
+      const decidida = await cliente.propostas.decidir(proposta.proposal_id, aprovado);
+      setProposta(decidida);
+      setPrevia(null);
+      // Releitura sempre, inclusive na recusa: se o servidor não escreveu, a nuvem volta
+      // idêntica — e é ele quem responde isso, não uma suposição da tela.
+      await recarregar();
+    } catch (falha) {
+      setErroDeAcao(falha);
+    } finally {
+      setDecidindo(false);
+    }
+  }
 
   if (carregando && !dado) return <Carregando />;
   if (erro && !dado) return <EstadoDeErro erro={erro} aoTentarDeNovo={() => void recarregar()} />;
@@ -202,6 +232,38 @@ export function TelaDaNuvem({ cliente, projetoId, aoVoltar }: TelaDaNuvemProps) 
           geracao={previa}
           textosAtuais={Object.fromEntries(nuvem.entidades.map((e) => [e.papel, e.texto]))}
           aoFechar={() => setPrevia(null)}
+          ocupada={decidindo}
+          // Aceitar NÃO escreve: cria a proposta governada com o resultado que esta mesma
+          // prévia mostrou, e é a superfície de confirmação que decide (RF-23/RF-25).
+          aoAceitar={() => {
+            setErroDeAcao(null);
+            setDecidindo(true);
+            cliente.propostas
+              .criar({
+                action_id: previa.action_id,
+                args: {
+                  projeto_id: projetoId,
+                  narrativa: narrativa.trim(),
+                  resultado: previa.resultado,
+                },
+              })
+              .then(setProposta)
+              .catch(setErroDeAcao)
+              .finally(() => setDecidindo(false));
+          }}
+        />
+      ) : null}
+
+      {proposta ? (
+        <SuperficieDeConfirmacao
+          proposta={proposta}
+          ocupada={decidindo}
+          aoConfirmar={() => void decidir(true)}
+          aoRecusar={() => void decidir(false)}
+          aoFechar={() => {
+            setProposta(null);
+            setPrevia(null);
+          }}
         />
       ) : null}
 

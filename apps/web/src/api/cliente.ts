@@ -32,9 +32,11 @@ import type {
   No,
   Nuvem,
   PapelDaEntidade,
+  PedidoDeProposta,
   Posicao,
   Premissa,
   Projeto,
+  Proposta,
   ProjetoResumo,
   RelatorioEstrutural,
   SeparacaoTRIZ,
@@ -216,6 +218,54 @@ export function criarCliente(opcoes: OpcoesDoCliente) {
         dados: { titulo: string; descricao?: string; posicao?: Posicao },
       ) =>
         pedir<No>(`/toc/ara/projetos/${seg(projeto)}/efeitos`, { metodo: "POST", corpo: dados }),
+      /**
+       * O grafo da Árvore da Realidade Atual (ARA), pela RAIZ do agregado.
+       *
+       * Estas seis existem porque a tela chamava `cliente.grafo.*` — as rotas genéricas
+       * do Núcleo de Diagramas Lógicos (M1) — para mover, editar, ligar, rotular e
+       * apagar dentro de uma ARA. Cada uma dessas chamadas carregava o `Projeto` cru e
+       * passava por fora das invariantes do módulo M2: o elo nascia sem exame de
+       * suficiência, o Efeito Indesejável sumia sem a ficha ser arquivada, e o conector E
+       * ficava apontando para uma aresta que não existia mais. Hoje o servidor recusa
+       * essas rotas sobre projeto de ferramenta (`AGGREGATE_ROOT_REQUIRED`), e estas são
+       * a porta certa.
+       */
+      editarNo: (projeto: string, no: string, dados: { titulo?: string; descricao?: string }) =>
+        pedir<No>(`/toc/ara/projetos/${seg(projeto)}/nos/${seg(no)}`, {
+          metodo: "PATCH",
+          corpo: dados,
+        }),
+      moverNo: (projeto: string, no: string, posicao: Posicao) =>
+        pedir<No>(`/toc/ara/projetos/${seg(projeto)}/nos/${seg(no)}`, {
+          metodo: "PATCH",
+          corpo: { posicao },
+        }),
+      recolherNo: (projeto: string, no: string, recolhido: boolean) =>
+        pedir<No>(`/toc/ara/projetos/${seg(projeto)}/nos/${seg(no)}`, {
+          metodo: "PATCH",
+          corpo: { recolhido },
+        }),
+      /** Devolve o RAIO da exclusão: quais arestas saíram junto (RF-15/RI-05). */
+      excluirNo: (projeto: string, no: string) =>
+        pedir<ExclusaoDeNo>(`/toc/ara/projetos/${seg(projeto)}/nos/${seg(no)}`, {
+          metodo: "DELETE",
+        }),
+      /** O elo nasce COM exame (`nao_examinado`) — é o que faz a suficiência ser dado. */
+      ligar: (projeto: string, origem_id: string, destino_id: string, rotulo = "") =>
+        pedir<Aresta>(`/toc/ara/projetos/${seg(projeto)}/arestas`, {
+          metodo: "POST",
+          corpo: { origem_id, destino_id, rotulo },
+        }),
+      editarAresta: (projeto: string, aresta: string, rotulo: string) =>
+        pedir<Aresta>(`/toc/ara/projetos/${seg(projeto)}/arestas/${seg(aresta)}`, {
+          metodo: "PATCH",
+          corpo: { rotulo },
+        }),
+      /** Leva junto o exame do elo e a citação dele em conector E (RN-11). */
+      excluirAresta: (projeto: string, aresta: string) =>
+        pedir<void>(`/toc/ara/projetos/${seg(projeto)}/arestas/${seg(aresta)}`, {
+          metodo: "DELETE",
+        }),
       marcarUde: (projeto: string, no: string, ficha?: FichaDeUde) =>
         pedir<FichaDeUde>(`/toc/ara/projetos/${seg(projeto)}/nos/${seg(no)}/ude`, {
           metodo: "POST",
@@ -266,6 +316,38 @@ export function criarCliente(opcoes: OpcoesDoCliente) {
       analisar: (projeto: string) =>
         pedir<RelatorioEstrutural>(`/toc/ara/projetos/${seg(projeto)}/analises`, {
           metodo: "POST",
+        }),
+    },
+
+    /**
+     * O gate humano, do lado da interface (spec 006, RI-01).
+     *
+     * **Aceitar não escreve.** Quem escreve é a proposta de ação que atravessa a máquina
+     * de estados no servidor; estes dois métodos são a porta dela para esta tela — criar
+     * (a proposta nasce e espera) e decidir (confirmar executa, recusar encerra). As duas
+     * deixam traço, inclusive a recusa.
+     *
+     * Não existe aqui um `aplicarGeracao(...)` que grave direto, e a ausência é o
+     * requisito: era assim que a 4ª geração da linhagem fazia — a resposta do modelo,
+     * pedida do navegador, ia direto para o estado da tela.
+     */
+    propostas: {
+      criar: (pedido: PedidoDeProposta) =>
+        pedir<Proposta>("/toc/propostas", {
+          metodo: "POST",
+          corpo: {
+            action_id: pedido.action_id,
+            args: pedido.args,
+            // `origem` é DADO sobre a procedência do conteúdo (APH-5.9), nunca desvio de
+            // fluxo: o padrão é `ia` porque esta porta existe para o conteúdo assistido.
+            origem: pedido.origem ?? "ia",
+            ...(pedido.contexto_hash ? { contexto_hash: pedido.contexto_hash } : {}),
+          },
+        }),
+      decidir: (proposta: string, aprovado: boolean) =>
+        pedir<Proposta>(`/toc/propostas/${seg(proposta)}/decisao`, {
+          metodo: "POST",
+          corpo: { aprovado },
         }),
     },
 

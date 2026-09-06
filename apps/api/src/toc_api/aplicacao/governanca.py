@@ -42,15 +42,23 @@ from ..dominio.federacao.principal import Principal
 from ..dominio.portas import Rastreador, Relogio
 from .ara import (
     AbrirProjetoARA,
+    AdicionarEfeito,
     AnalisarArvore,
     CriarProjetoARA,
     DesfazerConectorE,
     DesmarcarUde,
+    EditarArestaDaARA,
     EditarFichaDeUde,
+    EditarNoDaARA,
     ExaminarElo,
+    ExcluirArestaDaARA,
+    ExcluirNoDaARA,
     FormarConectorE,
+    LigarNaARA,
     MarcarUde,
+    MoverNoDaARA,
     MudarStatusDeUde,
+    RecolherNoDaARA,
     RegistrarParecer,
     ReformularUde,
     ValidarTextoDeUde,
@@ -163,6 +171,17 @@ POLITICA: dict[type[CasoDeUso], str] = {
     # que um principal só-leitura alcança.
     ValidarTextoDeUde: TOC_LEITURA,
     CriarProjetoARA: TOC_ESCRITA,
+    # M2 — o grafo da ARA, pela raiz do agregado. Cada um destes é o par governado da
+    # rota genérica correspondente do M1: a genérica recusa sobre projeto de ferramenta
+    # (`MutacaoForaDaRaiz`), e é por aqui que a ARA muda o próprio grafo.
+    AdicionarEfeito: TOC_ESCRITA,
+    EditarNoDaARA: TOC_ESCRITA,
+    MoverNoDaARA: TOC_ESCRITA,
+    RecolherNoDaARA: TOC_ESCRITA,
+    ExcluirNoDaARA: TOC_ESCRITA,
+    LigarNaARA: TOC_ESCRITA,
+    EditarArestaDaARA: TOC_ESCRITA,
+    ExcluirArestaDaARA: TOC_ESCRITA,
     MarcarUde: TOC_ESCRITA,
     DesmarcarUde: TOC_ESCRITA,
     EditarFichaDeUde: TOC_ESCRITA,

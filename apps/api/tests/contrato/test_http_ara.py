@@ -34,8 +34,14 @@ def cria_efeito(plena, app, projeto_id, titulo):
 
 
 def liga(plena, projeto_id, origem, destino):
+    """Pela rota da ARA, que é a raiz: o elo nasce COM exame (RF-22).
+
+    Antes esta função chamava `/toc/projetos/{id}/arestas` — a rota genérica do M1 —, e
+    o elo nascia sem exame porque `Projeto.ligar` não sabe que exame existe. A própria
+    suíte da ferramenta entrava pela porta dos fundos do agregado.
+    """
     r = plena.post(
-        f"/toc/projetos/{projeto_id}/arestas",
+        f"/toc/ara/projetos/{projeto_id}/arestas",
         json={"origem_id": origem, "destino_id": destino},
     )
     assert r.status_code == 201, r.text

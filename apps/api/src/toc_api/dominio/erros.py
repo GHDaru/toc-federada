@@ -39,3 +39,30 @@ class ArestaInvalida(MutacaoRecusada):
     def __init__(self, regra: str, detalhe: str = "") -> None:
         super().__init__(f"{regra}: {detalhe}" if detalhe else regra)
         self.regra = regra
+
+
+class MutacaoForaDaRaiz(MutacaoRecusada):
+    """O estado é de uma ferramenta e a mutação não veio pela RAIZ do agregado dela.
+
+    A regra que este erro impõe é a mais antiga do Design Orientado a Domínio (DDD):
+    **operação só pela raiz do agregado**. As ferramentas da Teoria das Restrições (TOC)
+    são raízes por composição — `ProjetoARA` e `NuvemDeConflito` contêm um `Projeto` do
+    núcleo e acrescentam invariantes próprias (a topologia fixa de 5 entidades e 7
+    arestas, o exame que nasce com todo elo, o arquivamento da ficha quando um Efeito
+    Indesejável some, o conector sem referência órfã). Enquanto o `Projeto` contido
+    aceitava mutação de quem o carregasse cru, havia **duas portas para o mesmo estado** e
+    as invariantes moravam numa só.
+
+    `ferramenta` e `raiz` viajam no erro porque a borda tem de dizer QUAL é a porta certa
+    sem reconstruir a frase por texto — o cliente discrimina por código e por dado, nunca
+    por mensagem (Anexo A §A.7 do Padrão APH — Aplicação ↔ Harness).
+    """
+
+    def __init__(self, operacao: str, ferramenta: str, raiz: str) -> None:
+        super().__init__(
+            f"{operacao}: o grafo de um projeto da ferramenta {ferramenta!r} só muda "
+            f"pela raiz do agregado ({raiz})"
+        )
+        self.operacao = operacao
+        self.ferramenta = ferramenta
+        self.raiz = raiz

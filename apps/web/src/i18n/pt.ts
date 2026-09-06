@@ -254,6 +254,35 @@ export const pt = {
     origem: "Derivada de",
     pendente_de_injecao: "Sem injeção",
   },
+  /**
+   * A superfície de confirmação (`proposta-de-acao`) — RI-01 da spec 006. UMA para toda
+   * ação `confirm`, venha de pessoa ou de assistência.
+   */
+  proposta: {
+    titulo: "Confirmar a proposta",
+    aguardando: "Aguardando a sua decisão",
+    gate: "A escrita acontece no servidor, pela ação governada, depois desta decisão.",
+    acao: "Ação",
+    origem: "Origem",
+    alvos: "Itens afetados",
+    vence_em: "Vence em",
+    confirmar: "Confirmar e aplicar",
+    recusar: "Recusar",
+    fechar: "Fechar",
+    decidindo: "Levando a decisão ao servidor…",
+  },
+  origem_da_proposta: {
+    humano: "Pessoa",
+    ia: "Assistência",
+  },
+  desfecho: {
+    executed: "Aplicado à nuvem.",
+    failed: "A aplicação falhou; leia o motivo por item.",
+    denied: "Recusado. Nada foi escrito.",
+    cancelled: "A tela mudou entre a proposta e a confirmação; proponha de novo.",
+    expired: "A proposta venceu antes da decisão.",
+    skipped: "Pulado.",
+  },
   papel: {
     A: "Objetivo comum (A)",
     B: "Necessidade (B)",
@@ -304,10 +333,16 @@ export const pt = {
     INVALID_TRANSITION: "Esta mudança de status não é permitida a partir do estado atual.",
     MUTATION_REFUSED: "A operação é válida, mas não neste estado do projeto.",
     FIXED_TOPOLOGY: "A nuvem tem topologia fixa: 5 entidades e 7 arestas, sempre.",
+    AGGREGATE_ROOT_REQUIRED:
+      "Este projeto é de uma ferramenta e o desenho dele só muda pela tela da ferramenta.",
     INVALID_ASSUMPTION: "A premissa foi recusada pelo domínio.",
     INVALID_INJECTION: "A injeção foi recusada pelo domínio.",
     INVALID_DERIVATION: "A derivação a partir da ARA foi recusada.",
     INVALID_GENERATION_RESULT: "O resultado gerado não valida contra o esquema e foi recusado.",
+    ACTION_NOT_FOUND: "Esta ação não está disponível para o seu perfil.",
+    PROPOSAL_NOT_FOUND: "Esta proposta não existe (ou não é deste inquilino).",
+    PROPOSAL_EXPIRED: "A proposta venceu antes da decisão. Gere de novo.",
+    PROPOSAL_CONTEXT_STALE: "A tela mudou desde a proposta. Gere de novo sobre o estado atual.",
     DOMAIN_REFUSED: "O domínio recusou a operação.",
     REDE_INDISPONIVEL: "O serviço não respondeu. Verifique a conexão e tente de novo.",
     RESPOSTA_INVALIDA: "O serviço respondeu de forma inesperada.",

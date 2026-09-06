@@ -10,7 +10,16 @@ import { render } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { ProvedorDeIdioma, type Idioma } from "../i18n";
 import type { Cliente } from "../api/cliente";
-import type { Ara, No, Nuvem, Projeto, ProjetoResumo, Ude, ValidacaoFormal } from "../dominio/tipos";
+import type {
+  Ara,
+  No,
+  Nuvem,
+  Projeto,
+  ProjetoResumo,
+  Proposta,
+  Ude,
+  ValidacaoFormal,
+} from "../dominio/tipos";
 
 export function renderComIdioma(elemento: ReactElement, idioma: Idioma = "pt") {
   return render(<ProvedorDeIdioma idiomaInicial={idioma}>{elemento}</ProvedorDeIdioma>);
@@ -110,6 +119,24 @@ export const NUVEM: Nuvem = {
   ],
 };
 
+/** Uma proposta de ação esperando o gate humano — a forma que o servidor devolve. */
+export const PROPOSTA_PENDENTE: Proposta = {
+  proposal_id: "prop-1",
+  action_id: "toc.generate_conflict_cloud",
+  titulo: "Preencher a nuvem a partir de uma narrativa",
+  risk: "confirm",
+  requires_confirmation: true,
+  origem: "ia",
+  estado: "awaiting_approval",
+  alvos: [],
+  quantidade_de_alvos: 0,
+  criada_em: "2026-09-06T10:00:00Z",
+  vence_em: "2026-09-06T10:10:00Z",
+  status: null,
+  mensagem: "",
+  outcomes: [],
+};
+
 /**
  * Um cliente com todos os métodos espiáveis. Cada teste sobrescreve o que lhe interessa —
  * o resto responde vazio, para a tela nunca quebrar por método não previsto.
@@ -173,6 +200,14 @@ export function clienteFalso(sobrescritas: Record<string, unknown> = {}): Client
         total_de_udes: 1,
         resumo: { fragmentos: 1 },
       }),
+    },
+    /**
+     * O gate governado. O padrão devolve uma proposta esperando decisão: nenhum teste
+     * ganha escrita de graça, e quem quiser o desfecho sobrescreve `decidir`.
+     */
+    propostas: {
+      criar: async () => PROPOSTA_PENDENTE,
+      decidir: async () => ({ ...PROPOSTA_PENDENTE, estado: "denied", status: "denied" }),
     },
     nc: {
       criarProjeto: async () => NUVEM,

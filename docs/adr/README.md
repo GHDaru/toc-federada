@@ -20,3 +20,4 @@ verificada por `scripts/check-adr.sh`.
 | 0006 | [Base sintética desde o dia 1: nenhum dado real de pessoa em fixture, captura, spec ou exemplo](0006-base-sintetica-desde-o-dia-1.md) | Aceita | P7 | 2026-09-03 |
 | 0007 | [Inteligência artificial somente pela fundação: sem SDK de provedor, chave nunca no cliente, prompts no servidor](0007-ia-somente-pela-fundacao.md) | Aceita | P2, P7 (INEGOCIÁVEIS) | 2026-09-03 |
 | 0008 | [Site de produto gerado por script versionado, nunca escrito à mão](0008-site-de-produto-gerado-por-script.md) | Aceita | P6 | 2026-09-03 |
+| 0009 | [A interface decide proposta por `/toc/propostas`: mesma máquina de estados, mesmo traço, projeção estruturada](0009-superficie-de-proposta-para-a-interface-da-aplicacao.md) | Aceita | P2 (INEGOCIÁVEL) | 2026-09-06 |

@@ -5,6 +5,178 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Correção — o laço da assistência não fechava na tela (achado de revisão independente)
+
+- **A pré-visualização da geração assistida era um beco sem saída.** Ela mostrava o diff
+  inteiro do que a geração propunha e oferecia **um** botão: "Recusar". Não existia, em
+  lugar nenhum da aplicação, caminho para a pessoa **aceitar** a proposta e ver a Nuvem de
+  Conflito (NC) mudar — a funcionalidade mais vistosa do produto não concluía. A ausência
+  estava documentada no próprio componente (*"a escrita é da proposta que atravessa a
+  máquina de estados no servidor"*) e a documentação da ausência **é a descrição do
+  buraco**, não o conserto dele. A avaliação heurística datada da jornada J-03 já
+  registrava o mesmo achado (A-03), aberto desde então.
+
+  **Causa raiz**: o servidor tinha a ação governada, a máquina de estados, a política, o
+  traço e o executor — e as duas portas de proposta que existiam servem o **hospedeiro**
+  (o fio do §A.6, dentro de uma sessão de conversa, e a borda `POST /aph/actions/{id}`,
+  que devolve `{"result": <frase>}` por contrato dele). Faltava a porta do **terceiro
+  consumidor**: a interface da própria aplicação, que precisa do `proposal_id` em dado
+  estruturado — extraí-lo da frase seria o cliente discriminando por mensagem, o que o
+  §A.7 do Anexo A proíbe.
+
+  **Conserto** (pelo caminho que a spec 006 e o Padrão APH — Aplicação ↔ Harness — mandam,
+  decisão em [ADR 0009](docs/adr/0009-superficie-de-proposta-para-a-interface-da-aplicacao.md)):
+  - **serviço**: `POST /toc/propostas` (a proposta nasce e **espera**) e
+    `POST /toc/propostas/{proposal_id}/decisao` (o gate humano), em
+    `apps/api/src/toc_api/http/roteadores/propostas.py`, montadas sobre os **mesmos**
+    `ProporAcao` e `DecidirProposta` — mesma FSM (máquina de estados finitos), mesma
+    política verificada no caso de uso, mesmo registro de erros, mesmo traço. Nenhum
+    segundo caminho de escrita: a rota não toca repositório;
+  - **interface**: "Aceitar" na prévia leva a proposta ao gate, e a superfície de
+    confirmação `proposta-de-acao`
+    (`apps/web/src/componentes/federacao/SuperficieDeConfirmacao.tsx`, RI-01 da spec 006)
+    confirma ou recusa — com os dois botões de mesmo peso, foco no resumo ao abrir e
+    desfecho anunciado por `aria-live`. Depois da decisão a nuvem é **relida do serviço**;
+    a tela não escreve nada.
+
+  **Evidência do build real** (`docs/jornadas/scripts/capturar-telas.mjs`, capturas 08 a 10
+  da J-03):
+
+  ```text
+    · proposta criada e aguardando decisão · nuvem intacta enquanto espera: true · linhas de traço antes da decisão: 0
+    · confirmada: 2 de 5 entidades reescritas · premissas 7 → 14 · traço da ação: ["executed"]
+  ```
+
+- **Prova de persistência, com PostgreSQL real e três aplicações diferentes**
+  (`apps/api/tests/integracao/test_propostas_no_postgres.py`): propor numa, confirmar
+  noutra, ler numa terceira. Se a proposta vivesse em memória, a segunda não a encontraria;
+  se a escrita fosse estado de tela, a terceira não a veria.
+
+- **Dois achados de interface fechados junto** (jornada J-03): a prévia e a superfície de
+  confirmação passaram a `min(880px, 100%)` — as duas são leitura para decidir, não
+  formulário lateral (A-02) —, e a superfície não anuncia mais "itens afetados: 0" numa
+  ação que não é lote (0 alvos é ausência, não quantidade).
+
+- **Dois defeitos do gerador de capturas, achados ao regenerar**: ele semeava as arestas da
+  Árvore da Realidade Atual (ARA) pela rota genérica do M1, que passou a responder
+  `409 AGGREGATE_ROOT_REQUIRED` desde a correção da porta dos fundos do agregado (a jornada
+  J-02 não regenerava mais); e apagava **todas** as capturas mesmo com `--jornada`, o que
+  levava junto as das jornadas que aquela corrida não geraria.
+
+### Correção — o agregado com porta dos fundos (achado de revisão independente, reproduzido)
+
+- **A raiz do agregado deixou de ser o único caminho para o estado dela, e voltou a ser.**
+  As ferramentas M2 (Árvore da Realidade Atual — ARA) e M3 (Nuvem de Conflito — NC) são
+  raízes por composição: `ProjetoARA` e `NuvemDeConflito` contêm um `Projeto` do M1 (Núcleo
+  de Diagramas Lógicos) e acrescentam as invariantes da ferramenta. O `Projeto` contido é a
+  **mesma linha de banco** que as rotas genéricas de `/toc/projetos` abrem, e essas rotas o
+  carregavam cru: duas portas para o mesmo estado, invariantes numa só.
+
+  **Reprodução, colada da execução antes do conserto** (`POST /toc/nc/projetos`, depois a
+  rota genérica sobre a aresta D↯D′):
+
+  ```text
+  nasceu: 5 entidades, 7 arestas
+  DELETE aresta D_D_PRIME pela rota generica -> 204
+  GET /toc/nc/projetos/{id} depois -> 404 {"error":{"code":"NOT_FOUND","message":"recurso não encontrado"}}
+  DELETE entidade A pela rota generica -> 200 {"no_id":"…","arestas_removidas":["…","…"]}
+  ```
+
+  A nuvem **sumia da leitura** — `404` sobre um projeto que continuava no banco — e a
+  resposta da mutilação era `204 No Content`.
+
+  **Causa raiz**: a fronteira do agregado estava escrita em prosa e numa classe
+  invólucra, não no objeto que guarda o estado. `Projeto.ferramenta` era um rótulo de
+  filtro, então qualquer um que obtivesse um `Projeto` mutava o grafo da ferramenta.
+
+  **Conserto** (mata a classe, não o caso): `Projeto._exigir_raiz` recusa as **oito**
+  mutações de grafo (`adicionar_no`, `editar_no`, `mover_no`, `recolher_no`, `excluir_no`,
+  `ligar`, `editar_aresta`, `excluir_aresta`) quando a `ferramenta` não é a genérica, e a
+  única destrava é `Projeto.sob_a_raiz()`, usada por dentro das raízes. **Fail-closed por
+  construção**: ferramenta nova nasce bloqueada mesmo sem se registrar. Erro novo
+  `MutacaoForaDaRaiz` → `409 AGGREGATE_ROOT_REQUIRED` com `details.ferramenta` e
+  `details.raiz` (registro do §A.7 em `apps/api/src/toc_api/dominio/federacao/wire.py`; mensagem de tela em
+  `apps/web/src/i18n/pt.ts` e `en.ts`).
+
+- **A mesma exposição, nas outras invariantes — procuradas, achadas e testadas.** Não era
+  só a RN-01 da nuvem:
+  - a **terceira porta**, que fechar as rotas teria deixado aberta: o executor do catálogo
+    federado (`apps/api/src/toc_api/infra/federacao/executor.py`) monta os mesmos casos de uso genéricos para
+    `toc.criar_nos`, `toc.criar_arestas`, `toc.atualizar_no` e `toc.excluir_nos`. Uma ação
+    governada, aprovada por gate humano, mutilaria a nuvem igual. Recusa medida em
+    `apps/api/tests/federacao/test_porta_dos_fundos_do_catalogo.py`;
+  - **elo da ARA sem exame de suficiência** (RF-22): `ProjetoARA.ligar` cria o `Exame`;
+    `Projeto.ligar` não sabe que exame existe — e a ARA **não tinha rota de aresta**, então
+    a própria tela do produto ligava pela rota genérica;
+  - **UDE órfão** (RF-05): pela rota genérica o nó sumia e a ficha ficava pendurada num
+    identificador que não existe mais, sem `UdeArquivado`;
+  - **conector E com aresta fantasma** (RN-11): `_soltar_das_conjuncoes` só rodava dentro de
+    `excluir_no`; **não havia** `ProjetoARA.excluir_aresta`, e o produto apagava pela rota
+    genérica deixando o conector apontando para o vazio. A operação passou a existir;
+  - **UDE reescrito sem revalidar** (RF-10): `PATCH` genérico trocava o texto e o veredito
+    formal anterior ficava pendurado. `ProjetoARA.editar_no` agora revalida no mesmo ato.
+
+- **Adicionado — o grafo da ARA pela raiz.** Oito casos de uso (`AdicionarEfeito`,
+  `EditarNoDaARA`, `MoverNoDaARA`, `RecolherNoDaARA`, `ExcluirNoDaARA`, `LigarNaARA`,
+  `EditarArestaDaARA`, `ExcluirArestaDaARA`), todos na `POLITICA` de capacidades, e as
+  rotas `POST/PATCH/DELETE /toc/ara/projetos/{id}/nos|arestas`. A rota
+  `POST /toc/ara/projetos/{id}/efeitos` deixou de rodar o `AdicionarNo` genérico: dava o
+  mesmo nó e era a ferramenta indo ao núcleo por fora da própria raiz. O cliente web
+  (`apps/web/src/api/cliente.ts`) e a tela da ARA passaram a usá-las.
+
+- **Adicionado — portão `scripts/check-raiz-do-agregado.sh`**, no `scripts/evidencia.sh` e
+  na suíte de sabotagem com três mutações (chave vazando para a aplicação, mutação sem
+  guarda, ferramenta que não se registra). Existe porque o `import-linter` mede **direção**
+  de import e `aplicacao → dominio` é o sentido permitido: ele não veria uma camada de fora
+  pegar a chave do núcleo.
+
+### Correção — três achados de revisão independente que executou
+
+- **`done` depois de `error` no fio (§A.1 do Anexo A)** — `apps/api/src/toc_api/http/aph.py`.
+  `_acrescentar_ao_log` emitia o terminador `done` **incondicionalmente** depois do evento.
+  Quando o evento é `error`, que já é terminador, o turno tentava encerrar duas vezes; o
+  domínio recusava a segunda (`SessaoEncerrada`) e a recusa subia até a borda. **Efeito
+  medido**: quem confirmava uma proposta com a tela desatualizada recebia
+  `409 DOMAIN_REFUSED` com a mensagem interna `"sessão …: o turno já terminou em 'error'"`
+  em vez do `PROPOSAL_CONTEXT_STALE` que o §A.7 nomeia — defeito de protocolo e vazamento
+  de mensagem interna no mesmo `done`. Agora o terminador é condicional, e os eventos de
+  uma decisão entram num turno só (um `done`, não um por evento). Testes que reproduzem
+  antes do conserto: `test_acrescentar_ao_log_nao_tenta_um_segundo_terminador`,
+  `test_decisao_com_contexto_divergente_devolve_o_codigo_do_a7`,
+  `test_o_error_da_recusa_encerra_o_turno_sozinho_sem_done_atras` e
+  `test_a_decisao_acrescenta_um_terminador_so_ao_log`.
+- **Duas grafias do mesmo código de erro no mesmo serviço** — a borda REST emitia
+  `INVALID_ARGUMENT` (`apps/api/src/toc_api/http/erros.py`) e a borda APH emitia
+  `INVALID_ARGUMENTS` (`apps/api/src/toc_api/http/aph.py`) para a mesma situação. O §A.7 diz que "o cliente discrimina por código e
+  nunca por mensagem": quem comparasse por igualdade trataria um e ignoraria o outro — e o
+  cliente web já discriminava só o singular (`apps/web/src/api/erros.ts`). **Causa raiz**:
+  eram **dois registros declarados**, um por borda, e nada comparava os dois; além disso
+  o tradutor REST montava o envelope à mão, sem passar pela validação de código que a borda APH
+  fazia por `ErroDoFio`. Agora há **um registro só**
+  (`apps/api/src/toc_api/dominio/federacao/wire.py`, `CODIGOS_PROPRIOS`), `envelope()` constrói pelo domínio (código não declarado levanta
+  antes de virar resposta) e o mapa `status → código` do tratador do Starlette virou a
+  constante `CODIGO_POR_STATUS`, visível para quem varre. A aptidão nova é
+  `apps/api/tests/contrato/test_registro_de_codigos_a7.py`: uma varredura por árvore
+  sintática (AST) sobre `src/toc_api/**/*.py` que exige todo código literalmente emitido no
+  registro, recusa duas grafias do mesmo código, e confere o outro lado da igualdade (os
+  códigos que a tela discrimina).
+- **O portão de conformidade APH não dizia o que mediu (regra R2)** —
+  `scripts/check-conformidade-aph.sh`. Ele herdava o ambiente do shell: sem `DATABASE_URL`
+  exportada o serviço sobe em `persistencia: memoria` e a suíte, que é caixa-preta,
+  devolve **11/11 do mesmo jeito**. Foi o que aconteceu na corrida da revisão independente
+  — verde legítimo, alvo errado, e a saída não dizia nem uma coisa nem outra. Agora o
+  portão: monta o alvo com **ambiente explícito**; **sonda o banco antes** de subir o
+  serviço (motor do SQLAlchemy é preguiçoso: sem a sondagem, o `/saude` diria `postgres`
+  com o cluster fora do ar); **declara campo a campo** o que mediu — persistência, cadeia e
+  de onde ela veio, servidor, revisão da migração, identidade, admissão, ambiente — e
+  declara a **natureza do turno**: enlatado e determinístico, sem provedor de modelo
+  (ADR 0007), medido sem grant, logo com principal anônimo e catálogo vazio; e **RECUSA**
+  (saída 3) medir contra alvo em memória, a não ser que quem chama peça
+  `--permitir-memoria`, e aí o veredito sai carimbado e a saída é 1. Duas sabotagens novas
+  em `scripts/tests/run-sabotagem.sh` (terceira metade: sabotagem por **ambiente**, para
+  portão que não tem fixture de arquivo) provam as duas metades.
+
+
 ### Jornadas vivas — J-01, J-02, J-03 e J-07 (princípio P6, skill `living-journey`)
 
 - **`docs/jornadas/scripts/capturar-telas.mjs`**: o gerador versionado das capturas. Sobe

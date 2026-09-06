@@ -27,16 +27,21 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 from toc_api.aplicacao.ara import (
+    AdicionarEfeito,
     AnalisarArvore,
     CriarProjetoARA,
     ExaminarElo,
+    ExcluirNoDaARA,
     FormarConectorE,
+    LigarNaARA,
     MarcarUde,
+    MoverNoDaARA,
     MudarStatusDeUde,
     RegistrarParecer,
     ReformularUde,
 )
-from toc_api.aplicacao.grafo import AdicionarNo, ExcluirNo, LigarNos, MoverNo
+from toc_api.aplicacao.grafo import AdicionarNo, LigarNos, MoverNo
+from toc_api.aplicacao.projetos import CriarProjeto
 from toc_api.dominio.ara import (
     EstadoDoExame,
     FichaDeUde,
@@ -79,7 +84,8 @@ def pecas(url_postgres, esquema_migrado):
 
 
 def test_o_grafo_do_m1_volta_do_banco_identico(pecas):
-    projeto = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
+    """M1 puro, sobre projeto GENÉRICO — onde o `Projeto` é a própria raiz do agregado."""
+    projeto = CriarProjeto(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — diagrama")
     a = AdicionarNo(**pecas).rodar(
         dono=HORIZONTE, projeto_id=projeto.id,
         titulo="Os formulários chegam incompletos.",
@@ -102,7 +108,7 @@ def test_o_grafo_do_m1_volta_do_banco_identico(pecas):
 
 
 def test_mover_no_persiste_a_posicao_final(pecas):
-    projeto = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
+    projeto = CriarProjeto(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — diagrama")
     no = AdicionarNo(**pecas).rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo=BOM)
     MoverNo(**pecas).rodar(
         dono=HORIZONTE, projeto_id=projeto.id, no_id=no.id,
@@ -119,7 +125,7 @@ def test_excluir_no_leva_so_as_arestas_dele_e_preserva_o_exame_vizinho(pecas):
     (`tocbuilderv3/services/mockApiService.ts:521`), agora no banco.
     """
     projeto = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
-    adicionar, ligar = AdicionarNo(**pecas), LigarNos(**pecas)
+    adicionar, ligar = AdicionarEfeito(**pecas), LigarNaARA(**pecas)
     a = adicionar.rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo="Nó A qualquer.")
     m = adicionar.rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo="Nó do meio.")
     z = adicionar.rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo="Nó Z qualquer.")
@@ -133,7 +139,7 @@ def test_excluir_no_leva_so_as_arestas_dele_e_preserva_o_exame_vizinho(pecas):
         estado=EstadoDoExame.SUFICIENTE,
     )
 
-    removidas = ExcluirNo(**pecas).rodar(
+    removidas = ExcluirNoDaARA(**pecas).rodar(
         dono=HORIZONTE, projeto_id=projeto.id, no_id=m.id
     )
 
@@ -151,7 +157,7 @@ def test_a_ara_completa_volta_do_banco_com_ficha_status_parecer_exame_e_conector
     projeto = CriarProjetoARA(**pecas).rodar(
         dono=HORIZONTE, nome="Horizonte — ARA da evasão"
     )
-    adicionar, ligar = AdicionarNo(**pecas), LigarNos(**pecas)
+    adicionar, ligar = AdicionarEfeito(**pecas), LigarNaARA(**pecas)
     c1 = adicionar.rodar(
         dono=HORIZONTE, projeto_id=projeto.id, titulo="Os formulários chegam incompletos."
     )
@@ -227,7 +233,7 @@ def test_a_ara_completa_volta_do_banco_com_ficha_status_parecer_exame_e_conector
 def test_a_validacao_formal_e_recalculada_na_reidratacao_nunca_lida_do_banco(pecas):
     """Por isso não existe tabela de validação: ela é função pura do texto do nó."""
     projeto = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
-    no = AdicionarNo(**pecas).rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo=RUIM)
+    no = AdicionarEfeito(**pecas).rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo=RUIM)
     MarcarUde(**pecas).rodar(dono=HORIZONTE, projeto_id=projeto.id, no_id=no.id)
 
     reaberta = pecas["repositorio"].obter_ara(HORIZONTE.inquilino_id, projeto.id)
@@ -243,7 +249,7 @@ def test_a_validacao_formal_e_recalculada_na_reidratacao_nunca_lida_do_banco(pec
 
 def test_analisar_a_arvore_persistida_acha_a_causa_raiz_candidata(pecas):
     projeto = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
-    adicionar, ligar = AdicionarNo(**pecas), LigarNos(**pecas)
+    adicionar, ligar = AdicionarEfeito(**pecas), LigarNaARA(**pecas)
     raiz = adicionar.rodar(
         dono=HORIZONTE, projeto_id=projeto.id, titulo="A conferência de matrícula é manual."
     )
@@ -277,12 +283,12 @@ def test_analisar_a_arvore_persistida_acha_a_causa_raiz_candidata(pecas):
 
 def test_a_ara_de_outro_inquilino_nao_atravessa_a_fronteira(pecas):
     projeto = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
-    AdicionarNo(**pecas).rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo=BOM)
+    AdicionarEfeito(**pecas).rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo=BOM)
 
     assert pecas["repositorio"].obter_ara(ALVORADA.inquilino_id, projeto.id) is None
     assert pecas["repositorio"].obter(ALVORADA.inquilino_id, projeto.id) is None
     with pytest.raises(NaoEncontrado):
-        AdicionarNo(**pecas).rodar(
+        AdicionarEfeito(**pecas).rodar(
             dono=ALVORADA, projeto_id=projeto.id, titulo="Nó da intrusa."
         )
     # e o projeto do outro inquilino continua intacto
@@ -293,8 +299,8 @@ def test_a_ara_de_outro_inquilino_nao_atravessa_a_fronteira(pecas):
 def test_dois_inquilinos_nao_veem_o_grafo_um_do_outro(pecas):
     do_horizonte = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
     da_alvorada = CriarProjetoARA(**pecas).rodar(dono=ALVORADA, nome="Alvorada — ARA")
-    AdicionarNo(**pecas).rodar(dono=HORIZONTE, projeto_id=do_horizonte.id, titulo=BOM)
-    AdicionarNo(**pecas).rodar(
+    AdicionarEfeito(**pecas).rodar(dono=HORIZONTE, projeto_id=do_horizonte.id, titulo=BOM)
+    AdicionarEfeito(**pecas).rodar(
         dono=ALVORADA, projeto_id=da_alvorada.id, titulo="Nó da Alvorada, só dela."
     )
 
@@ -309,9 +315,9 @@ def test_dois_inquilinos_nao_veem_o_grafo_um_do_outro(pecas):
 def test_o_banco_recusa_auto_laco_e_aresta_duplicada(pecas, url_postgres, esquema_migrado):
     """RN-02 e RN-03 não dependem só do domínio: `sem_auto_laco` e `uq_aresta_par`."""
     projeto = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
-    a = AdicionarNo(**pecas).rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo="Nó A qualquer.")
-    b = AdicionarNo(**pecas).rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo="Nó B qualquer.")
-    LigarNos(**pecas).rodar(
+    a = AdicionarEfeito(**pecas).rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo="Nó A qualquer.")
+    b = AdicionarEfeito(**pecas).rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo="Nó B qualquer.")
+    LigarNaARA(**pecas).rodar(
         dono=HORIZONTE, projeto_id=projeto.id, origem_id=a.id, destino_id=b.id
     )
 
@@ -347,7 +353,7 @@ def test_o_banco_recusa_exame_sem_reserva_e_aresta_em_dois_conectores(
 ):
     """RF-22 e RN-11 impostas pelo banco além do domínio."""
     projeto = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
-    adicionar, ligar = AdicionarNo(**pecas), LigarNos(**pecas)
+    adicionar, ligar = AdicionarEfeito(**pecas), LigarNaARA(**pecas)
     c1 = adicionar.rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo="Nó C1 qualquer.")
     c2 = adicionar.rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo="Nó C2 qualquer.")
     destino = adicionar.rodar(dono=HORIZONTE, projeto_id=projeto.id, titulo=BOM)

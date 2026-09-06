@@ -98,7 +98,7 @@ export function TelaDaAra({ cliente, projetoId, aoVoltar, aoAbrirNuvem }: TelaDa
         posicao,
       });
       desfazer.registrar("criar_no", async () => {
-        await cliente.grafo.excluirNo(projetoId, criado.id);
+        await cliente.ara.excluirNo(projetoId, criado.id);
         await recarregar();
       });
     });
@@ -107,10 +107,10 @@ export function TelaDaAra({ cliente, projetoId, aoVoltar, aoAbrirNuvem }: TelaDa
   async function moverNo(id: string, posicao: Posicao) {
     const anterior = nos.find((no) => no.id === id)?.posicao;
     await escrever(async () => {
-      await cliente.grafo.moverNo(projetoId, id, posicao);
+      await cliente.ara.moverNo(projetoId, id, posicao);
       if (anterior) {
         desfazer.registrar("mover_no", async () => {
-          await cliente.grafo.moverNo(projetoId, id, anterior);
+          await cliente.ara.moverNo(projetoId, id, anterior);
           await recarregar();
         });
       }
@@ -122,11 +122,11 @@ export function TelaDaAra({ cliente, projetoId, aoVoltar, aoAbrirNuvem }: TelaDa
     const eUde = udePorNo.has(id);
     await escrever(async () => {
       if (eUde) await cliente.ara.reformular(projetoId, id, titulo);
-      else await cliente.grafo.editarNo(projetoId, id, { titulo });
+      else await cliente.ara.editarNo(projetoId, id, { titulo });
       if (anterior) {
         desfazer.registrar("editar_no", async () => {
           if (eUde) await cliente.ara.reformular(projetoId, id, anterior.titulo);
-          else await cliente.grafo.editarNo(projetoId, id, { titulo: anterior.titulo });
+          else await cliente.ara.editarNo(projetoId, id, { titulo: anterior.titulo });
           await recarregar();
         });
       }
@@ -135,9 +135,9 @@ export function TelaDaAra({ cliente, projetoId, aoVoltar, aoAbrirNuvem }: TelaDa
 
   async function ligar(origemId: string, destinoId: string) {
     await escrever(async () => {
-      const aresta = await cliente.grafo.ligar(projetoId, origemId, destinoId);
+      const aresta = await cliente.ara.ligar(projetoId, origemId, destinoId);
       desfazer.registrar("ligar", async () => {
-        await cliente.grafo.excluirAresta(projetoId, aresta.id);
+        await cliente.ara.excluirAresta(projetoId, aresta.id);
         await recarregar();
       });
     });
@@ -161,7 +161,7 @@ export function TelaDaAra({ cliente, projetoId, aoVoltar, aoAbrirNuvem }: TelaDa
 
   async function excluirNo(id: string) {
     // Sem episódio de desfazer: o serviço não ressuscita nó. O raio foi declarado antes.
-    await escrever(() => cliente.grafo.excluirNo(projetoId, id).then(() => undefined));
+    await escrever(() => cliente.ara.excluirNo(projetoId, id).then(() => undefined));
   }
 
   useEffect(() => {
@@ -339,12 +339,12 @@ export function TelaDaAra({ cliente, projetoId, aoVoltar, aoAbrirNuvem }: TelaDa
           aoLigar={(origem, destino) => void ligar(origem, destino)}
           aoEditarAresta={(id, rotulo) =>
             void escrever(async () => {
-              await cliente.grafo.editarAresta(projetoId, id, rotulo);
+              await cliente.ara.editarAresta(projetoId, id, rotulo);
             })
           }
           aoExcluirAresta={(id) =>
             void escrever(async () => {
-              await cliente.grafo.excluirAresta(projetoId, id);
+              await cliente.ara.excluirAresta(projetoId, id);
             })
           }
         />
@@ -385,7 +385,7 @@ export function TelaDaAra({ cliente, projetoId, aoVoltar, aoAbrirNuvem }: TelaDa
             no={nos.find((no) => no.id === detalhando)!}
             aoFechar={() => setDetalhando(null)}
             aoSalvar={async (dados) => {
-              await cliente.grafo.editarNo(projetoId, detalhando, dados);
+              await cliente.ara.editarNo(projetoId, detalhando, dados);
               await recarregar();
               setDetalhando(null);
             }}
