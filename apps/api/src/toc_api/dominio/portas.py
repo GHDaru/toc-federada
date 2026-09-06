@@ -12,10 +12,15 @@ from datetime import datetime
 from typing import Any, ContextManager, Mapping, Protocol, Sequence, runtime_checkable
 from uuid import UUID
 
+from .apr import ProjetoAPR
 from .ara import ProjetoARA
+from .arf import ProjetoARF
+from .at import ProjetoAT
 from .federacao.principal import Principal
+from .focalizacao import AnaliseDeFocalizacao
 from .nuvem import NuvemDeConflito
 from .projeto import Projeto
+from .referencia import ReferenciaCruzada
 
 
 @runtime_checkable
@@ -141,6 +146,138 @@ class RepositorioDaCosturaM2M3(RepositorioDeARA, RepositorioDeNuvens, Protocol):
     Conflito. Declarar a exigência como um `Protocol` composto é o que impede o caso de uso
     de receber um repositório que só sabe metade do caminho — e é mais honesto do que um
     `Any` com comentário pedindo cuidado.
+    """
+
+
+# ---------------------------------------------------------------------------------------
+# M4 · Árvores de Futuro e Implementação (spec 008)
+#
+# Uma porta por ferramenta, pelo mesmo motivo das três anteriores (RN-04 da spec 004): o
+# núcleo não conhece semântica da Teoria das Restrições, e uma porta única obrigaria a
+# assinatura do M1 a mencionar ramo negativo, par obstáculo↔objetivo intermediário e ficha
+# de passo. O adaptador implementa todas; o domínio continua com uma por ferramenta.
+# ---------------------------------------------------------------------------------------
+
+
+@runtime_checkable
+class RepositorioDeARF(Protocol):
+    """Persistência do projeto do tipo Árvore da Realidade Futura (ARF), M4 · E4.1."""
+
+    def salvar_arf(self, arf: "ProjetoARF") -> None: ...
+
+    def obter_arf(self, inquilino_id: str, projeto_id: UUID) -> "ProjetoARF | None": ...
+
+
+@runtime_checkable
+class RepositorioDeAPR(Protocol):
+    """Persistência do projeto do tipo Árvore de Pré-Requisitos (APR), M4 · E4.2."""
+
+    def salvar_apr(self, apr: "ProjetoAPR") -> None: ...
+
+    def obter_apr(self, inquilino_id: str, projeto_id: UUID) -> "ProjetoAPR | None": ...
+
+
+@runtime_checkable
+class RepositorioDeAT(Protocol):
+    """Persistência do projeto do tipo Árvore de Transição (AT), M4 · E4.3."""
+
+    def salvar_at(self, at: "ProjetoAT") -> None: ...
+
+    def obter_at(self, inquilino_id: str, projeto_id: UUID) -> "ProjetoAT | None": ...
+
+
+@runtime_checkable
+class RepositorioDeReferencias(Protocol):
+    """Persistência da `ReferenciaCruzada` — agregado PRÓPRIO, fora dos projetos (RF-33).
+
+    `listar_referencias` aceita `projeto_id` como filtro opcional porque a vista da cadeia
+    (RF-41) parte de um projeto e precisa das referências que o tocam — nos dois sentidos.
+    O inquilino continua sendo o primeiro parâmetro posicional e sem valor padrão: a
+    fronteira é a consulta, aqui como em todo o resto.
+    """
+
+    def salvar_referencia(self, referencia: "ReferenciaCruzada") -> None: ...
+
+    def obter_referencia(
+        self, inquilino_id: str, referencia_id: UUID
+    ) -> "ReferenciaCruzada | None": ...
+
+    def listar_referencias(
+        self, inquilino_id: str, *, projeto_id: UUID | None = None
+    ) -> list["ReferenciaCruzada"]: ...
+
+
+@runtime_checkable
+class RepositorioDaCadeia(
+    RepositorioDeARA,
+    RepositorioDeNuvens,
+    RepositorioDeARF,
+    RepositorioDeAPR,
+    RepositorioDeAT,
+    RepositorioDeReferencias,
+    Protocol,
+):
+    """As seis portas juntas — a forma que o encadeamento do M4 exige (E4.4).
+
+    Promover lê uma Árvore da Realidade Atual e grava uma Nuvem de Conflito **mais** uma
+    referência; semear lê a nuvem e grava a Árvore da Realidade Futura; derivar desce até
+    a Árvore de Transição. Declarar a exigência como `Protocol` composto é o que impede o
+    caso de uso de receber um repositório que só sabe metade do caminho — e é mais honesto
+    do que um `Any` com comentário pedindo cuidado.
+    """
+
+
+# ---------------------------------------------------------------------------------------
+# M6 · Focalização (spec 009)
+#
+# Uma porta própria, pelo mesmo motivo das anteriores (RN-04 da spec 004): o núcleo não
+# conhece semântica da Teoria das Restrições, e uma porta única obrigaria a assinatura do
+# M1 a mencionar ciclo de focalização, restrição e decisão herdada. O adaptador implementa
+# todas; o domínio continua com uma por ferramenta.
+# ---------------------------------------------------------------------------------------
+
+
+@runtime_checkable
+class RepositorioDeFocalizacao(Protocol):
+    """Persistência da `AnaliseDeFocalizacao` — a jornada dos cinco passos (M6).
+
+    A regra do inquilino não tem exceção aqui tampouco: primeiro parâmetro posicional, sem
+    valor padrão.
+    """
+
+    def salvar_focalizacao(self, analise: "AnaliseDeFocalizacao") -> None: ...
+
+    def obter_focalizacao(
+        self, inquilino_id: str, projeto_id: UUID
+    ) -> "AnaliseDeFocalizacao | None": ...
+
+
+@runtime_checkable
+class RepositorioDaJornada(RepositorioDeFocalizacao, RepositorioDeProjetos, Protocol):
+    """As duas portas juntas — a forma que a validação de vínculo exige (RNF-04).
+
+    Criar um vínculo **lê** o projeto de destino (existência, inquilino, ferramenta e
+    estado) e **grava** a análise. Declarar a exigência como `Protocol` composto é o que
+    impede o caso de uso de receber um repositório que só sabe metade do caminho: sem a
+    metade de leitura, a validação de vínculo viraria disciplina em vez de tipo, e um
+    vínculo para um projeto de outro inquilino entraria em silêncio.
+
+    O que ela deliberadamente **não** compõe: as portas do M2, M3 e M4. O vínculo é opaco
+    no domínio (plano 009, decisão 2) e a borda valida o projeto pelo NÚCLEO — ferramenta
+    e inquilino bastam. Compor as seis portas aqui acoplaria o M6 à evolução de todas elas
+    para não ganhar nada.
+    """
+
+
+@runtime_checkable
+class RepositorioDaSugestaoDeRestricao(RepositorioDaJornada, RepositorioDeARA, Protocol):
+    """A forma que `toc.suggest_constraint` exige (RF-19, INT-05).
+
+    Sugerir a restrição **lê** a Árvore da Realidade Atual vinculada ao passo `identificar`
+    (para tirar dela as causas raiz candidatas) e **grava** a análise, quando a proposta é
+    aceita. É a única operação do M6 que precisa conhecer outro módulo por dentro — e por
+    isso é a única que declara a porta composta, em vez de todo o módulo carregar o
+    acoplamento.
     """
 
 

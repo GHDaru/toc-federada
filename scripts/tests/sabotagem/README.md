@@ -44,6 +44,7 @@ temporário criado com `mktemp -d` e sabota a cópia.
 | `jornadas/` | `scripts/check-jornadas.sh` | uma jornada sintética com captura, heurística datada e o comando que a regenera, mais o `manifesto.json` que dá a data das capturas |
 | `raiz-do-agregado/` | `scripts/check-raiz-do-agregado.sh` | um agregado sintético com a guarda de raiz nas mutações e as raízes de ferramenta registradas |
 | `trava-otimista/` | `scripts/check-trava-otimista.sh` | um adaptador sintético que condiciona a escrita à versão lida e confere o `rowcount` |
+| `trava-da-proposta/` | `scripts/check-trava-da-proposta.sh` | um caso de uso sintético que **reserva a proposta antes do efeito**, com o adaptador condicionando a escrita ao estado lido e o duplo em memória recusando o mesmo |
 | `evidencia-colada/` | `scripts/check-evidencia-colada.sh` | um registro de duas afirmações com comando reproduzível e um documento que cola os dois valores — a base mínima do portão que confere se a saída colada ainda é a que o comando devolve |
 
 Base 100% sintética, por regra do ADR 0006: personas fictícias (**Facilitadora TOC**,
@@ -54,15 +55,15 @@ como vale em spec e em captura — fixture é exatamente onde a dívida da irmã
 ## As sabotagens
 
 A tabela viva está em `scripts/tests/run-sabotagem.sh` (a mutação e o trecho exigido moram
-juntos, para não divergirem). São **48** mutações sobre **9** bases — número medido, não
+juntos, para não divergirem). São **61** mutações sobre **10** bases — número medido, não
 lembrado, e conferido pelo `scripts/check-evidencia-colada.sh` para não envelhecer como a
 redação anterior desta linha, que dizia 27 depois que a suíte já tinha crescido:
 
 ```text
 $ grep -cE '^  "scripts/check-[a-z-]+\.sh" +"[a-z-]+" "[a-z0-9-]+"$' scripts/tests/run-sabotagem.sh
-48
+61
 $ ls -d scripts/tests/sabotagem/*/ | wc -l
-9
+10
 ```
 
 Em resumo, elas cobrem:
@@ -87,6 +88,10 @@ Em resumo, elas cobrem:
 - **`check-raiz-do-agregado.sh`** — chave da raiz vazando para a aplicação; mutação de
   grafo sem guarda; ferramenta que não registra a raiz.
 - **`check-trava-otimista.sh`** — as oito formas de perder escrita concorrente em silêncio.
+- **`check-trava-da-proposta.sh`** — as dez formas de fazer uma aprovação humana executar
+  N vezes. A central é a **ordem**: mover a reserva para depois do efeito deixa a trava
+  inteira no lugar e inútil, porque quando a corrida se resolve os alvos já foram
+  escritos.
 - **`check-evidencia-colada.sh`** — número que saiu do lugar; saída colada que envelheceu; e
   as três formas de desligar o portão por dentro (registro sem documento de destino, molde
   que casaria com qualquer valor, documento citado que não existe).

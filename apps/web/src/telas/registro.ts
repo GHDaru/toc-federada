@@ -139,6 +139,146 @@ export const REGISTRO_DE_TELAS: readonly Tela[] = [
       { nome: "app_id", tipo: "text", rotulo: "Identificador da aplicação", aiVisivel: false, justificativa: "" },
     ],
   },
+  // M6 — Focalização (spec 009, INT-06). Três telas, declaradas no manifesto do ciclo 006
+  // no mesmo commit em que nascem. O `aiVisivel` segue a regra dos módulos anteriores:
+  // grandeza e vocabulário sim, texto de pessoa não — o enunciado da restrição, as notas
+  // e as decisões são conteúdo do inquilino, e a assistência só os recebe quando a pessoa
+  // os coloca numa ação governada, nunca por raspagem de tela (APH-3.1).
+  {
+    id: "toc.foco_jornada",
+    rota: "/toc/focalizacao",
+    titulo: "Jornada dos cinco passos",
+    acoesDeIa: ["READ", "NAVIGATE"],
+    declaradaNoManifesto: true,
+    campos: [
+      {
+        nome: "projeto_id",
+        tipo: "text",
+        rotulo: "Análise",
+        aiVisivel: true,
+        justificativa: "identifica o alvo das ações governadas do módulo",
+      },
+      {
+        nome: "ciclo",
+        tipo: "number",
+        rotulo: "Ciclo",
+        aiVisivel: true,
+        justificativa: "em que volta da jornada a análise está; número, sem conteúdo",
+      },
+      {
+        nome: "passo_atual",
+        tipo: "select",
+        rotulo: "Passo atual",
+        aiVisivel: true,
+        justificativa: "vocabulário fechado de cinco valores — é o contexto da proposta",
+      },
+      {
+        nome: "passos_concluidos",
+        tipo: "number",
+        rotulo: "Passos concluídos",
+        aiVisivel: true,
+        justificativa: "progresso agregado, sem texto de decisão",
+      },
+      {
+        nome: "tipo_de_restricao",
+        tipo: "select",
+        rotulo: "Tipo da restrição",
+        aiVisivel: true,
+        justificativa: "enum fechado da TOC; diz a natureza da restrição, não o enunciado",
+      },
+      {
+        nome: "pendencias",
+        tipo: "number",
+        rotulo: "Pendências",
+        aiVisivel: true,
+        justificativa: "contagem agregada do que falta no ciclo",
+      },
+      {
+        nome: "herancas_pendentes",
+        tipo: "number",
+        rotulo: "Vereditos pendentes",
+        aiVisivel: true,
+        justificativa: "contagem do bloqueio anti-inércia; agregada, sem o texto das regras",
+      },
+      { nome: "descricao_da_restricao", tipo: "text", rotulo: "Restrição", aiVisivel: false, justificativa: "" },
+    ],
+  },
+  {
+    id: "toc.foco_passo",
+    rota: "/toc/focalizacao/passo",
+    titulo: "Painel do passo",
+    acoesDeIa: ["READ", "NAVIGATE"],
+    declaradaNoManifesto: true,
+    campos: [
+      {
+        nome: "projeto_id",
+        tipo: "text",
+        rotulo: "Análise",
+        aiVisivel: true,
+        justificativa: "identifica o alvo das ações governadas do módulo",
+      },
+      {
+        nome: "passo",
+        tipo: "select",
+        rotulo: "Passo",
+        aiVisivel: true,
+        justificativa: "o passo aberto; vocabulário fechado, é o contexto da proposta",
+      },
+      {
+        nome: "estado",
+        tipo: "select",
+        rotulo: "Estado do passo",
+        aiVisivel: true,
+        justificativa: "pendente/em andamento/concluído — enum, sem conteúdo",
+      },
+      {
+        nome: "vinculos",
+        tipo: "number",
+        rotulo: "Vínculos de ferramenta",
+        aiVisivel: true,
+        justificativa: "contagem agregada dos projetos referenciados",
+      },
+      {
+        nome: "vinculos_nao_canonicos",
+        tipo: "number",
+        rotulo: "Vínculos com aviso",
+        aiVisivel: true,
+        justificativa: "contagem do que foge da combinação canônica do método",
+      },
+      { nome: "decisao_em_rascunho", tipo: "text", rotulo: "Decisão", aiVisivel: false, justificativa: "" },
+      { nome: "notas", tipo: "text", rotulo: "Notas", aiVisivel: false, justificativa: "" },
+    ],
+  },
+  {
+    id: "toc.foco_linha_do_tempo",
+    rota: "/toc/focalizacao/linha-do-tempo",
+    titulo: "Linha do tempo dos ciclos",
+    acoesDeIa: ["READ"],
+    declaradaNoManifesto: true,
+    campos: [
+      {
+        nome: "projeto_id",
+        tipo: "text",
+        rotulo: "Análise",
+        aiVisivel: true,
+        justificativa: "identifica a análise cuja história está em tela",
+      },
+      {
+        nome: "ciclos",
+        tipo: "number",
+        rotulo: "Ciclos",
+        aiVisivel: true,
+        justificativa: "tamanho da história; agregado, sem restrição nem decisão",
+      },
+      {
+        nome: "ciclos_fechados",
+        tipo: "number",
+        rotulo: "Ciclos fechados",
+        aiVisivel: true,
+        justificativa: "quantas voltas já se fecharam; agregado",
+      },
+    ],
+  },
   {
     // Rota da interface, ainda **fora** do manifesto (ver `declaradaNoManifesto`).
     id: "toc.nuvem",

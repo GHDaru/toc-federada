@@ -126,6 +126,14 @@ def compor_federacao(
         # O mesmo adaptador atende as três portas (M1, M2 e M3); o domínio continua com
         # três, que é o que impede a assinatura do núcleo de mencionar premissa e injeção.
         nuvens=nuvens if nuvens is not None else aras,
+        # E as três portas do M4 (ARF, APR e AT). O mesmo adaptador atende as seis; o
+        # domínio continua com seis, que é o que impede a assinatura do núcleo de
+        # mencionar ramo negativo, par obstáculo↔objetivo e ficha de passo.
+        arvores=aras,
+        # E a porta do M6 (spec 009). O mesmo adaptador atende as sete; o domínio continua
+        # com sete, que é o que impede a assinatura do núcleo de mencionar ciclo de
+        # focalização, restrição e decisão herdada.
+        focalizacoes=aras,
         motor_de_geracao=motor_de_geracao,
         relogio=relogio,
     )

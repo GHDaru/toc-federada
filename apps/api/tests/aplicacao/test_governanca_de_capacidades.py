@@ -68,8 +68,15 @@ SO_LE = principal_com([TOC_LEITURA])
 SO_ESCREVE = principal_com([TOC_ESCRITA])
 PLENA = principal_com([TOC_LEITURA, TOC_ESCRITA])
 
-#: Os cinco casos de uso que só leem. Escrito à mão de propósito: se um caso de uso
-#: MUTADOR for registrado como leitura por descuido, a lista aqui não muda e o teste cai.
+#: Os casos de uso que só leem. Escrito à mão de propósito: se um caso de uso MUTADOR for
+#: registrado como leitura por descuido, a lista aqui não muda e o teste cai.
+#:
+#: As sete primeiras são M1, M2 e M3. As sete do M4 (spec 008) obedecem à mesma régua, e
+#: duas merecem nota: `avaliar_verbalizacao` é heurística **pura** que não grava (a irmã
+#: de `validar_texto_de_ude`), e `abrir_cadeia` é a travessia calculada em memória sobre
+#: as referências — sem tabela materializada e sem evento. O que **não** está aqui, e é a
+#: prova de que a régua vale: `verificar_arf` e `sequenciar_apr` acrescentam evento ao
+#: projeto (RF-13 e RF-26) e por isso exigem escrita.
 SO_LEITURA = {
     "abrir_projeto",
     "abrir_projeto_ara",
@@ -78,6 +85,22 @@ SO_LEITURA = {
     "listar_projetos",
     "validar_nuvem",
     "validar_texto_de_ude",
+    # M4 — Árvores de Futuro e Implementação
+    "abrir_projeto_arf",
+    "abrir_projeto_apr",
+    "abrir_projeto_at",
+    "avaliar_verbalizacao",
+    "resumo_da_apr",
+    "abrir_cadeia",
+    "listar_referencias_do_projeto",
+    # M6 — Focalização (spec 009). As seis leituras da jornada: nenhuma delas grava — o
+    # mapa é função pura de domínio (RF-12) e a resolução de vínculo é consulta ao M1.
+    "abrir_analise_de_focalizacao",
+    "mapa_da_jornada",
+    "linha_do_tempo_da_analise",
+    "listar_analises_de_focalizacao",
+    "resolver_vinculos",
+    "referencias_da_ferramenta",
 }
 
 
@@ -91,6 +114,14 @@ MODULOS_DO_NUCLEO = (
     "toc_api.aplicacao.grafo",
     "toc_api.aplicacao.ara",
     "toc_api.aplicacao.nuvem",
+    # M4 — Árvores de Futuro e Implementação (spec 008). Entram aqui no mesmo commit em
+    # que nascem: um módulo de caso de uso fora desta lista é um módulo cujos pontos de
+    # verificação ninguém exercita, e o portão responderia verde sobre metade da camada.
+    "toc_api.aplicacao.arvores",
+    "toc_api.aplicacao.cadeia",
+    # M6 — Focalização (spec 009). Mesmo motivo: os casos de uso da jornada dos cinco
+    # passos entram aqui no commit em que nascem.
+    "toc_api.aplicacao.focalizacao",
 )
 
 
@@ -145,7 +176,10 @@ def test_todo_caso_de_uso_recusa_o_principal_que_nao_tem_a_capacidade():
         f"{len(classes)} casos de uso concretos → {sorted(recusados)}"
     )
     assert len(recusados) == len(classes)
-    assert len(classes) >= 27, "a camada de aplicação encolheu — reveja a descoberta"
+    # O piso sobe a cada módulo entregue: 27 até o M3, 77 com o M4 (spec 008). Ele não é
+    # decoração — é o que impede a descoberta por introspecção de emudecer em silêncio se
+    # alguém quebrar a herança de `CasoDeUso`.
+    assert len(classes) >= 77, "a camada de aplicação encolheu — reveja a descoberta"
 
 
 def test_a_recusa_acontece_ANTES_de_executar_qualquer_coisa():

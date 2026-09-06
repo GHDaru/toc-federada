@@ -18,7 +18,7 @@
       },
       {
         "title": "📐 Corpus de planejamento",
-        "content": "12 specs · 8 módulos (M1–M8) · 10 ADRs · 359 RF · 114 RI · 105 RNF · 71 regras de negócio · 61 integrações. Números contados pelo gerador, não declarados."
+        "content": "12 specs · 8 módulos (M1–M8) · 13 ADRs · 359 RF · 114 RI · 105 RNF · 71 regras de negócio · 61 integrações. Números contados pelo gerador, não declarados."
       },
       {
         "title": "🤝 Federação",
@@ -430,6 +430,30 @@
       "description": "1. O agregado guarda a versão que leu. `Projeto.versao_lida` (com `init=False`, `compare=False`, `repr=False`, como o contador `_profundidade_da_raiz`) é preenchido pelo adaptador ao reidratar e sincronizado por `Projeto.confirmar_gravacao()` depois do commit. `0` significa \"nunca foi gravado\", e é ele que distingue inserção de atualização. Não é estado de negócio: é estado de sincronia com o repo",
       "principios": "P2 (INEGOCIÁVEL) — \"nada de segundo protocolo […] tela é",
       "path": "docs/adr/0010-trava-otimista-por-versao-lida.md"
+    },
+    {
+      "n": "0011",
+      "title": "A confirmação de proposta é uma transição atômica no banco, e a `idempotency_key` deduplica de verdade",
+      "status": "Aceita",
+      "description": "1. A proposta passa a saber de que estado partiu. `PropostaDeAcao.estado_lido`, com `confirmar_gravacao()`, exatamente como `Projeto.versao_lida`. Não entra no construtor nem na comparação: é estado de sincronia com o repositório, não de negócio.",
+      "principios": "P2 (INEGOCIÁVEL) — \"verbo mutador nasce `action_proposal`\",",
+      "path": "docs/adr/0011-trava-da-proposta-e-dedup-real-da-chave.md"
+    },
+    {
+      "n": "0012",
+      "title": "O M4 nasce com o pacote de suficiência **extraído** e a referência cruzada como **agregado próprio**",
+      "status": "Aceita",
+      "description": "1. O pacote de suficiência causal é EXTRAÍDO, nunca copiado. O exame de elo, o conector E e as duas leituras saíram de `apps/api/src/toc_api/dominio/ara.py` para `apps/api/src/toc_api/dominio/suficiencia.py`, e a ARA e a ARF importam o mesmo objeto. A alternativa era duplicar as classes na ARF — mais rápido de escrever e indistinguível por um teste de comportamento no primeiro dia. Por isso a prov",
+      "principios": "P2 (INEGOCIÁVEL) — as quatro ações `toc.*` do módulo nascem",
+      "path": "docs/adr/0012-modulo-m4-suficiencia-compartilhada-e-referencia-como-agregado.md"
+    },
+    {
+      "n": "0013",
+      "title": "A restrição tem taxonomia **fechada**, e uma decisão herdada \"mantida\" **volta à mesa** a cada recomeço",
+      "status": "Aceita",
+      "description": "### 1. `TipoDeRestricao` é um `enum` fechado de três valores",
+      "principios": "P3 (as duas decisões são regra de domínio puro, testáveis",
+      "path": "docs/adr/0013-taxonomia-fechada-da-restricao-e-heranca-que-volta-a-mesa.md"
     }
   ],
   "principles": [
@@ -487,7 +511,7 @@
     ],
     [
       "ADRs",
-      "10"
+      "13"
     ],
     [
       "Princípios do projeto (P1–P7)",
@@ -535,11 +559,11 @@
     ],
     [
       "Scripts de aptidão",
-      "28"
+      "29"
     ],
     [
       "Jornadas vivas",
-      "4"
+      "5"
     ],
     [
       "Linhas de código de produção",
@@ -549,7 +573,7 @@
   "counts": {
     "specs": 12,
     "modules": 8,
-    "adrs": 10,
+    "adrs": 13,
     "rf": 359,
     "ri": 114,
     "rnf": 105,
@@ -559,8 +583,8 @@
     "lacunas": 58,
     "clarify": 55,
     "skills": 6,
-    "scripts": 28,
-    "journeys": 4,
+    "scripts": 29,
+    "journeys": 5,
     "cycles": 12,
     "principles": 7,
     "requisitos": 578
@@ -6949,6 +6973,10 @@
       "data": "2026-09-03",
       "artifacts": [
         {
+          "name": "data-model.md",
+          "path": "specs/009-focalizacao/data-model.md"
+        },
+        {
           "name": "plan.md",
           "path": "specs/009-focalizacao/plan.md"
         },
@@ -6959,6 +6987,18 @@
         {
           "name": "tasks.md",
           "path": "specs/009-focalizacao/tasks.md"
+        },
+        {
+          "name": "ux-design.md",
+          "path": "specs/009-focalizacao/ux-design.md"
+        },
+        {
+          "name": "contracts/acoes-catalogo.md",
+          "path": "specs/009-focalizacao/contracts/acoes-catalogo.md"
+        },
+        {
+          "name": "contracts/rest-api.md",
+          "path": "specs/009-focalizacao/contracts/rest-api.md"
         }
       ],
       "rfs": [
@@ -7494,6 +7534,26 @@
         {
           "label": "tasks.md",
           "href": "specs/009-focalizacao/tasks.md",
+          "state": "ok"
+        },
+        {
+          "label": "data-model.md",
+          "href": "specs/009-focalizacao/data-model.md",
+          "state": "ok"
+        },
+        {
+          "label": "contracts/acoes-catalogo.md",
+          "href": "specs/009-focalizacao/contracts/acoes-catalogo.md",
+          "state": "ok"
+        },
+        {
+          "label": "contracts/rest-api.md",
+          "href": "specs/009-focalizacao/contracts/rest-api.md",
+          "state": "ok"
+        },
+        {
+          "label": "ux-design.md",
+          "href": "specs/009-focalizacao/ux-design.md",
           "state": "ok"
         },
         {
@@ -9675,6 +9735,12 @@
       "path": "scripts/check-specs.sh"
     },
     {
+      "name": "check-trava-da-proposta.sh",
+      "description": "nenhuma decisão sobre proposta executa duas vezes.",
+      "type": "Bash",
+      "path": "scripts/check-trava-da-proposta.sh"
+    },
+    {
       "name": "check-trava-otimista.sh",
       "description": "nenhuma escrita de agregado sai sem a trava de versão.",
       "type": "Bash",
@@ -9745,6 +9811,13 @@
       "description": "",
       "steps": 0,
       "path": "docs/jornadas/007-a-travessia.md"
+    },
+    {
+      "id": "009-cinco-passos-de-focalizacao",
+      "name": "J-09 · Os cinco passos de focalização",
+      "description": "",
+      "steps": 0,
+      "path": "docs/jornadas/009-cinco-passos-de-focalizacao.md"
     }
   ],
   "journeys_note": "",
@@ -15372,6 +15445,26 @@
             "state": "ok"
           },
           {
+            "label": "data-model.md",
+            "href": "specs/009-focalizacao/data-model.md",
+            "state": "ok"
+          },
+          {
+            "label": "contracts/acoes-catalogo.md",
+            "href": "specs/009-focalizacao/contracts/acoes-catalogo.md",
+            "state": "ok"
+          },
+          {
+            "label": "contracts/rest-api.md",
+            "href": "specs/009-focalizacao/contracts/rest-api.md",
+            "state": "ok"
+          },
+          {
+            "label": "ux-design.md",
+            "href": "specs/009-focalizacao/ux-design.md",
+            "state": "ok"
+          },
+          {
             "label": "qa-report.md",
             "href": "specs/009-focalizacao/qa-report.md",
             "state": "pending"
@@ -17560,6 +17653,10 @@
             "href": "specs/009-focalizacao/spec.md"
           },
           {
+            "text": "data-model.md",
+            "href": "specs/009-focalizacao/data-model.md"
+          },
+          {
             "text": "plan.md",
             "href": "specs/009-focalizacao/plan.md"
           },
@@ -17570,6 +17667,18 @@
           {
             "text": "tasks.md",
             "href": "specs/009-focalizacao/tasks.md"
+          },
+          {
+            "text": "ux-design.md",
+            "href": "specs/009-focalizacao/ux-design.md"
+          },
+          {
+            "text": "contracts/acoes-catalogo.md",
+            "href": "specs/009-focalizacao/contracts/acoes-catalogo.md"
+          },
+          {
+            "text": "contracts/rest-api.md",
+            "href": "specs/009-focalizacao/contracts/rest-api.md"
           }
         ],
         "modules": [

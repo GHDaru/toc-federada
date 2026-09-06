@@ -36,6 +36,7 @@ from ...dominio.federacao.portas import (
 )
 from ...dominio.federacao.principal import IntrospeccaoInvalida, Principal
 from ...dominio.federacao.proposta import (
+    CorridaDeDecisao,
     Desfecho,
     Origem,
     PropostaDeAcao,
@@ -170,10 +171,35 @@ class _ComGovernanca(CasoDeUso):
         )
 
     # -- execução ------------------------------------------------------------------
-    def _executar(self, proposta: PropostaDeAcao, acao: AcaoDoCatalogo, principal: Principal) -> None:
+    def _reservar(self, proposta: PropostaDeAcao, principal: Principal) -> None:
+        """Grava `executing` NO BANCO, condicionado ao estado lido — antes do efeito.
+
+        **É aqui que a corrida se resolve, e é por isso que esta chamada não pode descer
+        uma linha.** A transição `confirmed → executing` é a serialização natural do
+        APH-5.1, mas só quando ela existe no banco: enquanto a máquina de estados finitos
+        (FSM) transicionava um agregado em memória e a gravação vinha **depois** do efeito,
+        oito confirmações simultâneas atravessavam oito objetos, todas legítimas, e
+        executavam oito vezes — 50 nós para 30 pedidos, oito linhas de traço.
+
+        O repositório condiciona a escrita ao `estado_lido` (`UPDATE … WHERE estado =`), e
+        quem não casa recebe `CorridaDeDecisao`. Quem não escreve, **não executa**.
+        """
+        inquilino, usuario = self._exigir_identidade(principal)
+        self._propostas.salvar(inquilino, usuario, proposta)
+
+    def _executar(
+        self,
+        proposta: PropostaDeAcao,
+        acao: AcaoDoCatalogo,
+        principal: Principal,
+        *,
+        reservar: bool = True,
+    ) -> None:
         """Executa e fecha a proposta. Lote: alvo a alvo, com desfecho por alvo."""
         agora = self._relogio.agora()
         proposta.transicionar("executar", em=agora)
+        if reservar:
+            self._reservar(proposta, principal)
         if not proposta.alvos:
             status, mensagem = self._executor.executar(
                 action_id=acao.action_id,
@@ -292,6 +318,11 @@ class ProporAcao(_ComGovernanca):
             proposta.apresentar(em=agora)
         else:
             proposta.confirmar(em=agora)
+            # A ação de leitura executa direto (APH-5.2) — e mesmo ela reserva antes do
+            # efeito. Não é cerimônia: é o que faz "nenhum efeito acontece antes de a
+            # reserva estar no banco" valer para TODO caminho, e não para o caminho que o
+            # crítico atacou. Um invariante com exceção é um invariante que se perde na
+            # próxima rota.
             self._executar(proposta, acao, principal)
             eventos.append(("action_result", proposta.como_action_result()))
             self._registrar_traco(proposta, principal=principal)
@@ -314,6 +345,55 @@ class DecidirProposta(_ComGovernanca):
         if kwargs.get("proposal_id"):
             span.atributo("toc.proposal_id", str(kwargs["proposal_id"]))
 
+    def _como_resultado(self, proposta: PropostaDeAcao) -> ResultadoDaAcao:
+        return ResultadoDaAcao(
+            proposta=proposta, eventos=(("action_result", proposta.como_action_result()),)
+        )
+
+    def _desfecho_da_mesma_chave(self, inquilino: str, proposta: PropostaDeAcao) -> ResultadoDaAcao:
+        """APH-5.3, segunda metade: **quantas respostas idênticas forem pedidas**.
+
+        A chave já está nesta proposta, então esta confirmação é uma repetição da que a
+        gravou. Nada reexecuta e nada entra no traço: o que volta é a linha que o vencedor
+        gravou. Se ele ainda estiver executando, espera-se por ele — o limite da espera é
+        do adaptador e está declarado lá (`ESPERA_MAXIMA`, 6 s).
+        """
+        vencedora = self._propostas.aguardar_desfecho(inquilino, proposta.proposal_id) or proposta
+        if not vencedora.terminal:
+            # Fail-closed: uma proposta não-terminal não tem `action_result`, e devolver o
+            # `failed` da projeção seria afirmar um desfecho que não houve.
+            raise TransicaoInvalida(
+                "INVALID_TRANSITION",
+                f"a proposta {proposta.proposal_id} segue em {vencedora.estado!r}: a "
+                "decisão que a reservou ainda não terminou",
+            )
+        return self._como_resultado(vencedora)
+
+    def _resolver_corrida(
+        self,
+        inquilino: str,
+        proposal_id: str,
+        *,
+        idempotency_key: str | None,
+        corrida: CorridaDeDecisao,
+    ) -> ResultadoDaAcao:
+        """Perdeu a corrida. Com a MESMA chave, devolve o desfecho de quem venceu.
+
+        Sem chave, a recusa é `INVALID_TRANSITION` (§A.7) e é a resposta certa: quem não
+        pediu deduplicação recebe a verdade da máquina de estados — a proposta não está
+        mais em `awaiting_approval`, e a decisão que executou não foi a dele. É por isso
+        que a chave **significa** alguma coisa, que é literalmente o que o APH-5.3 diz ao
+        colocá-la "além da proteção que a FSM já dá".
+        """
+        if not idempotency_key:
+            raise corrida
+        vencedora = self._propostas.aguardar_desfecho(inquilino, proposal_id)
+        if vencedora is None or not vencedora.terminal or not vencedora.mesma_chave(
+            idempotency_key
+        ):
+            raise corrida
+        return self._como_resultado(vencedora)
+
     def executar(
         self,
         *,
@@ -323,7 +403,7 @@ class DecidirProposta(_ComGovernanca):
         contexto_hash: str | None = None,
         idempotency_key: str | None = None,
     ) -> ResultadoDaAcao:
-        inquilino, _ = self._exigir_identidade(principal)
+        inquilino, usuario = self._exigir_identidade(principal)
         self._exigir_sumidouro_de_traco()
 
         proposta = self._propostas.obter(inquilino, proposal_id)
@@ -332,25 +412,36 @@ class DecidirProposta(_ComGovernanca):
             # a consulta, como no M1 (`NaoEncontrado`, nunca "proibido").
             raise AcaoDesconhecida(proposal_id)
 
+        # APH-5.3, primeira metade: esta proposta JÁ carrega esta chave, logo esta
+        # confirmação é a repetição de uma que já foi decidida. Antes deste bloco a coluna
+        # `idempotency_key` era gravada em toda confirmação e lida em lugar nenhum — a
+        # varredura `grep -rn idempotency_key` mostrava só escritas.
+        if idempotency_key and proposta.mesma_chave(idempotency_key):
+            return self._desfecho_da_mesma_chave(inquilino, proposta)
+
         # RF-16: a decisão repetida devolve o desfecho original, sem novo efeito e sem
         # novo traço. Duplicar o traço faria a auditoria contar duas execuções que não
         # houve — pior do que não registrar.
         repetida = proposta.decisao_ja_tomada(aprovado=aprovado)
         if repetida is not None:
-            return ResultadoDaAcao(
-                proposta=proposta, eventos=(("action_result", proposta.como_action_result()),)
-            )
+            return self._como_resultado(proposta)
 
         acao = self._achar_acao(principal, proposta.action_id)
         agora = self._relogio.agora()
 
         if not aprovado:
+            # Recusar também é decidir, e decidir também escreve: sem a mesma reserva,
+            # oito recusas simultâneas gravariam oito vezes e deixariam oito linhas de
+            # traço `denied` para uma decisão só. Medido antes do conserto: cinco.
             proposta.negar(em=agora)
-            self._propostas.salvar(inquilino, principal.usuario_id or "", proposta)
+            try:
+                self._propostas.salvar(inquilino, usuario, proposta)
+            except CorridaDeDecisao as corrida:
+                return self._resolver_corrida(
+                    inquilino, proposal_id, idempotency_key=idempotency_key, corrida=corrida
+                )
             self._registrar_traco(proposta, principal=principal)
-            return ResultadoDaAcao(
-                proposta=proposta, eventos=(("action_result", proposta.como_action_result()),)
-            )
+            return self._como_resultado(proposta)
 
         try:
             proposta.confirmar(
@@ -360,14 +451,25 @@ class DecidirProposta(_ComGovernanca):
             # Expirada e contexto divergente já mudaram o estado do agregado dentro de
             # `confirmar` (vencer e invalidar são desfechos, não limbo) — o traço sai
             # aqui, e a exceção segue para a borda traduzir em HTTP 409.
-            self._propostas.salvar(inquilino, principal.usuario_id or "", proposta)
+            try:
+                self._propostas.salvar(inquilino, usuario, proposta)
+            except CorridaDeDecisao:
+                # Outra decisão chegou antes e é ela que vale; o desfecho dela é que fica
+                # gravado, e gravar o nosso por cima seria reescrever a decisão de quem
+                # ganhou. A exceção original segue mesmo assim: quem chamou tem de saber
+                # que a SUA decisão não vingou.
+                raise
             if proposta.terminal:
                 self._registrar_traco(proposta, principal=principal)
             raise
 
-        self._executar(proposta, acao, principal)
-        self._propostas.salvar(inquilino, principal.usuario_id or "", proposta)
+        try:
+            # A reserva mora dentro de `_executar`, entre a transição e o efeito.
+            self._executar(proposta, acao, principal)
+        except CorridaDeDecisao as corrida:
+            return self._resolver_corrida(
+                inquilino, proposal_id, idempotency_key=idempotency_key, corrida=corrida
+            )
+        self._propostas.salvar(inquilino, usuario, proposta)
         self._registrar_traco(proposta, principal=principal)
-        return ResultadoDaAcao(
-            proposta=proposta, eventos=(("action_result", proposta.como_action_result()),)
-        )
+        return self._como_resultado(proposta)

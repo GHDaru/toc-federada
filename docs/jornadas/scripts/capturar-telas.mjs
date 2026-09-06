@@ -320,6 +320,17 @@ function zerarBanco() {
     "nc_injecao",
     "proposta_de_acao",
     "traco_de_execucao",
+    // M6 — Focalização (spec 009). Sem estas, a corrida seguinte encontraria a análise da
+    // anterior e a jornada narraria uma listagem que não estava vazia.
+    "foco_analise",
+    "foco_ciclo",
+    "foco_restricao",
+    "foco_passo",
+    "foco_decisao",
+    "foco_nota",
+    "foco_reabertura",
+    "foco_vinculo",
+    "foco_heranca",
   ];
   execSync(
     `psql -h /var/run/postgresql -p 5433 -U toc -d toc_federada -v ON_ERROR_STOP=1 ` +
@@ -962,6 +973,215 @@ async function jornadaNuvem(navegador, { nuvemId }) {
 }
 
 // =======================================================================================
+// J-09 — A jornada dos cinco passos de focalização (spec 009, M6)
+//
+// É aqui que a aplicação come a própria comida: a Facilitadora atravessa
+// identificar → explorar → subordinar → elevar → recomeçar sobre o MESMO serviço, com a
+// Árvore da Realidade Atual da J-02 vinculada ao primeiro passo e a Nuvem de Conflito da
+// J-03 vinculada ao terceiro. Uma captura por passo — é o portão que o roadmap nomeia.
+// =======================================================================================
+
+const NOME_DA_ANALISE = "Fluxo de matrículas da Instituição Horizonte";
+const SISTEMA_ANALISADO = "Da inscrição do candidato à primeira aula assistida";
+const RESTRICAO_DA_HORIZONTE = "Capacidade de conferência da secretaria acadêmica";
+const AUTORA_DA_JORNADA = "Facilitadora TOC";
+
+/** As decisões que encerram cada passo — texto sintético, personas fictícias (ADR 0006). */
+const DECISOES_DA_JORNADA = {
+  identificar: "A restrição do fluxo é a conferência documental da secretaria acadêmica.",
+  explorar: "Priorizar na fila de conferência as matrículas com documentação completa.",
+  subordinar:
+    "Nenhuma turma abre antes de a secretaria confirmar a conferência da turma inteira.",
+  elevar: "Contratar duas pessoas para a conferência e treinar a equipe de atendimento.",
+};
+
+async function abrirAnaliseDeFocalizacao(pagina) {
+  await pagina.getByRole("button", { name: "Focalização" }).click();
+  await pagina.getByRole("heading", { name: "Cinco passos de focalização" }).waitFor({ timeout: 20000 });
+}
+
+async function concluirPassoNaTela(pagina, jornada, captura, decisao) {
+  await pagina.getByLabel("Decisão que encerra o passo").fill(decisao);
+  await capturar(jornada, captura, pagina);
+  await pagina.getByRole("button", { name: "Concluir passo" }).click();
+  await pagina.waitForTimeout(700);
+}
+
+/**
+ * A Árvore de Pré-Requisitos que o passo `elevar` vincula.
+ *
+ * Criada pela API porque o alvo do vínculo é um projeto de OUTRO módulo (M4): o M6 guarda
+ * a referência tipada e o estado, e não sabe — nem precisa saber — o que há dentro dela.
+ * Se o M4 não estiver composto neste build, a jornada segue sem o vínculo de `elevar` em
+ * vez de falhar: o que ela prova é a travessia dos cinco passos, não o M4.
+ */
+async function criarAprDoPlano() {
+  try {
+    const apr = await api("/toc/apr/projetos", {
+      metodo: "POST",
+      corpo: {
+        nome: "Ampliar a secretaria acadêmica",
+        objetivo: "A conferência documental deixa de acumular fila",
+      },
+    });
+    return apr.id;
+  } catch (erro) {
+    log(`  · sem Árvore de Pré-Requisitos para vincular em elevar: ${erro.message}`);
+    return null;
+  }
+}
+
+async function jornadaFocalizacao(navegador, { araId, nuvemId, aprId }) {
+  log("J-09 · a jornada dos cinco passos");
+  const jornada = "009-cinco-passos-de-focalizacao";
+  const pagina = await navegador.newPage({ viewport: VIEWPORT });
+  await pagina.goto(URL_AUTONOMA, { waitUntil: "networkidle" });
+
+  // 0. a listagem vazia — e o formulário que cria a análise INTEIRA (RF-02).
+  await abrirAnaliseDeFocalizacao(pagina);
+  await capturar(jornada, "00-listagem-vazia", pagina);
+
+  await pagina.getByLabel("Nome", { exact: true }).fill(NOME_DA_ANALISE);
+  await pagina.getByLabel("Sistema analisado").fill(SISTEMA_ANALISADO);
+  await pagina
+    .getByLabel("Descrição do problema")
+    .fill("O fluxo vai da inscrição à primeira aula, passando por conferência e contrato.");
+  await pagina.getByRole("button", { name: "Criar análise" }).click();
+  await pagina.getByRole("navigation", { name: /cinco passos/i }).waitFor({ timeout: 20000 });
+  await pagina.waitForTimeout(500);
+
+  const analises = await api("/toc/focalizacao/analises");
+  const analise = analises.find((a) => a.nome === NOME_DA_ANALISE);
+  if (!analise) throw new Error("a análise criada pela tela não voltou na listagem da API");
+  const analiseId = analise.projeto_id;
+
+  // 1. IDENTIFICAR — a ARA da J-02 entra como ferramenta do passo (RN-06), e a restrição
+  //    é registrada. As duas coisas pela tela, que é o que a jornada viva prova.
+  await pagina.getByLabel("Projeto", { exact: true }).fill(araId);
+  await pagina.getByLabel("Papel do vínculo").fill("causa raiz da evasão");
+  await pagina.getByRole("button", { name: "Vincular ferramenta" }).click();
+  await pagina.waitForTimeout(600);
+  await pagina.getByLabel("Restrição", { exact: true }).fill(RESTRICAO_DA_HORIZONTE);
+  await pagina.getByLabel("Tipo").selectOption("fisica");
+  await pagina
+    .getByLabel("Justificativa", { exact: true })
+    .fill("A fila de matrículas aguardando conferência cresce em todo período de entrada.");
+  await pagina.getByRole("button", { name: "Registrar restrição" }).click();
+  await pagina.waitForTimeout(700);
+  await capturar(jornada, "01-identificar-com-a-restricao", pagina);
+
+  await concluirPassoNaTela(
+    pagina, jornada, "02-identificar-a-decisao-que-encerra", DECISOES_DA_JORNADA.identificar,
+  );
+
+  // 2. EXPLORAR — o passo abre com o produto do anterior à vista (RF-13).
+  await pagina.getByRole("heading", { name: "Explorar a restrição" }).waitFor({ timeout: 15000 });
+  await pagina
+    .getByLabel("Notas do passo")
+    .fill("Metade do tempo da secretaria vai para matrículas incompletas.");
+  await pagina.getByRole("button", { name: "Anotar" }).click();
+  await pagina.waitForTimeout(600);
+  await capturar(jornada, "03-explorar-herda-a-restricao", pagina);
+  await capturar(
+    jornada, "04-explorar-camada-herdada",
+    pagina.getByRole("region", { name: "O que este passo herda" }),
+  );
+  await concluirPassoNaTela(
+    pagina, jornada, "05-explorar-a-decisao", DECISOES_DA_JORNADA.explorar,
+  );
+
+  // 3. SUBORDINAR — o conflito da regra vira Nuvem de Conflito (US-10, INT-03).
+  await pagina.getByRole("heading", { name: "Subordinar tudo o mais" }).waitFor({ timeout: 15000 });
+  await pagina
+    .getByLabel("Notas do passo")
+    .fill("A coordenação contesta a regra: para ela, a turma cheia garante o semestre.");
+  await pagina.getByRole("button", { name: "Anotar" }).click();
+  await pagina.waitForTimeout(500);
+  await pagina.getByLabel("Projeto", { exact: true }).fill(nuvemId);
+  await pagina.getByLabel("Papel do vínculo").fill("conflito da regra de abertura de turma");
+  await pagina.getByRole("button", { name: "Vincular ferramenta" }).click();
+  await pagina.waitForTimeout(600);
+  await capturar(jornada, "06-subordinar-com-a-nuvem-do-conflito", pagina);
+  await concluirPassoNaTela(
+    pagina, jornada, "07-subordinar-a-decisao", DECISOES_DA_JORNADA.subordinar,
+  );
+
+  // 4. ELEVAR — o plano de elevação é a Árvore de Pré-Requisitos (US-11, INT-04).
+  await pagina.getByRole("heading", { name: "Elevar a restrição" }).waitFor({ timeout: 15000 });
+  if (aprId) {
+    await pagina.getByLabel("Projeto", { exact: true }).fill(aprId);
+    await pagina.getByLabel("Papel do vínculo").fill("ampliar a secretaria acadêmica");
+    await pagina.getByRole("button", { name: "Vincular ferramenta" }).click();
+    await pagina.waitForTimeout(600);
+  }
+  await capturar(jornada, "08-elevar-com-o-plano", pagina);
+  await concluirPassoNaTela(pagina, jornada, "09-elevar-a-decisao", DECISOES_DA_JORNADA.elevar);
+
+  // 5. RECOMEÇAR — o quinto passo não tem decisão de conclusão: o ato dele é o recomeço.
+  await pagina.getByRole("heading", { name: "Recomeçar sem inércia" }).waitFor({ timeout: 15000 });
+  await capturar(jornada, "10-recomecar-o-quinto-passo", pagina);
+  await pagina.getByRole("button", { name: "Recomeçar a jornada" }).click();
+  await pagina.getByRole("region", { name: /Decisões herdadas/ }).waitFor({ timeout: 15000 });
+  await pagina.waitForTimeout(600);
+  await capturar(jornada, "11-ciclo-2-com-a-heranca-pendente", pagina);
+  await capturar(
+    jornada, "12-julgamento-de-heranca",
+    pagina.getByRole("region", { name: /Decisões herdadas/ }),
+  );
+
+  // O bloqueio anti-inércia, medido pela API depois da tela ter feito o percurso.
+  const antesDoVeredito = await api(`/toc/focalizacao/analises/${analiseId}/jornada`);
+  medidas.focalizacao = {
+    ciclos: antesDoVeredito.ciclos_no_total,
+    ciclo_aberto: antesDoVeredito.ordem,
+    passo_atual: antesDoVeredito.passo_atual,
+    herancas_pendentes: antesDoVeredito.herancas_pendentes,
+    restricao_do_ciclo_anterior: RESTRICAO_DA_HORIZONTE,
+  };
+  log(
+    `  · ciclo ${antesDoVeredito.ordem} de ${antesDoVeredito.ciclos_no_total} · passo ` +
+      `${antesDoVeredito.passo_atual} · vereditos pendentes: ${antesDoVeredito.herancas_pendentes}`,
+  );
+
+  // Um veredito dado pela tela: manter e revogar têm o mesmo peso (RI-05).
+  const primeiroMotivo = pagina.getByLabel("Por quê?").first();
+  await primeiroMotivo.fill("A fila migrou de etapa; esta regra já não protege a restrição.");
+  await pagina.getByRole("button", { name: "Revogar" }).first().click();
+  await pagina.waitForTimeout(700);
+  await capturar(jornada, "13-veredito-revogado", pagina);
+
+  // A linha do tempo: o ciclo 1 continua inteiro, com a restrição que perseguiu (RN-04).
+  await capturar(
+    jornada, "14-linha-do-tempo-com-os-dois-ciclos",
+    pagina.getByRole("region", { name: /Linha do tempo/ }),
+  );
+
+  const depois = await api(`/toc/focalizacao/analises/${analiseId}`);
+  medidas.focalizacao.linha_do_tempo = depois.linha_do_tempo.map((c) => ({
+    ciclo: c.ordem,
+    estado: c.estado,
+    restricao: c.restricao,
+    decisoes: c.decisoes,
+  }));
+  log(
+    "  · linha do tempo: " +
+      depois.linha_do_tempo
+        .map((c) => `ciclo ${c.ordem} ${c.estado} (${c.decisoes} decisões)`)
+        .join(" · "),
+  );
+
+  // E o ciclo fechado abre em SOMENTE LEITURA — quem diz isso é o servidor (RI-04).
+  const fechado = depois.linha_do_tempo.find((c) => c.estado === "fechado");
+  if (fechado) {
+    await pagina.getByRole("button", { name: new RegExp(`Ciclo ${fechado.ordem}`) }).click();
+    await pagina.waitForTimeout(700);
+    await capturar(jornada, "15-ciclo-fechado-somente-leitura", pagina);
+  }
+
+  await pagina.close();
+}
+
+// =======================================================================================
 // J-02b — a exclusão reversível e a lixeira (fecha a jornada do projeto)
 // =======================================================================================
 
@@ -1060,10 +1280,25 @@ async function principal() {
     // J-02 → J-07 → J-03 correm em sequência DE PROPÓSITO: é a mesma pessoa, na mesma
     // sessão, e a nuvem da J-03 é a que a travessia derivou. Pedir uma delas sozinha
     // (`--jornada J-03`) não funciona sem a anterior, e isso é a costura, não um defeito.
-    if (quer("J-02") || quer("J-07") || quer("J-03")) {
+    // A J-09 entra na MESMA sequência: ela vincula a Árvore da Realidade Atual da J-02 e
+    // a Nuvem de Conflito da J-03. Pedir `--jornada J-09` sozinha reconstrói as duas
+    // anteriores — é a costura do módulo, não um defeito da captura.
+    if (quer("J-02") || quer("J-07") || quer("J-03") || quer("J-09")) {
       const ara = await jornadaAra(navegador);
       const travessia = await jornadaTravessia(navegador, ara);
       await jornadaNuvem(navegador, travessia);
+      // J-09 fecha a sequência DE PROPÓSITO: a jornada dos cinco passos vincula a Árvore
+      // da Realidade Atual da J-02 e a Nuvem de Conflito da J-03. Ela não inventa
+      // projeto nenhum — costura os que a mesma pessoa acabou de construir, que é
+      // exatamente o que o M6 existe para fazer.
+      if (quer("J-09")) {
+        const apr = await criarAprDoPlano();
+        await jornadaFocalizacao(navegador, {
+          araId: ara.projetoId,
+          nuvemId: travessia.nuvemId,
+          aprId: apr,
+        });
+      }
       await jornadaLixeira(navegador);
     }
   } finally {

@@ -472,6 +472,160 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
         ui_route="/toc/nc/aresta",
         intent_keywords=("injecao", "solucao", "triz", "sugerir"),
     ),
+    # -- M4 · Árvores de Futuro e Implementação (spec 008, INT-05..INT-08) --------------
+    #
+    # As quatro são `confirm` porque as quatro **escrevem** depois do gate. Cada uma
+    # registra UM elemento de propósito (RF-43: "cada sugestão mutadora nascendo
+    # `action_proposal` individual"), para aceitar duas e recusar uma sem regenerar o que o
+    # grupo já validou — a mesma granularidade que o M3 escolheu para as premissas.
+    #
+    # E o que **não** existe aqui é decisão de round: **não há ação de ramo negativo**
+    # (RF-10). A marcação do efeito colateral é manual nesta v1, e a prova é negativa: o
+    # `grep` da DoD 8 (spec 008) procura os dois identificadores que uma ação assim teria
+    # e devolve zero — inclusive aqui, e por isso este comentário não os escreve.
+    AcaoDoCatalogo(
+        action_id="toc.suggest_future_effects",
+        title="Sugerir um efeito futuro para a Arvore da Realidade Futura",
+        description=(
+            "Registra UM efeito futuro ligado a uma injecao da Arvore da Realidade "
+            "Futura. O contexto de dominio ja computado (verificacao estrutural) "
+            "acompanha a entrada; o modelo nunca decide o que a funcao pura ja decidiu."
+        ),
+        risk="confirm",
+        reversible=True,
+        input_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["projeto_id", "injecao_id", "texto"],
+            "properties": {
+                "projeto_id": {"type": "string"},
+                "injecao_id": {"type": "string"},
+                "texto": {"type": "string", "minLength": 1, "maxLength": 300},
+            },
+        },
+        ui_route="/toc/arf",
+        intent_keywords=("efeito futuro", "realidade futura", "sugerir", "arf"),
+    ),
+    AcaoDoCatalogo(
+        action_id="toc.suggest_obstacles",
+        title="Sugerir um obstaculo para a Arvore de Pre-Requisitos",
+        description=(
+            "Registra UM obstaculo na Arvore de Pre-Requisitos. Obstaculo e condicao que "
+            "existe hoje, nunca tarefa nem previsao: a verbalizacao avaliada avisa quem "
+            "escrever diferente, e o aviso nao veta."
+        ),
+        risk="confirm",
+        reversible=True,
+        input_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["projeto_id", "texto"],
+            "properties": {
+                "projeto_id": {"type": "string"},
+                "texto": {"type": "string", "minLength": 1, "maxLength": 300},
+            },
+        },
+        ui_route="/toc/apr",
+        intent_keywords=("obstaculo", "impedimento", "sugerir", "apr"),
+    ),
+    AcaoDoCatalogo(
+        action_id="toc.suggest_intermediate_objectives",
+        title="Sugerir um objetivo intermediario que supera um obstaculo",
+        description=(
+            "Registra UM objetivo intermediario e o pareia com o obstaculo indicado. O "
+            "julgamento do teste de validade permanece humano (RN-07) e NAO vem "
+            "preenchido por esta acao."
+        ),
+        risk="confirm",
+        reversible=True,
+        input_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["projeto_id", "obstaculo_id", "texto"],
+            "properties": {
+                "projeto_id": {"type": "string"},
+                "obstaculo_id": {"type": "string"},
+                "texto": {"type": "string", "minLength": 1, "maxLength": 300},
+            },
+        },
+        ui_route="/toc/apr",
+        intent_keywords=("objetivo intermediario", "superar", "sugerir"),
+    ),
+    AcaoDoCatalogo(
+        action_id="toc.suggest_transition_steps",
+        title="Sugerir um passo para a Arvore de Transicao",
+        description=(
+            "Registra UM passo com a tripla acao, necessidade e resultado esperado. "
+            "Proposta sem os tres campos e recusada pelo input_schema ANTES de virar "
+            "action_proposal: passo sem necessidade explicita degrada a arvore a lista de "
+            "tarefas, e o contrato nao deixa isso acontecer."
+        ),
+        risk="confirm",
+        reversible=True,
+        input_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["projeto_id", "acao", "necessidade", "resultado_esperado"],
+            "properties": {
+                "projeto_id": {"type": "string"},
+                "acao": {"type": "string", "minLength": 1, "maxLength": 300},
+                "necessidade": {"type": "string", "minLength": 1, "maxLength": 4000},
+                "resultado_esperado": {"type": "string", "minLength": 1, "maxLength": 4000},
+            },
+        },
+        ui_route="/toc/at",
+        intent_keywords=("passo", "transicao", "sugerir", "at"),
+    ),
+    # -- M6 · Focalização (spec 009, INT-05) --------------------------------------------
+    #
+    # UMA ação, e ela é a única assistência do módulo (RF-19). Granular por candidata,
+    # como as do M3 e do M4: aceitar uma restrição e recusar outra sem regenerar nada.
+    #
+    # `confirm` porque ela **escreve** depois do gate: aceitar registra a restrição do
+    # ciclo aberto com a referência de origem (INT-02). E é exatamente esta ação que o
+    # corte de apetite do round 009 solta primeiro — a jornada guiada é completa por
+    # construção sem ela (RF-20), e o `input_schema` abaixo é o contrato que ela cumpre
+    # quando existe.
+    AcaoDoCatalogo(
+        action_id="toc.suggest_constraint",
+        title="Sugerir a restricao a partir da Arvore da Realidade Atual",
+        description=(
+            "Registra a restricao do ciclo aberto de uma analise de focalizacao, com a "
+            "referencia de origem apontando para o no de causa raiz da Arvore da "
+            "Realidade Atual vinculada ao passo identificar. Mutadora: nasce proposta e "
+            "espera o gate humano; recusar deixa a analise byte a byte intacta."
+        ),
+        risk="confirm",
+        reversible=True,
+        input_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "required": [
+                "projeto_id",
+                "ara_projeto_id",
+                "no_id",
+                "descricao",
+                "tipo",
+                "justificativa",
+            ],
+            "properties": {
+                "projeto_id": {"type": "string"},
+                "ara_projeto_id": {"type": "string"},
+                "no_id": {"type": "string"},
+                "descricao": {"type": "string", "minLength": 1, "maxLength": 300},
+                # O enum fechado da L-01, aqui como contrato: uma restricao de tipo
+                # inventado e recusada pelo `input_schema` ANTES de virar action_proposal.
+                "tipo": {
+                    "type": "string",
+                    "enum": ["fisica", "politica", "de_mercado"],
+                },
+                "justificativa": {"type": "string", "minLength": 1, "maxLength": 4000},
+                "autor": {"type": "string", "maxLength": 200},
+            },
+        },
+        ui_route="/toc/focalizacao",
+        intent_keywords=("restricao", "gargalo", "focalizacao", "sugerir"),
+    ),
 )
 
 # A instância que o serviço usa. É construída no import: um catálogo torto derruba o

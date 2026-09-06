@@ -166,7 +166,11 @@ def test_ferramenta_nova_nasce_FECHADA_mesmo_sem_se_registrar():
     tabela `RAIZ_POR_FERRAMENTA`, a sétima ferramenta da TOC nasceria com a porta dos
     fundos aberta e ninguém perceberia até a próxima revisão independente.
     """
-    futura = "arf"  # Árvore da Realidade Futura — ainda não existe neste repositório
+    # A ferramenta usada aqui tem de ser uma que AINDA não existe no repositório: era
+    # `arf` até o ciclo 008 entregar a Árvore da Realidade Futura, e passa a ser `snt` —
+    # Estratégia & Táticas, o M5 do ciclo 010. O que o teste prova não mudou: ferramenta
+    # não registrada nasce **fechada**.
+    futura = "snt"  # Estratégia & Táticas — ainda não existe neste repositório
     assert futura not in RAIZ_POR_FERRAMENTA
     assert tem_raiz_propria(futura) is True
     projeto = Projeto(

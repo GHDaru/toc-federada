@@ -1,0 +1,158 @@
+{
+  "versao": "1.0.0",
+  "sobre": "Corpus sintético da verbalização de obstáculos e objetivos intermediários (spec 008, RF-22 e RNF-07). Base sintética (ADR 0006): Instituição Horizonte, personas fictícias, nenhum dado real de pessoa. A função forçante é a mesma do M2: heurística nova sem caso novo no corpus não entra.",
+  "fonte": "skill toc-prt, references/prt-methodology.md — tabela 'Armadilhas comuns ao verbalizar obstáculos' e a tabela 'Tarefa vs. IO'",
+  "casos": [
+    {
+      "id": "OB-BOM-01",
+      "papel": "obstaculo",
+      "texto": "Há apenas uma pessoa treinada no sistema de matrículas",
+      "veredito": "atende",
+      "porque": "condição presente, específica, verbalizada pelo que existe"
+    },
+    {
+      "id": "OB-BOM-02",
+      "papel": "obstaculo",
+      "texto": "O sistema de matrículas não conversa com o financeiro",
+      "veredito": "atende",
+      "porque": "condição atual e específica; negação de fato, não ausência genérica"
+    },
+    {
+      "id": "OB-BOM-03",
+      "papel": "obstaculo",
+      "texto": "Temos apenas quinze mil reais disponíveis para a frente de expansão",
+      "veredito": "atende",
+      "porque": "a forma correta da armadilha 'falta dinheiro' — diz o que existe, com quantidade"
+    },
+    {
+      "id": "OB-BOM-04",
+      "papel": "obstaculo",
+      "texto": "Não existe rotina de conferência entre matrícula e contrato",
+      "veredito": "atende",
+      "porque": "ausência ESPECÍFICA e nomeada; o método a aceita (exemplo da própria referência)"
+    },
+    {
+      "id": "OB-BOM-05",
+      "papel": "obstaculo",
+      "texto": "A Secretaria opera com duas pessoas em período parcial durante o pico de matrícula",
+      "veredito": "atende",
+      "porque": "condição presente, factual e mensurável"
+    },
+    {
+      "id": "OB-MAU-01",
+      "papel": "obstaculo",
+      "texto": "Precisamos criar a conversão de dados entre os dois sistemas",
+      "veredito": "aviso",
+      "codigo": "verbo_de_acao",
+      "trecho": "precisamos",
+      "porque": "tarefa disfarçada de obstáculo — a armadilha 1 da referência"
+    },
+    {
+      "id": "OB-MAU-02",
+      "papel": "obstaculo",
+      "texto": "Implementar o painel de acompanhamento da fila",
+      "veredito": "aviso",
+      "codigo": "verbo_de_acao",
+      "trecho": "implementar",
+      "porque": "começa por verbo no infinitivo: é ação, não condição"
+    },
+    {
+      "id": "OB-MAU-03",
+      "papel": "obstaculo",
+      "texto": "O conselho vai recusar a proposta de faseamento",
+      "veredito": "aviso",
+      "codigo": "previsao_futura",
+      "trecho": "vai recusar",
+      "porque": "previsão futura — a armadilha 2 da referência"
+    },
+    {
+      "id": "OB-MAU-04",
+      "papel": "obstaculo",
+      "texto": "O orçamento aprovado não cobrirá as duas frentes de expansão",
+      "veredito": "aviso",
+      "codigo": "previsao_futura",
+      "trecho": "cobrirá",
+      "porque": "verbo no futuro do presente: descreve o que ainda não aconteceu (alcance declarado: a detecção sintética é sensível a acento)"
+    },
+    {
+      "id": "OB-MAU-05",
+      "papel": "obstaculo",
+      "texto": "Falta dinheiro",
+      "veredito": "aviso",
+      "codigo": "ausencia_generica",
+      "trecho": "falta ",
+      "porque": "ausência genérica — a armadilha 3 da referência"
+    },
+    {
+      "id": "OB-MAU-06",
+      "papel": "obstaculo",
+      "texto": "Não temos pessoas suficientes na Secretaria",
+      "veredito": "aviso",
+      "codigo": "ausencia_generica",
+      "trecho": "não temos ",
+      "porque": "diz o que falta, sem quantidade nem recorte — prefira o que existe"
+    },
+    {
+      "id": "OI-BOM-01",
+      "papel": "objetivo_intermediario",
+      "texto": "Existem três pessoas treinadas e escaladas para o sistema de matrículas",
+      "veredito": "atende",
+      "porque": "estado conquistado, no presente, verificável"
+    },
+    {
+      "id": "OI-BOM-02",
+      "papel": "objetivo_intermediario",
+      "texto": "Está definido e documentado o fluxo de conferência entre matrícula e contrato",
+      "veredito": "atende",
+      "porque": "estado conquistado, não atividade em andamento"
+    },
+    {
+      "id": "OI-BOM-03",
+      "papel": "objetivo_intermediario",
+      "texto": "A rotina de conferência está operacional e validada pela Secretaria",
+      "veredito": "atende",
+      "porque": "condição estabelecida; o teste IO-Obstáculo pode ser aplicado sobre ela"
+    },
+    {
+      "id": "OI-MAU-01",
+      "papel": "objetivo_intermediario",
+      "texto": "Criar a rotina de conferência entre matrícula e contrato",
+      "veredito": "aviso",
+      "codigo": "verbo_de_acao",
+      "trecho": "criar",
+      "porque": "tarefa, não estado conquistado — a distinção central da referência"
+    },
+    {
+      "id": "OI-MAU-02",
+      "papel": "objetivo_intermediario",
+      "texto": "Estudar a integração entre os dois sistemas",
+      "veredito": "aviso",
+      "codigo": "verbo_de_acao",
+      "trecho": "estudar",
+      "porque": "atividade em andamento; um objetivo intermediário descreve o depois dela"
+    },
+    {
+      "id": "OI-MAU-03",
+      "papel": "objetivo_intermediario",
+      "texto": "Vamos treinar três pessoas da Secretaria",
+      "veredito": "aviso",
+      "codigo": "verbo_de_acao",
+      "trecho": "vamos",
+      "porque": "marcador de tarefa; o estado conquistado é 'existem três pessoas treinadas'"
+    },
+    {
+      "id": "IND-01",
+      "papel": "obstaculo",
+      "texto": "Matrícula",
+      "veredito": "indeterminado",
+      "porque": "curto demais para a heurística julgar — e admitir é melhor que chutar"
+    },
+    {
+      "id": "IND-02",
+      "papel": "objetivo_intermediario",
+      "texto": "Fila menor",
+      "veredito": "indeterminado",
+      "porque": "sem verbo e sem marcador: a heurística não alcança o caso"
+    }
+  ]
+}

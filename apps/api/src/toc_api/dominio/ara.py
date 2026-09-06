@@ -21,7 +21,7 @@ O que este módulo corrige da linhagem, em uma frase por item:
 from __future__ import annotations
 
 from contextlib import contextmanager
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Iterator
@@ -46,6 +46,18 @@ from .eventos import (
 from .grafo import ArestaCausal, No
 from .identidade import DonoDoProjeto
 from .projeto import Projeto, registrar_raiz_de_ferramenta
+from .suficiencia import (
+    EXIGEM_RESERVA,
+    ConectorE,
+    ConectorInvalido,
+    EstadoDoExame,
+    Exame,
+    exame_de,
+    formar_conector,
+    leitura_de_conjuncao,
+    leitura_de_suficiencia,
+    soltar_das_conjuncoes,
+)
 from .valores import PosicaoNoCanvas
 
 #: O tipo de projeto do M2 (spec 005, RF-01) — o M1 nunca precisa saber deste nome.
@@ -75,16 +87,12 @@ class OrigemDoParecer(str, Enum):
     CATALOGO = "catalogo"
 
 
-class EstadoDoExame(str, Enum):
-    """O exame de suficiência do elo (RF-22) — dado de primeira classe, não anotação."""
-
-    NAO_EXAMINADO = "nao_examinado"
-    SUFICIENTE = "suficiente"
-    INSUFICIENTE = "insuficiente"
-    COM_RESERVA = "com_reserva"
-
-
-EXIGEM_RESERVA = (EstadoDoExame.INSUFICIENTE, EstadoDoExame.COM_RESERVA)
+#: `EstadoDoExame`, `Exame`, `ConectorE`, `ConectorInvalido` e as funções do exame e da
+#: conjunção **não moram mais aqui**: moram em `toc_api.dominio.suficiencia`, o pacote de
+#: suficiência causal que o M4 (Árvores de Futuro e Implementação) reusa (spec 008, RF-03
+#: e decisão 1 do plano do ciclo 008 — "extraído, nunca copiado"). Os nomes continuam
+#: importáveis daqui porque quem lê a ARA espera encontrá-los na ARA; o que não existe
+#: mais é a segunda implementação.
 
 
 class TransicaoDeStatusRecusada(MutacaoRecusada):
@@ -93,14 +101,6 @@ class TransicaoDeStatusRecusada(MutacaoRecusada):
     def __init__(self, motivo: str, detalhe: str = "") -> None:
         super().__init__(f"{motivo}: {detalhe}" if detalhe else motivo)
         self.motivo = motivo
-
-
-class ConectorInvalido(MutacaoRecusada):
-    """RN-11 violada. `regra`: `minimo_duas_arestas`, `destino_unico`, `aresta_ja_conectada`."""
-
-    def __init__(self, regra: str, detalhe: str = "") -> None:
-        super().__init__(f"{regra}: {detalhe}" if detalhe else regra)
-        self.regra = regra
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,21 +135,6 @@ class ParecerDeJulgamento:
             raise DadoInvalido("parecer sem autor")
         if not self.justificativa.strip():
             raise DadoInvalido("parecer sem justificativa")
-
-
-@dataclass(frozen=True, slots=True)
-class Exame:
-    estado: EstadoDoExame = EstadoDoExame.NAO_EXAMINADO
-    reserva: str = ""
-
-
-@dataclass(frozen=True, slots=True)
-class ConectorE:
-    """Conjunção: "Se A **e** B, então C" — a elipse canônica da TOC (RN-11)."""
-
-    id: UUID
-    destino_id: UUID
-    arestas: tuple[UUID, ...]
 
 
 @dataclass(slots=True)
@@ -483,11 +468,8 @@ class ProjetoARA:
         reserva: str = "",
     ) -> Exame:
         self.projeto.aresta(aresta_id)
-        if estado in EXIGEM_RESERVA and not reserva.strip():
-            raise MutacaoRecusada(
-                f"examinar_elo: o estado {estado.value} exige a reserva escrita (RF-22)"
-            )
-        novo = Exame(estado=estado, reserva=reserva.strip())
+        # A regra da reserva obrigatória mora no pacote compartilhado: é a MESMA da ARF.
+        novo = exame_de(estado, reserva)
         self._exames[aresta_id] = novo
         self._emitir(
             EloExaminado, em, aresta_id=aresta_id, estado=estado, reserva=novo.reserva
@@ -499,34 +481,18 @@ class ProjetoARA:
         aresta = self.projeto.aresta(aresta_id)
         origem = self.projeto.no(aresta.origem_id).titulo
         destino = self.projeto.no(aresta.destino_id).titulo
-        return f"Se {origem}, então {destino}"
+        return leitura_de_suficiencia(origem, destino)
 
     # -- conector E ---------------------------------------------------------------
 
     def formar_conector_e(
         self, arestas: tuple[UUID, ...], *, em: datetime, conector_id: UUID | None = None
     ) -> ConectorE:
-        if len(set(arestas)) < 2:
-            raise ConectorInvalido(
-                "minimo_duas_arestas", "conjunção com uma aresta só não é conjunção"
-            )
-        alvos = [self.projeto.aresta(a) for a in arestas]
-        destinos = {a.destino_id for a in alvos}
-        if len(destinos) != 1:
-            raise ConectorInvalido(
-                "destino_unico", "toda aresta do conector aponta para o mesmo destino"
-            )
-        ja_conectadas = {a for c in self._conectores.values() for a in c.arestas}
-        repetidas = sorted(set(arestas) & ja_conectadas, key=str)
-        if repetidas:
-            raise ConectorInvalido(
-                "aresta_ja_conectada",
-                f"a(s) aresta(s) {repetidas} já pertence(m) a um conector",
-            )
-        conector = ConectorE(
-            id=conector_id or uuid4(),
-            destino_id=destinos.pop(),
-            arestas=tuple(arestas),
+        conector = formar_conector(
+            self._conectores,
+            arestas,
+            aresta_de=self.projeto.aresta,
+            conector_id=conector_id,
         )
         self._conectores[conector.id] = conector
         self._emitir(
@@ -555,17 +521,11 @@ class ProjetoARA:
             for a in conector.arestas
         ]
         destino = self.projeto.no(conector.destino_id).titulo
-        return f"Se {' e '.join(causas)}, então {destino}"
+        return leitura_de_conjuncao(causas, destino)
 
     def _soltar_das_conjuncoes(self, aresta_id: UUID) -> None:
         """Aresta que some leva junto o conector que a citava — nunca deixa referência órfã."""
-        for conector in list(self._conectores.values()):
-            if aresta_id in conector.arestas:
-                restantes = tuple(a for a in conector.arestas if a != aresta_id)
-                if len(restantes) < 2:
-                    self._conectores.pop(conector.id)
-                else:
-                    self._conectores[conector.id] = replace(conector, arestas=restantes)
+        soltar_das_conjuncoes(self._conectores, aresta_id)
 
     # -- análise estrutural --------------------------------------------------------
 

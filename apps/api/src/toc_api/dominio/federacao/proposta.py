@@ -111,6 +111,58 @@ class TransicaoInvalida(ErroDeDominio):
         self.http = http
 
 
+class CorridaDeDecisao(TransicaoInvalida):
+    """Duas decisões partiram do MESMO estado da linha e a segunda perdeu a corrida.
+
+    O defeito que este erro existe para tornar audível: a máquina de estados finitos (FSM)
+    guardava o **objeto**, não a linha. `obter` reidrata um agregado NOVO a cada chamada, e
+    `transicionar` consulta `self.estado`, que é atributo de memória — logo oito
+    confirmações simultâneas atravessavam oito agregados, todas legítimas, e executavam
+    oito vezes. Medido antes do conserto, contra o PostgreSQL real: **oito confirmações da
+    mesma proposta de 30 alvos · oito respostas `200` · 50 nós no banco · 22 títulos
+    repetidos · oito linhas de traço para uma proposta só.**
+
+    O código é o `INVALID_TRANSITION` do registro mínimo do §A.7 do Anexo A do Padrão APH
+    (Aplicação ↔ Harness), e é de propósito que não seja um código novo: da perspectiva de
+    quem perdeu, a proposta **não está mais** em `awaiting_approval`, que é literalmente a
+    situação que a norma dá a esse código ("confirmação ou transição fora da máquina de
+    estados finitos da proposta").
+
+    `estado_lido` e `estado_atual` viajam no erro pelo mesmo motivo que `versao_lida` e
+    `versao_atual` viajam em `ConflitoDeVersao`: o cliente discrimina por código e por
+    dado, nunca por mensagem (§A.7).
+    """
+
+    def __init__(self, proposal_id: str, *, estado_lido: str, estado_atual: str) -> None:
+        super().__init__(
+            "INVALID_TRANSITION",
+            f"a decisão sobre {proposal_id} partiu do estado {estado_lido!r} e a proposta "
+            f"está em {estado_atual!r} — outra decisão chegou antes",
+        )
+        self.proposal_id = proposal_id
+        self.estado_lido = estado_lido
+        self.estado_atual = estado_atual
+
+
+class ChaveDeIdempotenciaReutilizada(TransicaoInvalida):
+    """A chave já produziu uma execução — em OUTRA proposta deste mesmo inquilino.
+
+    APH-5.3 pede deduplicação **real**: "a mesma chave produz uma execução e quantas
+    respostas idênticas forem pedidas". Enquanto a chave era só uma coluna gravada e nunca
+    consultada, ela não deduplicava nada; a unicidade por (inquilino, chave) é o que a
+    torna verdade, e esta recusa é o que acontece quando alguém a reaproveita.
+    """
+
+    def __init__(self, idempotency_key: str, *, proposal_id: str) -> None:
+        super().__init__(
+            "IDEMPOTENCY_KEY_REUSED",
+            f"a chave de idempotência {idempotency_key!r} já pertence à proposta "
+            f"{proposal_id} — uma chave produz uma execução (APH-5.3)",
+        )
+        self.idempotency_key = idempotency_key
+        self.proposal_id = proposal_id
+
+
 @dataclass(frozen=True, slots=True)
 class Desfecho:
     """O resultado terminal, com desfecho por alvo quando é lote (APH-5.9(b)).
@@ -183,6 +235,17 @@ class PropostaDeAcao:
     idempotency_key: str | None = None
     execucoes: int = 0
     historico: list[tuple[str, str, str]] = field(default_factory=list)
+    #: O estado que esta proposta tinha **na linha do banco** quando foi lida. `""` = nunca
+    #: foi gravada. É a base da trava, e existe pelo mesmo motivo que `Projeto.versao_lida`:
+    #: `estado` sozinho não serve, porque ele já foi mudado em memória pela transição, e na
+    #: hora de gravar já não é mais o valor contra o qual o `WHERE` tem de casar. Sem este
+    #: campo o adaptador não teria como condicionar a escrita — que é exatamente por que a
+    #: coluna `estado` existia, era gravada, e não protegia nada.
+    #:
+    #: Não entra no construtor nem na comparação porque é estado de SINCRONIA com o
+    #: repositório, não estado de negócio: quem o preenche é o adaptador, ao reidratar
+    #: (`estado_lido = <coluna>`) e ao confirmar uma gravação (`confirmar_gravacao()`).
+    estado_lido: str = field(default="", init=False, repr=False, compare=False)
 
     @classmethod
     def nova(
@@ -339,6 +402,19 @@ class PropostaDeAcao:
         if estado not in ESTADOS:  # pragma: no cover - erro de teste, não de produção
             raise ValueError(estado)
         self.estado = estado
+
+    # -- sincronia com o repositório -----------------------------------------------
+
+    def confirmar_gravacao(self) -> None:
+        """A gravação passou: o estado em memória passa a ser o estado da linha.
+
+        Chamado pelo adaptador DEPOIS do commit, nunca antes — confirmar uma escrita que
+        ainda pode falhar deixaria o agregado achando que está sincronizado com um banco
+        que não recebeu nada, e a gravação seguinte partiria de um estado que a linha não
+        tem. É a mesma disciplina de `Projeto.confirmar_gravacao`, e a mesma frase, porque
+        a regra é a mesma.
+        """
+        self.estado_lido = self.estado
 
     # -- projeções para o fio ------------------------------------------------------
     def como_action_proposal(self, *, titulo: str = "", justificativa: str = "") -> dict[str, Any]:

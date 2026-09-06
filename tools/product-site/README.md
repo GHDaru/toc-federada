@@ -42,14 +42,14 @@ Python 3.11.15
 
 $ python3 tools/product-site/generate.py . --output docs/product-site/data.json
 JSON escrito em docs/product-site/data.json
-  módulos=8 specs=12 adrs=10 RF=359 RI=114 RNF=105 RN=71 INT=61 fontes=176 lacunas=58 ciclos=12
+  módulos=8 specs=12 adrs=13 RF=359 RI=114 RNF=105 RN=71 INT=61 fontes=176 lacunas=58 ciclos=12
 
 $ python3 tools/product-site/render.py docs/product-site/data.json --output docs/product-site
   docs/product-site/styles.css (6209 bytes)
-  docs/product-site/index.html (51973 bytes)
-  docs/product-site/modules.html (91019 bytes)
-  docs/product-site/traceability.html (392417 bytes)
-  docs/product-site/roadmap.html (39783 bytes)
+  docs/product-site/index.html (54204 bytes)
+  docs/product-site/modules.html (91357 bytes)
+  docs/product-site/traceability.html (392819 bytes)
+  docs/product-site/roadmap.html (40101 bytes)
 Site renderizado em docs/product-site/
 ```
 

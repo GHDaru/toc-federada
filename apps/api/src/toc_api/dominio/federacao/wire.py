@@ -107,6 +107,16 @@ CODIGOS_PROPRIOS: dict[str, str] = {
         "o que uma ferramenta multiusuário encontra o tempo todo. Usar um deles diria ao "
         "cliente para tratar um caso que não é o dele"
     ),
+    "IDEMPOTENCY_KEY_REUSED": (
+        "a `idempotency_key` da confirmação já pertence a OUTRA proposta deste inquilino "
+        "(409). O APH-5.3 pede deduplicação real — \"a mesma chave produz uma execução e "
+        "quantas respostas idênticas forem pedidas\" —, e a unicidade por (inquilino, "
+        "chave) é o que a torna verdade. **Acréscimo declarado**: o registro mínimo do "
+        "§A.7 não tem código para chave reaproveitada; INVALID_TRANSITION nomeia a FSM da "
+        "proposta e diria ao cliente para recarregar a proposta, quando o que ele tem de "
+        "fazer é sortear outra chave. `details.idempotency_key` e `details.proposal_id` "
+        "dizem qual chave e de quem ela é"
+    ),
     "AGGREGATE_ROOT_REQUIRED": (
         "o estado pertence a uma ferramenta e a mutação NÃO veio pela raiz do agregado "
         "dela; `details.ferramenta` diz de quem é o estado e `details.raiz` diz qual é a "
@@ -132,6 +142,86 @@ CODIGOS_PROPRIOS: dict[str, str] = {
     "INVALID_GENERATION_RESULT": (
         "o resultado da geração assistida não valida contra o esquema versionado e foi "
         "recusado em falha fechada, antes de qualquer efeito (422, RF-22)"
+    ),
+    # -- M4 · Árvores de Futuro e Implementação (spec 008) -----------------------------
+    #
+    # Cada um destes nomeia uma recusa cuja CORREÇÃO do lado do cliente é diferente das
+    # outras — que é o critério do §A.7 para código próprio. `MUTATION_REFUSED` diria
+    # apenas "não neste estado", e o cliente não saberia se recarrega, se muda o alvo ou
+    # se auditória o material antes de tentar de novo.
+    "INVALID_ROLE": (
+        "o papel do nó não permite a operação, ou não pode mudar: objetivo da Árvore de "
+        "Pré-Requisitos é único e imutável, injeção que corta ramo tratado não vira "
+        "efeito; `details.regra` diz qual (409, RF-02/RF-14)"
+    ),
+    "INVALID_MIRROR": (
+        "o espelho Efeito Indesejável → Efeito Desejável foi recusado — sem cadeia "
+        "vinculada, efeito fora da cadeia, ou o mesmo Efeito Indesejável espelhado duas "
+        "vezes na mesma árvore; `details.regra` diz qual (409, RN-03)"
+    ),
+    "INVALID_NEGATIVE_BRANCH": (
+        "a transição do ramo negativo foi recusada: `tratado` exige a injeção que corta e "
+        "`aceito` exige justificativa e autor; `details.regra` diz qual (409, RN-04)"
+    ),
+    "INVALID_PAIR": (
+        "o par obstáculo ↔ objetivo intermediário foi recusado — papel incompatível ou "
+        "obstáculo que já tem resposta; `details.regra` diz qual (409, RF-17)"
+    ),
+    "INVALID_ELLIPSE": (
+        "a elipse de simultaneidade foi recusada — menos de duas dependências, destinos "
+        "diferentes ou dependência já agrupada; `details.regra` diz qual (409, RF-19)"
+    ),
+    "INVALID_STEP": (
+        "o passo da Árvore de Transição não existe ou não tem ficha; `details.regra` diz "
+        "qual (409, RN-10)"
+    ),
+    "INVALID_PROMOTION": (
+        "a promoção de Efeito Indesejável para Nuvem de Conflito foi recusada: a cadeia "
+        "só avança sobre material auditado, e o efeito precisa estar `Validado`; "
+        "`details.regra` diz qual (409, RF-37/RN-13). Separado de INVALID_DERIVATION "
+        "porque a correção do cliente é outra — não é escolher outro alvo, é **validar** "
+        "o efeito antes de promover"
+    ),
+    "INVALID_SEEDING": (
+        "a semeadura da Árvore da Realidade Futura foi recusada: só injeção `escolhida` "
+        "semeia, e cada injeção semeia uma vez; `details.regra` diz qual (409, RF-38)"
+    ),
+    "INVALID_CROSS_REFERENCE": (
+        "a referência cruzada foi recusada — criação sem ação nomeada (RN-11), suspensão "
+        "sem motivo, ou transição sem mudança; `details.regra` diz qual (409, RF-33)"
+    ),
+    # -- M6 · Focalização (spec 009) ----------------------------------------------------
+    #
+    # Cinco códigos e não um: o cliente discrimina por código, e cada uma destas recusas
+    # tem uma CORREÇÃO diferente. Colapsá-las em `DOMAIN_REFUSED` mandaria a interface ler
+    # a mensagem para saber o que oferecer — que é o que o §A.7 proíbe.
+    "INVALID_FOCUSING_STEP": (
+        "o passo da jornada de focalização recusou a operação — passo fora de vez, "
+        "conclusão sem restrição registrada, sem decisão escrita, com herança pendente, "
+        "ou o quinto passo, que não conclui por decisão; `details.regra` diz qual "
+        "(409, RN-01, RN-05, RN-07, RF-08/RF-09/RF-10). Separado de INVALID_STEP porque "
+        "aquele é o passo da Árvore de Transição, e a correção do cliente é outra"
+    ),
+    "INVALID_CYCLE": (
+        "o ciclo de focalização recusou a operação — ciclo fechado é somente leitura, já "
+        "há um ciclo aberto, não há ciclo aberto, ou o recomeço foi pedido fora do quinto "
+        "passo; `details.regra` diz qual (409, RN-02, RN-04, RN-07)"
+    ),
+    "INVALID_CONSTRAINT": (
+        "o registro da restrição foi recusado — o ciclo já aponta para uma (mudar o alvo "
+        "é recomeçar, não editar), a edição não tem campo, ou não há restrição a editar; "
+        "`details.regra` diz qual (409, RN-03, RF-05/RF-07)"
+    ),
+    "INVALID_TOOL_LINK": (
+        "o vínculo com um projeto de ferramenta foi recusado — alvo inexistente para este "
+        "inquilino, ferramenta declarada diferente da do projeto, alvo arquivado, vínculo "
+        "repetido no passo, ou combinação fora da canônica sem justificativa; "
+        "`details.regra` diz qual (409, RN-06, RF-14, RNF-04)"
+    ),
+    "INVALID_INHERITED_DECISION": (
+        "o julgamento da decisão herdada foi recusado — manter e revogar exigem "
+        "justificativa, e um veredito não volta a `pendente`; `details.regra` diz qual "
+        "(409, RN-05)"
     ),
     "DOMAIN_REFUSED": "recusa de domínio sem tradução mais específica (409)",
     "METHOD_NOT_ALLOWED": "verbo fora dos declarados para a rota (405)",

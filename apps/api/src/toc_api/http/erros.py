@@ -55,7 +55,23 @@ from ..dominio.nuvem import (
     TopologiaImutavel,
     TransicaoDeInjecaoRecusada,
 )
+from ..dominio.apr import ElipseInvalida, PapelNaAprInvalido, ParInvalido
+from ..dominio.arf import EspelhoInvalido, PapelNaArfInvalido, RamoNegativoInvalido
+from ..dominio.at import PassoInvalido, TransicaoDePassoRecusada
+from ..dominio.encadeamento import (
+    DerivacaoInvalidaDoM4,
+    PromocaoInvalida,
+    SemeaduraInvalida,
+)
 from ..dominio.federacao.wire import CODIGOS_PROPRIOS, ErroDoFio
+from ..dominio.focalizacao import (
+    CicloInvalido,
+    HerancaInvalida,
+    RestricaoInvalida,
+    VinculoInvalido,
+)
+from ..dominio.focalizacao import PassoInvalido as PassoDeFocalizacaoInvalido
+from ..dominio.referencia import ReferenciaInvalida
 from ..dominio.erros import (
     ArestaInvalida,
     ConflitoDeVersao,
@@ -216,6 +232,105 @@ def registrar_tradutores(app: FastAPI) -> None:
     async def _geracao_invalida(request: Request, erro: ResultadoDeGeracaoInvalido):
         return _resposta(
             422, "INVALID_GENERATION_RESULT", str(erro), detalhes={"codigo": erro.codigo}
+        )
+
+    # -- M4 · Árvores de Futuro e Implementação (spec 008) -----------------------------
+    #
+    # Cada erro traz a REGRA nomeada em `details`, e é assim que o cliente se recupera sem
+    # ler mensagem: `ude_nao_validado` manda validar o Efeito Indesejável antes de
+    # promover; `injecao_nao_escolhida` manda escolher a injeção antes de semear. O §A.7
+    # do Anexo A do Padrão APH é explícito — "o cliente discrimina por código, e nunca por
+    # mensagem", e o mesmo vale para o dado que vem no `details`.
+
+    @app.exception_handler(PapelNaArfInvalido)
+    async def _papel_na_arf(request: Request, erro: PapelNaArfInvalido):
+        return _resposta(409, "INVALID_ROLE", str(erro), detalhes={"regra": erro.regra})
+
+    @app.exception_handler(PapelNaAprInvalido)
+    async def _papel_na_apr(request: Request, erro: PapelNaAprInvalido):
+        return _resposta(409, "INVALID_ROLE", str(erro), detalhes={"regra": erro.regra})
+
+    @app.exception_handler(EspelhoInvalido)
+    async def _espelho(request: Request, erro: EspelhoInvalido):
+        return _resposta(409, "INVALID_MIRROR", str(erro), detalhes={"regra": erro.regra})
+
+    @app.exception_handler(RamoNegativoInvalido)
+    async def _ramo_negativo(request: Request, erro: RamoNegativoInvalido):
+        return _resposta(
+            409, "INVALID_NEGATIVE_BRANCH", str(erro), detalhes={"regra": erro.regra}
+        )
+
+    @app.exception_handler(ParInvalido)
+    async def _par(request: Request, erro: ParInvalido):
+        return _resposta(409, "INVALID_PAIR", str(erro), detalhes={"regra": erro.regra})
+
+    @app.exception_handler(ElipseInvalida)
+    async def _elipse(request: Request, erro: ElipseInvalida):
+        return _resposta(409, "INVALID_ELLIPSE", str(erro), detalhes={"regra": erro.regra})
+
+    @app.exception_handler(PassoInvalido)
+    async def _passo(request: Request, erro: PassoInvalido):
+        return _resposta(409, "INVALID_STEP", str(erro), detalhes={"regra": erro.regra})
+
+    @app.exception_handler(TransicaoDePassoRecusada)
+    async def _transicao_de_passo(request: Request, erro: TransicaoDePassoRecusada):
+        return _resposta(
+            409, "INVALID_TRANSITION", str(erro), detalhes={"motivo": erro.motivo}
+        )
+
+    @app.exception_handler(PromocaoInvalida)
+    async def _promocao(request: Request, erro: PromocaoInvalida):
+        return _resposta(409, "INVALID_PROMOTION", str(erro), detalhes={"regra": erro.regra})
+
+    @app.exception_handler(SemeaduraInvalida)
+    async def _semeadura(request: Request, erro: SemeaduraInvalida):
+        return _resposta(409, "INVALID_SEEDING", str(erro), detalhes={"regra": erro.regra})
+
+    @app.exception_handler(DerivacaoInvalidaDoM4)
+    async def _derivacao_do_m4(request: Request, erro: DerivacaoInvalidaDoM4):
+        return _resposta(
+            409, "INVALID_DERIVATION", str(erro), detalhes={"regra": erro.regra}
+        )
+
+    @app.exception_handler(ReferenciaInvalida)
+    async def _referencia(request: Request, erro: ReferenciaInvalida):
+        return _resposta(
+            409, "INVALID_CROSS_REFERENCE", str(erro), detalhes={"regra": erro.regra}
+        )
+
+    # -- M6 · Focalização (spec 009) ----------------------------------------------------
+    #
+    # `PassoDeFocalizacaoInvalido` vem ANTES de `PassoInvalido` na leitura, mas a ordem de
+    # registro não decide nada aqui: são classes distintas, e o FastAPI casa pela mais
+    # específica. O apelido no import existe porque os dois módulos nomearam a exceção
+    # igual — e o passo da Árvore de Transição e o passo da jornada são coisas diferentes,
+    # com correções diferentes do lado do cliente.
+    @app.exception_handler(PassoDeFocalizacaoInvalido)
+    async def _passo_de_focalizacao(request: Request, erro: PassoDeFocalizacaoInvalido):
+        return _resposta(
+            409, "INVALID_FOCUSING_STEP", str(erro), detalhes={"regra": erro.regra}
+        )
+
+    @app.exception_handler(CicloInvalido)
+    async def _ciclo(request: Request, erro: CicloInvalido):
+        return _resposta(409, "INVALID_CYCLE", str(erro), detalhes={"regra": erro.regra})
+
+    @app.exception_handler(RestricaoInvalida)
+    async def _restricao(request: Request, erro: RestricaoInvalida):
+        return _resposta(
+            409, "INVALID_CONSTRAINT", str(erro), detalhes={"regra": erro.regra}
+        )
+
+    @app.exception_handler(VinculoInvalido)
+    async def _vinculo(request: Request, erro: VinculoInvalido):
+        return _resposta(
+            409, "INVALID_TOOL_LINK", str(erro), detalhes={"regra": erro.regra}
+        )
+
+    @app.exception_handler(HerancaInvalida)
+    async def _heranca(request: Request, erro: HerancaInvalida):
+        return _resposta(
+            409, "INVALID_INHERITED_DECISION", str(erro), detalhes={"regra": erro.regra}
         )
 
     @app.exception_handler(MutacaoForaDaRaiz)

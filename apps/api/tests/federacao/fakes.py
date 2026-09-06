@@ -22,6 +22,7 @@ from toc_api.dominio.federacao.proposta import PropostaDeAcao
 from toc_api.dominio.federacao.snapshot import SnapshotDeContexto
 from toc_api.dominio.federacao.traco import TracoDeExecucao
 from toc_api.dominio.federacao.wire import SessaoDeConversa
+from toc_api.infra.federacao.memoria import RepositorioDePropostasEmMemoria
 
 AGORA = datetime(2026, 9, 5, 12, 0, tzinfo=timezone.utc)
 
@@ -85,23 +86,15 @@ class RepositorioDeSessoesFalso:
 
 
 @dataclass
-class RepositorioDePropostasFalso:
-    itens: dict[tuple[str, str], PropostaDeAcao] = field(default_factory=dict)
-    donos: dict[str, str] = field(default_factory=dict)
+class RepositorioDePropostasFalso(RepositorioDePropostasEmMemoria):
+    """O duplo do teste **é** o duplo de produção, de propósito.
 
-    def salvar(self, inquilino_id: str, usuario_id: str, proposta: PropostaDeAcao) -> None:
-        self.itens[(inquilino_id, proposta.proposal_id)] = proposta
-        self.donos[proposta.proposal_id] = usuario_id
-
-    def obter(self, inquilino_id: str, proposal_id: str) -> PropostaDeAcao | None:
-        return self.itens.get((inquilino_id, proposal_id))
-
-    def listar_pendentes(self, inquilino_id: str) -> list[PropostaDeAcao]:
-        return [
-            p
-            for (inq, _), p in self.itens.items()
-            if inq == inquilino_id and p.estado == "awaiting_approval"
-        ]
+    Enquanto este fake era uma atribuição de dicionário e o adaptador real recusava a
+    segunda decisão da mesma leitura, os casos de uso ficavam verdes aqui sobre a corrida
+    que o PostgreSQL mostra — e foi assim que oito confirmações simultâneas passaram por
+    todo o corpo de testes até um crítico hostil as medir. Herdar em vez de reescrever é o
+    que impede o duplo de voltar a ser mais permissivo que o adaptador.
+    """
 
 
 @dataclass

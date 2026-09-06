@@ -63,6 +63,81 @@ from .ara import (
     ReformularUde,
     ValidarTextoDeUde,
 )
+from .arvores import (
+    AbrirProjetoAPR,
+    AbrirProjetoARF,
+    AbrirProjetoAT,
+    AceitarRamoNegativo,
+    AdicionarNoDaAPR,
+    AdicionarNoDaARF,
+    AvaliarVerbalizacao,
+    CriarProjetoAPR,
+    CriarProjetoARF,
+    CriarProjetoAT,
+    DeclararDependencia,
+    DesfazerConectorEDaARF,
+    DesfazerElipse,
+    DesfazerEspelho,
+    DesfazerPar,
+    EditarFichaDoPasso,
+    EditarNoDaAPR,
+    EditarNoDaARF,
+    EspelharUde,
+    ExaminarEloDaARF,
+    ExcluirArestaDaARF,
+    ExcluirDependencia,
+    ExcluirNoDaAPR,
+    ExcluirNoDaARF,
+    ExcluirPasso,
+    ExcluirPrecedencia,
+    FormarConectorEDaARF,
+    FormarElipse,
+    JulgarTesteDeValidade,
+    LigarNaARF,
+    MarcarRamoNegativo,
+    MoverNoDaAPR,
+    MoverNoDaARF,
+    MudarPapelNaAPR,
+    MudarPapelNaARF,
+    MudarStatusDoPasso,
+    ParearObstaculo,
+    PrecederPasso,
+    ReabrirRamoNegativo,
+    RegistrarPasso,
+    ResumoDaAPR,
+    SequenciarAPR,
+    TratarRamoNegativo,
+    VerificarARF,
+)
+from .focalizacao import (
+    AbrirAnaliseDeFocalizacao,
+    AnotarPasso,
+    ConcluirPasso,
+    CriarAnaliseDeFocalizacao,
+    EditarRestricao,
+    ExcluirAnaliseDeFocalizacao,
+    JulgarDecisaoHerdada,
+    LinhaDoTempoDaAnalise,
+    ListarAnalisesDeFocalizacao,
+    MapaDaJornadaDaAnalise,
+    ReabrirPassoAnterior,
+    Recomecar,
+    ReferenciasDaFerramenta,
+    RegistrarRestricao,
+    RemoverVinculo,
+    ResolverVinculos,
+    RestaurarAnaliseDeFocalizacao,
+    SugerirRestricao,
+    VincularFerramenta,
+)
+from .cadeia import (
+    AbrirCadeia,
+    DerivarAprDeArf,
+    DerivarAtDeOi,
+    ListarReferenciasDoProjeto,
+    PromoverUdesParaNC,
+    SemearArfDeInjecao,
+)
 from .casos_de_uso import CasoDeUso
 from .nuvem import (
     AbrirProjetoNC,
@@ -224,6 +299,105 @@ POLITICA: dict[type[CasoDeUso], str] = {
     SugerirPremissas: TOC_ESCRITA,
     SugerirInjecoes: TOC_ESCRITA,
     AplicarGeracaoDeNuvem: TOC_ESCRITA,
+    # M4 — Árvores de Futuro e Implementação (spec 008)
+    #
+    # As leituras: abrir os três tipos de projeto, a tabela resumo da APR, a vista da
+    # cadeia, as referências de uma ficha e a verbalização avaliada. Esta última é a
+    # única HEURÍSTICA que um principal só-leitura alcança, e alcança por ser função pura
+    # que **não grava**: é a irmã de `ValidarTextoDeUde` (M2) e `ValidarNuvem` (M3).
+    AbrirProjetoARF: TOC_LEITURA,
+    AbrirProjetoAPR: TOC_LEITURA,
+    AbrirProjetoAT: TOC_LEITURA,
+    AvaliarVerbalizacao: TOC_LEITURA,
+    ResumoDaAPR: TOC_LEITURA,
+    AbrirCadeia: TOC_LEITURA,
+    ListarReferenciasDoProjeto: TOC_LEITURA,
+    # As escritas da Árvore da Realidade Futura.
+    CriarProjetoARF: TOC_ESCRITA,
+    AdicionarNoDaARF: TOC_ESCRITA,
+    EditarNoDaARF: TOC_ESCRITA,
+    MoverNoDaARF: TOC_ESCRITA,
+    ExcluirNoDaARF: TOC_ESCRITA,
+    MudarPapelNaARF: TOC_ESCRITA,
+    LigarNaARF: TOC_ESCRITA,
+    ExcluirArestaDaARF: TOC_ESCRITA,
+    ExaminarEloDaARF: TOC_ESCRITA,
+    FormarConectorEDaARF: TOC_ESCRITA,
+    DesfazerConectorEDaARF: TOC_ESCRITA,
+    EspelharUde: TOC_ESCRITA,
+    DesfazerEspelho: TOC_ESCRITA,
+    MarcarRamoNegativo: TOC_ESCRITA,
+    TratarRamoNegativo: TOC_ESCRITA,
+    AceitarRamoNegativo: TOC_ESCRITA,
+    ReabrirRamoNegativo: TOC_ESCRITA,
+    # `VerificarARF` e `SequenciarAPR` não mudam o grafo, mas ACRESCENTAM evento à memória
+    # do projeto (RF-13 e RF-26). Operação que grava exige `toc:write`; chamá-las de
+    # leitura porque "só leem o grafo" seria a exceção por onde a regra vaza — a mesma
+    # decisão já tomada para `AnalisarArvore` no M2.
+    VerificarARF: TOC_ESCRITA,
+    # As escritas da Árvore de Pré-Requisitos.
+    CriarProjetoAPR: TOC_ESCRITA,
+    AdicionarNoDaAPR: TOC_ESCRITA,
+    EditarNoDaAPR: TOC_ESCRITA,
+    MoverNoDaAPR: TOC_ESCRITA,
+    ExcluirNoDaAPR: TOC_ESCRITA,
+    MudarPapelNaAPR: TOC_ESCRITA,
+    DeclararDependencia: TOC_ESCRITA,
+    ExcluirDependencia: TOC_ESCRITA,
+    ParearObstaculo: TOC_ESCRITA,
+    DesfazerPar: TOC_ESCRITA,
+    JulgarTesteDeValidade: TOC_ESCRITA,
+    FormarElipse: TOC_ESCRITA,
+    DesfazerElipse: TOC_ESCRITA,
+    SequenciarAPR: TOC_ESCRITA,
+    # As escritas da Árvore de Transição.
+    CriarProjetoAT: TOC_ESCRITA,
+    RegistrarPasso: TOC_ESCRITA,
+    EditarFichaDoPasso: TOC_ESCRITA,
+    PrecederPasso: TOC_ESCRITA,
+    ExcluirPrecedencia: TOC_ESCRITA,
+    ExcluirPasso: TOC_ESCRITA,
+    MudarStatusDoPasso: TOC_ESCRITA,
+    # O encadeamento: promover, semear e derivar CRIAM projeto e referência — manipulação
+    # direta do titular sob o item 8 da constituição, e por isso `toc:write` sem exceção.
+    PromoverUdesParaNC: TOC_ESCRITA,
+    SemearArfDeInjecao: TOC_ESCRITA,
+    DerivarAprDeArf: TOC_ESCRITA,
+    DerivarAtDeOi: TOC_ESCRITA,
+    # M6 — Focalização (spec 009)
+    #
+    # As leituras: abrir a análise, o mapa da jornada, a linha do tempo, a listagem, o
+    # estado dos vínculos e a navegação de volta. **Nenhuma delas grava** — o mapa é
+    # função pura de domínio (RF-12) e a resolução de vínculo é consulta ao M1. É a
+    # diferença para `AnalisarArvore` (M2), `VerificarARF` e `SequenciarAPR` (M4), que
+    # acrescentam evento à memória do projeto e por isso exigem escrita.
+    AbrirAnaliseDeFocalizacao: TOC_LEITURA,
+    MapaDaJornadaDaAnalise: TOC_LEITURA,
+    LinhaDoTempoDaAnalise: TOC_LEITURA,
+    ListarAnalisesDeFocalizacao: TOC_LEITURA,
+    ResolverVinculos: TOC_LEITURA,
+    ReferenciasDaFerramenta: TOC_LEITURA,
+    # As escritas da jornada. Registrar a restrição, concluir um passo e julgar uma
+    # herança são manipulação direta do titular sob o item 8 da constituição — alvo
+    # nomeado pelo gesto, valor no controle, reversível por histórico somente-acréscimo.
+    CriarAnaliseDeFocalizacao: TOC_ESCRITA,
+    ExcluirAnaliseDeFocalizacao: TOC_ESCRITA,
+    RestaurarAnaliseDeFocalizacao: TOC_ESCRITA,
+    RegistrarRestricao: TOC_ESCRITA,
+    EditarRestricao: TOC_ESCRITA,
+    ConcluirPasso: TOC_ESCRITA,
+    ReabrirPassoAnterior: TOC_ESCRITA,
+    AnotarPasso: TOC_ESCRITA,
+    VincularFerramenta: TOC_ESCRITA,
+    RemoverVinculo: TOC_ESCRITA,
+    JulgarDecisaoHerdada: TOC_ESCRITA,
+    Recomecar: TOC_ESCRITA,
+    # A assistência do M6 não grava no agregado (sugerir devolve rascunho), e ainda assim
+    # exige `toc:write`: ela **consome a fundação em nome do inquilino** e só existe para
+    # desembocar em proposta mutadora. Classificá-la como leitura daria a um principal
+    # só-leitura o poder de acionar o catálogo assistido — a mesma decisão já tomada para
+    # `GerarNuvemPorNarrativa` no M3, e é ela que faz a RF-21 valer.
+    SugerirRestricao: TOC_ESCRITA,
 }
 
 

@@ -133,6 +133,145 @@ CORPUS: list[tuple[str, dict[str, Any], bool]] = [
         False,
     ),
     ("toc.suggest_injections", {"projeto_id": UUID_SINTETICO, "texto": "sem premissa"}, False),
+    # -- M4 · Árvores de Futuro e Implementação (spec 008, INT-05..INT-08) --------------
+    # As quatro ações do módulo, com o contraexemplo que cada uma tem de recusar. O caso
+    # do passo é o que carrega a regra: **sem a tripla a proposta nem nasce** (RN-10) —
+    # a validação acontece no `input_schema`, antes de a `action_proposal` existir.
+    (
+        "toc.suggest_future_effects",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "injecao_id": UUID_SINTETICO,
+            "texto": "as duas frentes recebem verba no trimestre",
+        },
+        True,
+    ),
+    (
+        "toc.suggest_future_effects",
+        {"projeto_id": UUID_SINTETICO, "texto": "efeito sem injeção de origem"},
+        False,
+    ),
+    (
+        "toc.suggest_future_effects",
+        {"projeto_id": UUID_SINTETICO, "injecao_id": UUID_SINTETICO, "texto": ""},
+        False,
+    ),
+    (
+        "toc.suggest_obstacles",
+        {"projeto_id": UUID_SINTETICO, "texto": "Há apenas uma pessoa treinada"},
+        True,
+    ),
+    ("toc.suggest_obstacles", {"projeto_id": UUID_SINTETICO}, False),
+    (
+        "toc.suggest_obstacles",
+        {"projeto_id": UUID_SINTETICO, "texto": "x" * 301},
+        False,
+    ),
+    (
+        "toc.suggest_intermediate_objectives",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "obstaculo_id": UUID_SINTETICO,
+            "texto": "Existem três pessoas treinadas e escaladas",
+        },
+        True,
+    ),
+    (
+        "toc.suggest_intermediate_objectives",
+        {"projeto_id": UUID_SINTETICO, "texto": "objetivo sem obstáculo para superar"},
+        False,
+    ),
+    (
+        "toc.suggest_intermediate_objectives",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "obstaculo_id": UUID_SINTETICO,
+            "texto": "Existem três pessoas treinadas",
+            "valido": True,
+        },
+        False,
+    ),
+    (
+        "toc.suggest_transition_steps",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "acao": "publicar a chamada interna de treinamento",
+            "necessidade": "não há hoje candidato mapeado",
+            "resultado_esperado": "lista de inscritos até sexta",
+        },
+        True,
+    ),
+    (
+        "toc.suggest_transition_steps",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "acao": "publicar a chamada interna de treinamento",
+            "resultado_esperado": "lista de inscritos até sexta",
+        },
+        False,
+    ),
+    (
+        "toc.suggest_transition_steps",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "acao": "publicar a chamada",
+            "necessidade": "",
+            "resultado_esperado": "lista",
+        },
+        False,
+    ),
+    # -- M6 · Focalização (spec 009, RF-19) ---------------------------------------------
+    (
+        "toc.suggest_constraint",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "ara_projeto_id": UUID_SINTETICO,
+            "no_id": UUID_SINTETICO,
+            "descricao": "Capacidade de conferência da secretaria acadêmica",
+            "tipo": "fisica",
+            "justificativa": "a fila de matrículas só cresce nesta etapa",
+        },
+        True,
+    ),
+    (
+        # sem a referência de origem: a evidência que sustenta a conclusão é obrigatória
+        # nesta ação (US-04), e a proposta nem nasce sem ela
+        "toc.suggest_constraint",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "descricao": "Capacidade de conferência da secretaria acadêmica",
+            "tipo": "fisica",
+            "justificativa": "a fila só cresce nesta etapa",
+        },
+        False,
+    ),
+    (
+        # tipo fora do enum fechado da L-01
+        "toc.suggest_constraint",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "ara_projeto_id": UUID_SINTETICO,
+            "no_id": UUID_SINTETICO,
+            "descricao": "Capacidade da secretaria",
+            "tipo": "de_pessoal",
+            "justificativa": "a fila só cresce nesta etapa",
+        },
+        False,
+    ),
+    (
+        # justificativa vazia: registrar a restrição sem dizer por quê é o que a RF-05
+        # existe para impedir
+        "toc.suggest_constraint",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "ara_projeto_id": UUID_SINTETICO,
+            "no_id": UUID_SINTETICO,
+            "descricao": "Capacidade da secretaria",
+            "tipo": "fisica",
+            "justificativa": "",
+        },
+        False,
+    ),
 ]
 
 

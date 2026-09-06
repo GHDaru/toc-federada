@@ -11,7 +11,9 @@ import type { ReactElement } from "react";
 import { ProvedorDeIdioma, type Idioma } from "../i18n";
 import type { Cliente } from "../api/cliente";
 import type {
+  AnaliseDeFocalizacao,
   Ara,
+  Jornada,
   No,
   Nuvem,
   Projeto,
@@ -135,6 +137,123 @@ export const PROPOSTA_PENDENTE: Proposta = {
   status: null,
   mensagem: "",
   outcomes: [],
+};
+
+// ---------------------------------------------------------------------------------------
+// M6 · Focalização (spec 009) — a análise sintética da Instituição Horizonte
+//
+// Base sintética por regra (ADR 0006): a instituição é fictícia, as personas são papéis
+// ("Facilitadora TOC"), e o fluxo de matrículas é inventado para o teste.
+// ---------------------------------------------------------------------------------------
+
+export const RESTRICAO_SINTETICA = "Capacidade de conferência da secretaria acadêmica";
+
+function passo(
+  tipo: Jornada["passos"][number]["tipo"],
+  estado: Jornada["passos"][number]["estado"],
+  extra: Partial<Jornada["passos"][number]> = {},
+): Jornada["passos"][number] {
+  return {
+    tipo,
+    estado,
+    decisao: "",
+    autor_da_decisao: "",
+    decisoes: [],
+    notas: [],
+    reaberturas: [],
+    vinculos: [],
+    canonicas: [],
+    avisos: [],
+    herdado: [],
+    pendencias: [],
+    ...extra,
+  };
+}
+
+/** Uma jornada no passo `identificar`, com a restrição já registrada. */
+export const JORNADA: Jornada = {
+  ciclo_id: "c1",
+  ordem: 1,
+  estado: "aberto",
+  somente_leitura: false,
+  passo_atual: "identificar",
+  restricao: {
+    id: "r1",
+    descricao: RESTRICAO_SINTETICA,
+    tipo: "fisica",
+    justificativa: "a fila de matrículas só cresce nesta etapa",
+    autor: "Facilitadora TOC",
+    registrada_em: "2026-09-06T09:05:00Z",
+    origem: null,
+  },
+  passos: [
+    passo("identificar", "em_andamento", {
+      canonicas: ["ara"],
+      vinculos: [
+        {
+          id: "v1",
+          ferramenta: "ara",
+          projeto_id: "p-ara",
+          papel: "causa raiz",
+          justificativa: "",
+          canonico: true,
+          estado: "ativo",
+          nome: "ARA do fluxo",
+          legenda: "projeto ativo",
+        },
+      ],
+      pendencias: [
+        {
+          passo: "identificar",
+          regra: "decisao_ausente",
+          detalhe: "o passo se encerra com a decisão que o encerra (RF-09)",
+        },
+      ],
+    }),
+    passo("explorar", "pendente", { canonicas: ["arf", "nc"] }),
+    passo("subordinar", "pendente", { canonicas: ["nc"] }),
+    passo("elevar", "pendente", { canonicas: ["apr", "at"] }),
+    passo("recomecar", "pendente"),
+  ],
+  heranca: [],
+  herancas_pendentes: 0,
+  ciclos_no_total: 1,
+  passos_concluidos: 0,
+};
+
+export const ANALISE_DE_FOCALIZACAO: AnaliseDeFocalizacao = {
+  projeto: {
+    id: "p-foco",
+    nome: "Fluxo de matrículas",
+    ferramenta: "focalizacao",
+    descricao_do_problema: "Da inscrição do candidato à primeira aula assistida.",
+    estado: "ativo",
+    versao: 7,
+    criado_em: "2026-09-06T09:00:00Z",
+    alterado_em: "2026-09-06T09:05:00Z",
+    excluido_em: null,
+  },
+  sistema: {
+    nome: "Da inscrição do candidato à primeira aula assistida",
+    descricao: "O fluxo de matrículas da Instituição Horizonte.",
+  },
+  jornada: JORNADA,
+  linha_do_tempo: [
+    {
+      ciclo_id: "c1",
+      ordem: 1,
+      estado: "aberto",
+      restricao: RESTRICAO_SINTETICA,
+      tipo_de_restricao: "fisica",
+      aberto_em: "2026-09-06T09:00:00Z",
+      fechado_em: null,
+      decisoes: 0,
+      vinculos: 1,
+      herancas: 0,
+      herancas_pendentes: 0,
+      passo_atual: "identificar",
+    },
+  ],
 };
 
 /**
@@ -308,6 +427,43 @@ export function clienteFalso(sobrescritas: Record<string, unknown> = {}): Client
         premissa_id: "pr1",
         sugestoes: [],
         aviso: "",
+      }),
+    },
+    foco: {
+      criarAnalise: async () => ANALISE_DE_FOCALIZACAO,
+      listar: async () => [
+        {
+          projeto_id: "p-foco",
+          nome: "Fluxo de matrículas",
+          sistema: "Da inscrição do candidato à primeira aula assistida",
+          ciclo: 1,
+          passo_atual: "identificar" as const,
+          restricao: RESTRICAO_SINTETICA,
+          tipo_de_restricao: "fisica" as const,
+          pendencias: 1,
+          herancas_pendentes: 0,
+          alterado_em: "2026-09-06T09:05:00Z",
+        },
+      ],
+      abrir: async () => ANALISE_DE_FOCALIZACAO,
+      excluir: async () => ANALISE_DE_FOCALIZACAO,
+      restaurar: async () => ANALISE_DE_FOCALIZACAO,
+      jornada: async () => JORNADA,
+      linhaDoTempo: async () => ANALISE_DE_FOCALIZACAO.linha_do_tempo,
+      registrarRestricao: async () => JORNADA.restricao,
+      editarRestricao: async () => JORNADA.restricao,
+      concluirPasso: async () => JORNADA,
+      reabrirAnterior: async () => JORNADA,
+      anotar: async () => JORNADA,
+      vincular: async () => JORNADA.passos[0]!.vinculos[0]!,
+      removerVinculo: async () => JORNADA,
+      julgarHeranca: async () => JORNADA,
+      recomecar: async () => ANALISE_DE_FOCALIZACAO,
+      sugerirRestricao: async () => ({
+        ara_projeto_id: "p-ara",
+        action_id: "toc.suggest_constraint",
+        aviso: "nada foi aplicado",
+        candidatas: [],
       }),
     },
   };

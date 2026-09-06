@@ -63,6 +63,12 @@ export const CODIGOS = {
   PROPOSTA_INEXISTENTE: "PROPOSAL_NOT_FOUND",
   PROPOSTA_VENCIDA: "PROPOSAL_EXPIRED",
   CONTEXTO_DEFASADO: "PROPOSAL_CONTEXT_STALE",
+  /**
+   * A chave de idempotência já produziu uma execução em OUTRA proposta deste inquilino
+   * (APH-5.3). Tem tratamento próprio porque a saída é diferente da de `INVALID_TRANSITION`:
+   * ali a pessoa recarrega a proposta; aqui ela sorteia outra chave e tenta de novo.
+   */
+  CHAVE_REAPROVEITADA: "IDEMPOTENCY_KEY_REUSED",
   DOMINIO_RECUSOU: "DOMAIN_REFUSED",
   /** Nossos, do cliente: a rede e a resposta ilegível também precisam de nome. */
   REDE_INDISPONIVEL: "REDE_INDISPONIVEL",

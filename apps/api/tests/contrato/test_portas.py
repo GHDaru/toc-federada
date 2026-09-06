@@ -24,6 +24,10 @@ def test_toda_porta_e_um_protocolo_verificavel_em_execucao():
         portas.Rastreador,
         portas.RepositorioDeProjetos,
         portas.RepositorioDeARA,
+        # M6 — Focalização (spec 009): a porta da jornada e a composta que a validação de
+        # vínculo exige entram aqui no commit em que nascem.
+        portas.RepositorioDeFocalizacao,
+        portas.RepositorioDaJornada,
     ):
         assert getattr(porta, "_is_runtime_protocol", False), (
             f"{porta.__name__} precisa de @runtime_checkable para o contrato ser medível"
@@ -35,6 +39,10 @@ def test_os_duplos_dos_testes_satisfazem_as_portas():
     assert isinstance(RepositorioDeProjetosFalso(), portas.RepositorioDeProjetos)
     assert isinstance(RepositorioDeARAFalso(), portas.RepositorioDeARA)
     assert isinstance(RelogioFalso.__new__(RelogioFalso), portas.Relogio)
+    from tests.aplicacao.fakes_m6 import RepositorioDaJornadaFalso
+
+    assert isinstance(RepositorioDaJornadaFalso(), portas.RepositorioDeFocalizacao)
+    assert isinstance(RepositorioDaJornadaFalso(), portas.RepositorioDaJornada)
 
 
 def test_os_adaptadores_de_infra_satisfazem_as_mesmas_portas():
@@ -44,7 +52,13 @@ def test_os_adaptadores_de_infra_satisfazem_as_mesmas_portas():
     # O adaptador SQL exige uma fábrica de sessão; a conformidade é medida na classe.
     assert isinstance(RepositorioDeProjetosEmMemoria(), portas.RepositorioDeARA)
     # O adaptador SQL exige uma fábrica de sessão; a conformidade é medida na classe.
-    for porta in (portas.RepositorioDeProjetos, portas.RepositorioDeARA):
+    assert isinstance(RepositorioDeProjetosEmMemoria(), portas.RepositorioDaJornada)
+    for porta in (
+        portas.RepositorioDeProjetos,
+        portas.RepositorioDeARA,
+        portas.RepositorioDeFocalizacao,
+        portas.RepositorioDaJornada,
+    ):
         assert isinstance(
             RepositorioDeProjetosSQL.__new__(RepositorioDeProjetosSQL), porta
         ), f"o adaptador SQL não satisfaz {porta.__name__}"

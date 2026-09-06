@@ -367,3 +367,182 @@ export interface PedidoDeProposta {
   origem?: "humano" | "ia";
   contexto_hash?: string | null;
 }
+
+// ---------------------------------------------------------------------------------------
+// M6 · Focalização (spec 009) — a jornada dos cinco passos
+//
+// Estes tipos são **espelho** do que o serviço publica, nunca uma segunda fonte de regra
+// (é a mesma disciplina do resto deste arquivo): nada aqui recomputa pendência, aviso ou
+// estado de vínculo. Quem os computa é o domínio, no servidor, por função pura — e a
+// interface desenha o que recebeu.
+// ---------------------------------------------------------------------------------------
+
+/** RN-01: os cinco, nomeados e ordenados. Não se cria, não se exclui, não se reordena. */
+export type TipoDePasso = "identificar" | "explorar" | "subordinar" | "elevar" | "recomecar";
+
+export const PASSOS_DA_FOCALIZACAO: readonly TipoDePasso[] = [
+  "identificar",
+  "explorar",
+  "subordinar",
+  "elevar",
+  "recomecar",
+] as const;
+
+export type EstadoDoPasso = "pendente" | "em_andamento" | "concluido";
+export type EstadoDoCiclo = "aberto" | "fechado";
+export type TipoDeRestricao = "fisica" | "politica" | "de_mercado";
+export type VereditoDeHeranca = "pendente" | "mantida" | "revogada";
+export type FerramentaVinculada = "ara" | "nc" | "arf" | "apr" | "at";
+export type EstadoDoVinculo = "ativo" | "arquivado" | "ausente";
+
+export interface OrigemDaRestricao {
+  ferramenta: string;
+  projeto_id: string;
+  no_id: string;
+}
+
+export interface Restricao {
+  id: string;
+  descricao: string;
+  tipo: TipoDeRestricao;
+  justificativa: string;
+  autor: string;
+  registrada_em: string;
+  origem: OrigemDaRestricao | null;
+}
+
+export interface DecisaoDePasso {
+  texto: string;
+  autor: string;
+  instante: string;
+}
+
+export interface NotaDePasso {
+  id: string;
+  texto: string;
+  autor: string;
+  instante: string;
+}
+
+export interface ReaberturaDePasso {
+  justificativa: string;
+  autor: string;
+  instante: string;
+}
+
+/** RI-03: o cartão do vínculo — tipo, projeto, estado e navegação. Nunca o conteúdo. */
+export interface VinculoDeFerramenta {
+  id: string;
+  ferramenta: FerramentaVinculada;
+  projeto_id: string;
+  papel: string;
+  justificativa: string;
+  canonico: boolean;
+  estado: EstadoDoVinculo;
+  nome: string;
+  legenda: string;
+}
+
+export interface PendenciaDoPasso {
+  passo: string;
+  regra: string;
+  detalhe: string;
+}
+
+export interface PassoNaJornada {
+  tipo: TipoDePasso;
+  estado: EstadoDoPasso;
+  decisao: string;
+  autor_da_decisao: string;
+  decisoes: DecisaoDePasso[];
+  notas: NotaDePasso[];
+  reaberturas: ReaberturaDePasso[];
+  vinculos: VinculoDeFerramenta[];
+  canonicas: FerramentaVinculada[];
+  avisos: string[];
+  /** RF-13: o produto dos passos ANTERIORES do mesmo ciclo — para ninguém decidir no vácuo. */
+  herdado: string[];
+  pendencias: PendenciaDoPasso[];
+}
+
+export interface DecisaoHerdada {
+  id: string;
+  ciclo_de_origem: number;
+  passo: string;
+  texto: string;
+  veredito: VereditoDeHeranca;
+  justificativa: string;
+  autor: string;
+  julgada_em: string | null;
+}
+
+export interface Jornada {
+  ciclo_id: string;
+  ordem: number;
+  estado: EstadoDoCiclo;
+  somente_leitura: boolean;
+  passo_atual: TipoDePasso;
+  restricao: Restricao | null;
+  passos: PassoNaJornada[];
+  heranca: DecisaoHerdada[];
+  herancas_pendentes: number;
+  ciclos_no_total: number;
+  passos_concluidos: number;
+}
+
+export interface CicloNaLinha {
+  ciclo_id: string;
+  ordem: number;
+  estado: EstadoDoCiclo;
+  restricao: string | null;
+  tipo_de_restricao: TipoDeRestricao | null;
+  aberto_em: string;
+  fechado_em: string | null;
+  decisoes: number;
+  vinculos: number;
+  herancas: number;
+  herancas_pendentes: number;
+  passo_atual: TipoDePasso;
+}
+
+export interface SistemaAnalisado {
+  nome: string;
+  descricao: string;
+}
+
+export interface AnaliseDeFocalizacao {
+  projeto: ProjetoResumo;
+  sistema: SistemaAnalisado;
+  jornada: Jornada;
+  linha_do_tempo: CicloNaLinha[];
+}
+
+/** RF-03/RI-07: passo atual e restrição vigente como colunas de primeira classe. */
+export interface AnaliseResumo {
+  projeto_id: string;
+  nome: string;
+  sistema: string;
+  ciclo: number;
+  passo_atual: TipoDePasso;
+  restricao: string | null;
+  tipo_de_restricao: TipoDeRestricao | null;
+  pendencias: number;
+  herancas_pendentes: number;
+  alterado_em: string;
+}
+
+export interface CandidataARestricao {
+  no_id: string;
+  titulo: string;
+  racional: string;
+  udes_alcancados: number;
+  fracao: number;
+}
+
+/** RF-19: sugerir NÃO aplica — devolve as candidatas e o `action_id` da ação governada. */
+export interface SugestaoDeRestricao {
+  ara_projeto_id: string;
+  action_id: string;
+  aviso: string;
+  candidatas: CandidataARestricao[];
+}

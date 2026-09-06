@@ -5,6 +5,179 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Adição — M6: a jornada dos cinco passos de focalização, e a primeira vez que a aplicação diz **qual é a restrição** (spec 009)
+
+- **O buraco que este módulo fecha.** Até aqui a aplicação sabia desenhar as ferramentas
+  da Teoria das Restrições (TOC) e não sabia nomear o gargalo que elas existem para
+  atacar. A `Restricao` nasce neste ciclo como entidade de domínio, com tipo, justificativa
+  obrigatória e referência tipada de origem (o nó de causa raiz de uma Árvore da Realidade
+  Atual — ARA).
+- **A jornada (E6.1 + E6.2)** — `AnaliseDeFocalizacao` é agregado próprio, **composto**
+  sobre o `Projeto` do M1: herda dono por inquilino, exclusão suave e a trava otimista por
+  versão lida, e não usa grafo (uma jornada não é um diagrama). Uma análise nasce com o
+  ciclo 1 aberto e os **cinco passos instanciados** — `identificar` → `explorar` →
+  `subordinar` → `elevar` → `recomecar` —, e não há rota para criar, excluir ou reordenar
+  passo: a ausência é o contrato.
+- **A anti-inércia de Goldratt, como regra executável.** Recomeçar fecha o ciclo (imutável
+  a partir dali), abre o próximo em `identificar` e herda as decisões vigentes de
+  `explorar` e `subordinar` com veredito `pendente`. Concluir `subordinar` com herança
+  pendente é **recusado**. E uma decisão julgada `mantida` **volta à mesa no recomeço
+  seguinte**: um passe vitalício concedido por um único "manter" é inércia com carimbo.
+  Decisão registrada no
+  [ADR 0013](docs/adr/0013-taxonomia-fechada-da-restricao-e-heranca-que-volta-a-mesa.md).
+- **Reabrir não apaga.** As decisões de um passo são tupla somente-acréscimo e a reabertura
+  é fato registrado ao lado, nunca no lugar. A prova não é contagem: `CicloDeFocalizacao.retrato()`
+  produz o conteúdo que as pessoas escreveram, e o teste compara o retrato do ciclo fechado
+  antes e depois do recomeço.
+- **Vínculos combinados pela porta, não pela implementação.** O vínculo é referência tipada
+  a um projeto de outro módulo (ARA, Nuvem de Conflito, Árvore da Realidade Futura, Árvore
+  de Pré-Requisitos, Árvore de Transição) — **nunca cópia**. O domínio conhece só a tabela
+  canônica (fora dela exige justificativa e avisa, não bloqueia); existência, inquilino,
+  ferramenta real e estado do alvo são conferidos no servidor, contra a porta. É o que
+  permite a suíte de domínio do M6 rodar offline. A navegação de volta
+  (`GET /toc/focalizacao/ferramentas/{id}/analises`) resolve por consulta, **sem campo novo
+  em M2, M3 ou M4**.
+- **Superfície e governança** — 15 caminhos (18 pares verbo + caminho) sob `/toc/focalizacao`; cinco códigos estáveis
+  novos no registro do §A.7 (`INVALID_FOCUSING_STEP`, `INVALID_CYCLE`,
+  `INVALID_CONSTRAINT`, `INVALID_TOOL_LINK`, `INVALID_INHERITED_DECISION`), todos com a
+  regra nomeada em `detalhes.regra`; a ação governada `toc.suggest_constraint` (risco
+  `confirm`, nasce proposta — a rota de leitura que a precede **não escreve nada**); três
+  telas no registro com `ai_visible` campo a campo; migração Alembic `0008` com
+  `downgrade`, levando as invariantes ao banco (índice parcial único para "um ciclo
+  aberto", chave primária no ciclo para "uma restrição", `CHECK` para justificativa
+  obrigatória fora do canônico e para veredito com autor).
+- **Interface e jornada viva** — mapa dos cinco passos com estado **nunca só por cor**,
+  painel do passo em três camadas (herdado → trabalho → decisão), julgamento de herança com
+  dois vereditos de peso visual **igual**, linha do tempo somente leitura e listagem com
+  passo atual e restrição como colunas de primeira classe. Jornada
+  [`docs/jornadas/009-cinco-passos-de-focalizacao.md`](docs/jornadas/009-cinco-passos-de-focalizacao.md),
+  com captura por passo gerada pelo script versionado a partir do build real. A corrida de
+  2026-09-06 que a produziu, medida pelo `manifesto.json` que ela própria escreveu, levou o
+  repositório a **52 capturas,
+  8 481 359 bytes, 0 falhas** (`find docs/jornadas/capturas -name '*.png' | wc -l` → `52`,
+  conferido pelo portão `scripts/check-evidencia-colada.sh`). **O tempo de parede não entra
+  aqui**: ele muda a cada execução, e o manifesto não o grava.
+- **Portões** — `scripts/check-trava-otimista.sh` passou a conhecer **oito** caminhos de
+  escrita e `scripts/check-trava-da-proposta.sh` **nove** métodos `salvar*` (entrou
+  `salvar_focalizacao`, nas duas listas **e** nas duas fixtures de sabotagem);
+  `scripts/check-raiz-do-agregado.sh` conta agora **seis** raízes de ferramenta registradas;
+  o catálogo servido tem **16 ações** e **12 telas**. Fechamento: `scripts/evidencia.sh`
+  saiu `0` com **17 portões, 17 verdes, 0 vermelhos**, e `scripts/tests/run-sabotagem.sh`
+  saiu `0` com **10 portões cobertos, 61 sabotagens, 61 reprovadas pelo motivo certo**.
+
+### Correção — o painel do passo guardava a ferramenta canônica do passo em que foi montado
+
+- Navegar de `identificar` para `subordinar` deixava "vincular ferramenta" desabilitado sem
+  motivo aparente: o `<select>` mantinha o valor canônico do passo anterior. **Nenhum teste
+  de unidade pegou** — cada um monta o painel uma vez —, e quem pegou foi a captura da
+  jornada viva contra o build real, que é literalmente o argumento do princípio P6.
+  Corrigido com `key={passo.tipo}` no `PainelDoPasso`, o que também limpa os rascunhos de
+  nota e de decisão ao trocar de passo.
+
+### Adição — M4: as três árvores que a linhagem nunca entregou, e o encadeamento que faltava (spec 008)
+
+- **O que a linhagem tinha, medido:** nas quatro gerações do TOC-Builder, a Árvore da
+  Realidade Futura (ARF), a Árvore de Pré-Requisitos (APR) e a Árvore de Transição (AT)
+  eram **item de menu desabilitado** — `tocbuilderv3/components/Sidebar.tsx:55-57`,
+  `types.ts:249-258` — com zero componentes, zero prompts e zero linhas de domínio. E a
+  referência entre projetos nunca existiu:
+
+  ```text
+  $ grep -c "araProjectId\|sourceUdeId\|linkedProject\|crossTool" /home/user/tocbuilderv3/types.ts
+  0
+  ```
+
+- **ARF (E4.1)** — papéis tipados (injeção · efeito futuro), arestas de suficiência com
+  exame e conector E, espelho Efeito Indesejável (UDE) → Efeito Desejável com no máximo um
+  por UDE, **ramo negativo** com `aberto → tratado | aceito` (tratar exige a injeção que
+  corta; aceitar exige justificativa e autor) e verificação estrutural por função pura.
+- **APR (E4.2)** — objetivo único e indestrutível, obstáculos e objetivos intermediários,
+  **lógica de condição necessária** ("A precisa existir antes de B") sem exame de elo,
+  pareamento obstáculo ↔ objetivo com julgamento acumulável, elipse de simultaneidade,
+  sequenciamento em camadas com ciclo como pendência **bloqueante**, tabela resumo, e a
+  verbalização avaliada offline sobre corpus versionado — que **avisa e não veta**.
+- **AT (E4.3)** — passo com a tripla obrigatória (ação · necessidade · resultado
+  esperado), precedência, status com motivo de bloqueio e resultado real; a divergência
+  entre esperado e real fica no evento e **não** sobrescreve o esperado.
+- **Encadeamento (E4.4)** — promover UDE `Validado` → Nuvem de Conflito (NC), semear
+  injeção `escolhida` → ARF, derivar ARF → APR e objetivo intermediário → AT, cada um
+  criando uma `ReferenciaCruzada` tipada; a cadeia inteira é percorrível nos dois sentidos
+  e o elo com ponta excluída aparece `pendente`, nunca some.
+- **Superfície e governança** — `/toc/arf`, `/toc/apr`, `/toc/at` e `/toc/cadeia`; nove
+  códigos próprios novos no registro do §A.7; quatro ações `toc.suggest_*` que **executam
+  neste ciclo** pela máquina de estados do servidor, cinco telas no registro, migração
+  Alembic `0006` com `downgrade`, e a decisão registrada no
+  [ADR 0012](docs/adr/0012-modulo-m4-suficiencia-compartilhada-e-referencia-como-agregado.md).
+- **Portões** — `scripts/check-trava-otimista.sh` passou a conhecer **sete** caminhos de
+  escrita e **dois** gravadores (o projeto e a referência cruzada, que é agregado próprio
+  com versão própria); `scripts/check-raiz-do-agregado.sh` conta **cinco** raízes de
+  ferramenta registradas.
+
+### Correção — o gate humano multiplicado por uma corrida: a proposta de ação era o único agregado sem trava (achado de crítico hostil que o reproduziu)
+
+- **Uma aprovação humana executava N vezes.** A trava otimista do achado anterior fechou o
+  agregado **Projeto** e deixou a **proposta de ação** de fora — quem a instalou declarou a
+  lacuna como pendência, e o ataque confirmou que a pendência era real. Reproduzido aqui,
+  contra o PostgreSQL real, **antes de qualquer linha de conserto**
+  (`apps/api/tests/integracao/test_corrida_de_confirmacao_no_postgres.py`):
+
+  ```text
+  corrida de confirmação · chave única · códigos {200: 8} · nós no banco 50 para 30 pedidos
+    · títulos repetidos 22 · linhas de traço 8 · linha no banco: estado=failed execucoes=1
+  corrida de confirmação · sem chave · códigos {200: 8} · nós no banco 49 · linhas de traço 8
+  corrida de recusa · códigos {200: 8} · nós no banco 0
+    · linhas de traço ['denied', 'denied', 'denied', 'denied', 'denied']
+  ```
+
+- **Diagnóstico antes do conserto — por que a máquina de estados finitos (FSM) não
+  impediu.** Ela guardava o **objeto**, não a linha: `obter` reidrata um `PropostaDeAcao`
+  novo a cada chamada e `transicionar` consulta um atributo de memória, então oito
+  confirmações atravessavam oito agregados e as oito transições eram legítimas. E a
+  gravação era um `ON CONFLICT DO UPDATE` **incondicional** que rodava **depois** do
+  efeito — a prova está na própria linha depois do ataque: `estado=failed execucoes=1`
+  depois de oito execuções, porque o último a gravar escreveu o retrato dele por cima.
+  A transição `confirmed → executing` **é** a serialização natural do APH-5.1 (Padrão APH
+  — Aplicação ↔ Harness), mas só quando existe **no banco e antes do efeito**.
+
+- **Conserto na causa.** `PropostaDeAcao.estado_lido` + `confirmar_gravacao()` (o mesmo
+  desenho de `Projeto.versao_lida`); `UPDATE … WHERE estado = :estado_lido` no adaptador,
+  com `rowcount == 0` levantando `CorridaDeDecisao`; e — a peça central — a **reserva
+  acontece antes do efeito** (`_reservar`, entre a transição e a primeira chamada ao
+  executor): quem não escreve, não executa. Recusar também reserva, porque recusar também
+  é decidir. Medido depois: `códigos {200: 8} · nós no banco 30 para 30 pedidos · títulos
+  repetidos 0 · linhas de traço 1 · estado=executed execucoes=1`, estável em três corridas.
+
+- **A `idempotency_key` passou a deduplicar de verdade (APH-5.3).** Ela existia desde a
+  migração 0004, era gravada em toda confirmação e **lida em lugar nenhum** — o único
+  leitor era um teste de domínio. Agora há índice único parcial por
+  `(tenant_id, idempotency_key)` (migração **0007**) e a aplicação consulta a chave: a
+  segunda confirmação devolve o **mesmo** resultado da primeira, sem reexecutar e sem novo
+  traço, esperando quem venceu se ainda estiver executando. Sem chave, o perdedor recebe
+  `409 INVALID_TRANSITION` — a verdade da FSM, e o que faz a chave significar alguma coisa.
+  Código próprio novo, documentado no registro único do §A.7: `IDEMPOTENCY_KEY_REUSED`.
+
+- **A CLASSE, e não o caso.** Os seis caminhos de escrita persistente dos dois adaptadores
+  foram classificados um a um (`retrato` · `acréscimo` · `identidade`); o duplo em memória
+  ganhou a mesma trava **e passou a devolver cópia** — ele entregava o objeto guardado, o
+  que tornava a corrida invisível para a suíte de contrato inteira —; e
+  `RepositorioDePropostasFalso` dos testes passou a **herdar** o duplo de produção, para
+  não haver uma terceira permissividade.
+
+- **Achado de tabela: a metade cliente do conserto anterior faltava.** O teste de paridade
+  novo (`apps/web/src/i18n/i18n.test.tsx`) nasceu vermelho sobre `VERSION_CONFLICT`: o
+  código estava em `apps/web/src/api/erros.ts` desde o ADR 0010 e **não tinha texto em
+  nenhum dos dois idiomas**, então quem perdia a corrida de escrita lia "o serviço recusou
+  a operação" — o genérico. Era o "perder sem saber" que aquele ADR se propôs a acabar,
+  vivo do lado da tela. Texto acrescentado em `pt` e `en`, e a paridade agora é aptidão:
+  todo código de `CODIGOS` tem de ter texto nos dois dicionários.
+
+- **Portão novo — `scripts/check-trava-da-proposta.sh`** (26 verificações em 7 arquivos, 10 caminhos de escrita persistente classificados),
+  com **10 sabotagens** próprias. A mais importante não olha texto e sim **ordem de
+  linhas**: mover a reserva para depois do efeito deixa a trava inteira no lugar e inútil,
+  e nenhuma varredura de presença veria isso. Entrou no agregador `scripts/evidencia.sh`.
+  Decisão em **ADR 0011**.
+
+
 ### Correção — saída colada que envelheceu, e o portão que passa a reprová-la (achados de revisão independente)
 
 - **Três achados, os três de evidência e nenhum de código.** Num repositório cuja regra R1

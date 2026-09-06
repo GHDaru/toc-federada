@@ -56,7 +56,11 @@ export type EspacoDeCodigo =
   // Os dois da governança: `origem` (`humano` | `ia`) e o desfecho do §A.3 do Anexo A —
   // os dois chegam do servidor como código fechado, e a tela nunca os inventa.
   | "origem_da_proposta"
-  | "desfecho";
+  | "desfecho"
+  // M6 — a regra da pendência de um passo da jornada de focalização (spec 009, RF-12).
+  // Ela chega do servidor como código estável (`sem_restricao`, `decisao_ausente`,
+  // `heranca_pendente`), e a tela traduz por código — nunca por texto da mensagem.
+  | "pendencia_da_focalizacao";
 
 export function traduzirCom(
   dicionario: Dicionario,

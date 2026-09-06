@@ -49,10 +49,17 @@ PROJETO="$FONTE/dominio/projeto.py"
 WIRE="$FONTE/dominio/federacao/wire.py"
 BORDA="$FONTE/http/erros.py"
 
-#: As três portas de escrita do agregado. Escrita à mão de propósito, como as oito
-#: mutações do `check-raiz-do-agregado.sh`: derivar a lista do próprio arquivo faria o
-#: portão concordar com quem esquecesse a trava numa delas.
-ESCRITAS=(salvar salvar_ara salvar_nuvem)
+#: As portas de escrita do agregado, em DOIS grupos porque há dois agregados com versão
+#: própria: os projetos (M1, M2, M3, as três árvores do M4 e a jornada do M6) e a
+#: **referência cruzada** do
+#: encadeamento (spec 008, RF-33), que é agregado próprio e por isso tem trava própria.
+#:
+#: Escritas à mão de propósito, como as oito mutações do `check-raiz-do-agregado.sh`:
+#: derivar a lista do próprio arquivo faria o portão concordar com quem esquecesse a trava
+#: numa delas. Caminho de escrita novo entra AQUI no mesmo commit em que nasce.
+ESCRITAS_DE_PROJETO=(salvar salvar_ara salvar_nuvem salvar_arf salvar_apr salvar_at salvar_focalizacao)
+ESCRITAS_DE_REFERENCIA=(salvar_referencia)
+ESCRITAS=("${ESCRITAS_DE_PROJETO[@]}" "${ESCRITAS_DE_REFERENCIA[@]}")
 
 echo "── Trava otimista: nenhuma escrita de agregado sem a versão lida ──"
 
@@ -97,23 +104,40 @@ else
 fi
 
 # -- 2. a escrita se condiciona à versão lida, e a recusa é explícita -------------------
+#
+# Os DOIS gravadores são conferidos, e pelos mesmos três itens: o `WHERE versao =`, o
+# `rowcount` conferido e o `ConflitoDeVersao` levantado. Conferir um e confiar no outro
+# seria fechar o caso e deixar a classe aberta — que é a lição que este portão carrega.
 GRAVAR="$(corpo_do_metodo "$REPO" _gravar_projeto)"
+GRAVAR_REFERENCIA="$(corpo_do_metodo "$REPO" _gravar_referencia)"
+
 if printf '%s' "$GRAVAR" | grep -q "tabela_projeto.c.versao == projeto.versao_lida"; then
-  echo "  ✓ o \`UPDATE\` carrega \`WHERE versao = :versao_lida\`"
+  echo "  ✓ o \`UPDATE\` do projeto carrega \`WHERE versao = :versao_lida\`"
 else
   echo "✗ \`_gravar_projeto\` grava sem condicionar à versão lida — é a perda de" >&2
   echo "  atualização de volta: quem leu a versão velha apaga o trabalho de quem gravou." >&2
   FALHOU=1
 fi
 
-if printf '%s' "$GRAVAR" | grep -q "rowcount == 0" \
-   && printf '%s' "$GRAVAR" | grep -q "raise ConflitoDeVersao"; then
-  echo "  ✓ \`rowcount == 0\` levanta \`ConflitoDeVersao\` — a recusa não é silenciosa"
+if printf '%s' "$GRAVAR_REFERENCIA" | grep -q "tabela_referencia.c.versao == referencia.versao_lida"; then
+  echo "  ✓ o \`UPDATE\` da referência cruzada carrega \`WHERE versao = :versao_lida\`"
 else
-  echo "✗ a escrita não confere o \`rowcount\` ou não levanta \`ConflitoDeVersao\`: uma" >&2
-  echo "  atualização que não casou e não reclama é exatamente o silêncio que o defeito tinha." >&2
+  echo "✗ \`_gravar_referencia\` grava sem condicionar à versão lida: a referência é" >&2
+  echo "  agregado próprio (RF-33 da spec 008) e duas pessoas suspendem o mesmo vínculo." >&2
   FALHOU=1
 fi
+
+for par in "projeto:$GRAVAR" "referência:$GRAVAR_REFERENCIA"; do
+  nome="${par%%:*}"; corpo="${par#*:}"
+  if printf '%s' "$corpo" | grep -q "rowcount == 0" \
+     && printf '%s' "$corpo" | grep -q "raise ConflitoDeVersao"; then
+    echo "  ✓ ($nome) \`rowcount == 0\` levanta \`ConflitoDeVersao\` — a recusa não é silenciosa"
+  else
+    echo "✗ a escrita de $nome não confere o \`rowcount\` ou não levanta \`ConflitoDeVersao\`:" >&2
+    echo "  uma atualização que não casou e não reclama é o silêncio que o defeito tinha." >&2
+    FALHOU=1
+  fi
+done
 
 # -- 3. TODO caminho de escrita passa pela trava (a classe, não o caso) ----------------
 DECLARADAS="$(grep -c '^    def salvar' "$REPO" || true)"
@@ -127,9 +151,14 @@ fi
 
 SEM_TRAVA=()
 SEM_CONFIRMACAO=()
-for porta in "${ESCRITAS[@]}"; do
+for porta in "${ESCRITAS_DE_PROJETO[@]}"; do
   corpo="$(corpo_do_metodo "$REPO" "$porta")"
   printf '%s' "$corpo" | grep -q "_gravar_projeto(" || SEM_TRAVA+=("$porta")
+  printf '%s' "$corpo" | grep -q "confirmar_gravacao()" || SEM_CONFIRMACAO+=("$porta")
+done
+for porta in "${ESCRITAS_DE_REFERENCIA[@]}"; do
+  corpo="$(corpo_do_metodo "$REPO" "$porta")"
+  printf '%s' "$corpo" | grep -q "_gravar_referencia(" || SEM_TRAVA+=("$porta")
   printf '%s' "$corpo" | grep -q "confirmar_gravacao()" || SEM_CONFIRMACAO+=("$porta")
 done
 GUARDAS=$(( ${#ESCRITAS[@]} - ${#SEM_TRAVA[@]} ))
@@ -148,9 +177,14 @@ fi
 
 # -- 4. o duplo em memória tem a MESMA trava -------------------------------------------
 SEM_TRAVA_NO_DUPLO=()
-for porta in "${ESCRITAS[@]}"; do
+for porta in "${ESCRITAS_DE_PROJETO[@]}"; do
   corpo="$(corpo_do_metodo "$MEMORIA" "$porta")"
   printf '%s' "$corpo" | grep -q "_exigir_versao_lida(" || SEM_TRAVA_NO_DUPLO+=("$porta")
+done
+for porta in "${ESCRITAS_DE_REFERENCIA[@]}"; do
+  corpo="$(corpo_do_metodo "$MEMORIA" "$porta")"
+  printf '%s' "$corpo" | grep -q "_exigir_versao_lida_da_referencia(" \
+    || SEM_TRAVA_NO_DUPLO+=("$porta")
 done
 if grep -q "raise ConflitoDeVersao" "$MEMORIA" && (( ${#SEM_TRAVA_NO_DUPLO[@]} == 0 )); then
   echo "  ✓ o duplo em memória recusa a mesma escrita nos ${#ESCRITAS[@]} caminhos"

@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { CODIGOS } from "../api/erros";
 import { pt } from "./pt";
 import { en } from "./en";
 import { ProvedorDeIdioma, traduzirCom, useI18n } from "./index";
@@ -50,6 +51,18 @@ describe("dicionários", () => {
     ];
     expect(Object.keys(pt.criterio).sort()).toEqual([...esperadas].sort());
     expect(Object.keys(en.criterio).sort()).toEqual([...esperadas].sort());
+  });
+
+  it("todo código que a interface trata de forma diferente tem texto nos dois idiomas", () => {
+    // A lista de `CODIGOS` é o que a tela discrimina; sem texto, o código cai no genérico
+    // e a pessoa lê "o serviço recusou a operação" sobre um caso que tem saída própria.
+    // Foi assim que `IDEMPOTENCY_KEY_REUSED` entrou: código novo do serviço não quebra a
+    // tela, mas passa despercebido até alguém conferir.
+    const doServico = Object.values(CODIGOS).filter((c) => /^[A-Z][A-Z0-9_]*$/.test(c));
+    for (const codigo of doServico) {
+      expect(Object.keys(pt.erro), `pt.erro.${codigo}`).toContain(codigo);
+      expect(Object.keys(en.erro), `en.erro.${codigo}`).toContain(codigo);
+    }
   });
 
   it("traduz os três avisos de formulação da nuvem pelo código do domínio", () => {

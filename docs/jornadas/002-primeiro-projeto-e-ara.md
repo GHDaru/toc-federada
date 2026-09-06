@@ -95,7 +95,7 @@ painel de entidades, e o enquadramento é calculado sobre essa altura inteira. M
 navegador, na mesma corrida:
 
 ```text
-  · canvas: janela 900px · área do canvas 2762px · translate(14.561px, 1143.33px) scale(0.557317) · topo do 1º nó em 1414px
+  · canvas: janela 900px · área do canvas 2761px · translate(14.561px, 1143.08px) scale(0.557317) · topo do 1º nó em 1670px
 ```
 
 Em português: a janela tem 900 px de altura, a área do canvas tem **2 762 px**, e

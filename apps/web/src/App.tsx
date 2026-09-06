@@ -29,6 +29,8 @@ import {
 import { variaveisCss, type Esquema } from "./federacao/tema";
 import { ProvedorDeIdioma, useI18n, type Idioma } from "./i18n";
 import { TelaDaAra } from "./telas/TelaDaAra";
+import { TelaDaFocalizacao } from "./telas/TelaDaFocalizacao";
+import { TelaDeAnalisesDeFocalizacao } from "./telas/TelaDeAnalisesDeFocalizacao";
 import { TelaDaLixeira } from "./telas/TelaDaLixeira";
 import { TelaDaNuvem } from "./telas/TelaDaNuvem";
 import { TelaDeProjetos } from "./telas/TelaDeProjetos";
@@ -48,7 +50,11 @@ type Rota =
   | { tela: "projetos" }
   | { tela: "lixeira" }
   | { tela: "ara"; projetoId: string }
-  | { tela: "nuvem"; projetoId: string };
+  | { tela: "nuvem"; projetoId: string }
+  // M6 — a jornada dos cinco passos (spec 009). Rota própria e não uma aba do canvas: a
+  // análise de focalização não é diagrama, e a superfície dela é trilha e linha do tempo.
+  | { tela: "focalizacao"; projetoId: string }
+  | { tela: "analises_de_focalizacao" };
 
 export function idiomaDaUrl(url: string, padrao: Idioma = "pt"): Idioma {
   try {
@@ -125,11 +131,15 @@ function Aplicacao({ ambiente, url, pai, enviar, cliente, esquemaPreferido = "cl
   }
 
   function abrirProjeto(projeto: ProjetoResumo) {
-    setRota(
-      projeto.ferramenta === "nc"
-        ? { tela: "nuvem", projetoId: projeto.id }
-        : { tela: "ara", projetoId: projeto.id },
-    );
+    if (projeto.ferramenta === "nc") {
+      setRota({ tela: "nuvem", projetoId: projeto.id });
+      return;
+    }
+    if (projeto.ferramenta === "focalizacao") {
+      setRota({ tela: "focalizacao", projetoId: projeto.id });
+      return;
+    }
+    setRota({ tela: "ara", projetoId: projeto.id });
   }
 
   return (
@@ -141,6 +151,15 @@ function Aplicacao({ ambiente, url, pai, enviar, cliente, esquemaPreferido = "cl
           <nav role="navigation" aria-label={t("app.titulo")}>
             <button type="button" aria-current={rota.tela === "projetos"} onClick={() => setRota({ tela: "projetos" })}>
               {t("navegacao.projetos")}
+            </button>
+            <button
+              type="button"
+              aria-current={
+                rota.tela === "analises_de_focalizacao" || rota.tela === "focalizacao"
+              }
+              onClick={() => setRota({ tela: "analises_de_focalizacao" })}
+            >
+              {t("navegacao.focalizacao")}
             </button>
             <button type="button" aria-current={rota.tela === "lixeira"} onClick={() => setRota({ tela: "lixeira" })}>
               {t("navegacao.lixeira")}
@@ -174,6 +193,12 @@ function Aplicacao({ ambiente, url, pai, enviar, cliente, esquemaPreferido = "cl
           <TelaDeProjetos cliente={clienteEmUso} aoAbrir={abrirProjeto} />
         ) : null}
         {rota.tela === "lixeira" ? <TelaDaLixeira cliente={clienteEmUso} /> : null}
+        {rota.tela === "analises_de_focalizacao" ? (
+          <TelaDeAnalisesDeFocalizacao
+            cliente={clienteEmUso}
+            aoAbrir={(projetoId) => setRota({ tela: "focalizacao", projetoId })}
+          />
+        ) : null}
         {rota.tela === "ara" ? (
           <TelaDaAra
             cliente={clienteEmUso}
@@ -187,6 +212,24 @@ function Aplicacao({ ambiente, url, pai, enviar, cliente, esquemaPreferido = "cl
             cliente={clienteEmUso}
             projetoId={rota.projetoId}
             aoVoltar={() => setRota({ tela: "projetos" })}
+          />
+        ) : null}
+        {rota.tela === "focalizacao" ? (
+          <TelaDaFocalizacao
+            cliente={clienteEmUso}
+            projetoId={rota.projetoId}
+            // O autor dos registros é quem está na sessão de embarque; sem identidade do
+            // hospedeiro a jornada continua legível, e o autor cai no papel genérico —
+            // nunca num identificador inventado (o defeito D-02 da linhagem).
+            autor={federacao.sessao?.usuario.nome ?? t("federacao.modo_autonomo")}
+            aoVoltar={() => setRota({ tela: "projetos" })}
+            aoAbrirFerramenta={(destino) =>
+              setRota(
+                destino.ferramenta === "nc"
+                  ? { tela: "nuvem", projetoId: destino.projetoId }
+                  : { tela: "ara", projetoId: destino.projetoId },
+              )
+            }
           />
         ) : null}
       </main>

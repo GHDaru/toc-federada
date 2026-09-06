@@ -42,6 +42,7 @@ BASES=(
   "scripts/check-jornadas.sh"       "jornadas"
   "scripts/check-raiz-do-agregado.sh" "raiz-do-agregado"
   "scripts/check-trava-otimista.sh"   "trava-otimista"
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta"
   "scripts/check-evidencia-colada.sh" "evidencia-colada"
 )
 
@@ -245,9 +246,71 @@ SABOTAGENS=(
   "sed -i '/\"VERSION_CONFLICT\": (/,+3d' apps/api/src/toc_api/dominio/federacao/wire.py"
   "fora do registro único"
 
+  # As três abaixo nascem com o M4 (spec 008): três caminhos de escrita novos e um
+  # agregado novo — a referência cruzada, que tem versão PRÓPRIA. Sem elas, o portão
+  # continuaria verde sobre metade dos caminhos que ele agora conhece.
+  "scripts/check-trava-otimista.sh" "trava-otimista" "arvore-de-futuro-grava-por-fora-da-trava"
+  "sed -i '/def salvar_arf/,/confirmar_gravacao/{/_gravar_projeto(s, projeto)/d}' apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py"
+  "caminho de escrita que não passa pela trava: salvar_arf"
+
+  "scripts/check-trava-otimista.sh" "trava-otimista" "referencia-cruzada-sem-where-de-versao"
+  "sed -i '/tabela_referencia.c.versao == referencia.versao_lida,/d' apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py"
+  "grava sem condicionar à versão lida"
+
+  "scripts/check-trava-otimista.sh" "trava-otimista" "duplo-em-memoria-solta-a-referencia"
+  "sed -i '/self._exigir_versao_lida_da_referencia(referencia)/d' apps/api/src/toc_api/infra/persistencia/memoria.py"
+  "duplo em memória é mais permissivo"
+
   "scripts/check-trava-otimista.sh" "trava-otimista" "409-sem-a-versao-atual"
   "sed -i '/\"versao_atual\": erro.versao_atual,/d' apps/api/src/toc_api/http/erros.py"
   "não carrega \`details.versao_atual\`"
+
+  # --- check-trava-da-proposta.sh (o gate humano multiplicado por uma corrida) ---
+  # Dez mutações, cada uma reabrindo UMA peça da correção — e cada peça sozinha devolve a
+  # execução múltipla, que foi medida em oito confirmações simultâneas, 50 nós para 30
+  # pedidos e oito linhas de traço para uma proposta só. A quarta é a peça central: mover a
+  # reserva para DEPOIS do efeito deixa a trava intacta e inútil, porque quando a corrida
+  # se resolve os 30 nós já estão no banco.
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta" "proposta-gravada-sem-where-de-estado"
+  "sed -i '/proposta_de_acao.c.estado == proposta.estado_lido,/d' apps/api/src/toc_api/infra/federacao/repositorio_sql.py"
+  "grava a proposta sem condicionar ao estado lido"
+
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta" "rowcount-da-proposta-ignorado"
+  "sed -i 's/if resultado.rowcount == 0:/if False:/' apps/api/src/toc_api/infra/federacao/repositorio_sql.py"
+  "não confere o \`rowcount\`"
+
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta" "reidratacao-da-proposta-sem-estado-lido"
+  "sed -i '/proposta.estado_lido = proposta.estado/d' apps/api/src/toc_api/infra/federacao/repositorio_sql.py"
+  "reidratação sem \`estado_lido\` no adaptador SQL"
+
+  # A peça central: a ordem. A trava continua toda lá; só o efeito passa na frente dela.
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta" "efeito-antes-da-reserva"
+  "python3 -c \"p='apps/api/src/toc_api/aplicacao/federacao/acoes.py';s=open(p).read();s=s.replace('        if reservar:\n            self._reservar(proposta, principal)\n','');s=s.replace('        proposta.concluir(','        self._reservar(proposta, principal)\n        proposta.concluir(');open(p,'w').write(s)\""
+  "a reserva acontece DEPOIS do efeito"
+
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta" "caso-de-uso-sem-reserva-nenhuma"
+  "sed -i '/self._reservar(proposta, principal)/d' apps/api/src/toc_api/aplicacao/federacao/acoes.py"
+  "não reserva a proposta antes de executar"
+
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta" "duplo-da-proposta-sem-trava"
+  "sed -i '/def _exigir_estado_lido/,+12d' apps/api/src/toc_api/infra/federacao/memoria.py"
+  "duplo em memória é mais permissivo que o adaptador real"
+
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta" "duplo-da-proposta-devolve-a-linha-guardada"
+  "sed -i 's/            copia = deepcopy(achada)/            copia = achada/' apps/api/src/toc_api/infra/federacao/memoria.py"
+  "devolve o objeto guardado na leitura"
+
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta" "chave-de-idempotencia-nunca-consultada"
+  "sed -i '/mesma_chave(idempotency_key)/d' apps/api/src/toc_api/aplicacao/federacao/acoes.py"
+  "chave de idempotência não é consultada"
+
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta" "indice-unico-da-chave-removido"
+  "sed -i '/uq_proposta_de_acao_tenant_id_idempotency_key/d' apps/api/src/toc_api/infra/persistencia/tabelas.py"
+  "sem índice único de (tenant_id, idempotency_key)"
+
+  "scripts/check-trava-da-proposta.sh" "trava-da-proposta" "traco-deixa-de-ser-somente-acrescimo"
+  "sed -i 's/            sessao.execute(insert(traco_de_execucao).values(\*\*valores))/            sessao.execute(update(traco_de_execucao).values(**valores))/' apps/api/src/toc_api/infra/federacao/repositorio_sql.py"
+  "traço deixou de ser somente-acréscimo"
 
   # --- check-evidencia-colada.sh (regra R1 depois que o número já entrou) ---
   # As cinco mutações atacam as duas metades do portão: a saída que envelheceu (o defeito

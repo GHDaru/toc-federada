@@ -67,10 +67,10 @@ invariantes e sai diferente de zero quando qualquer uma cai:
 ```text
 $ scripts/check-jornadas.sh
 ── Jornadas vivas: captura, citação e heurística datada (P6) ──
-  jornadas examinadas: 4 (001-chegada-e-embarque.md, 002-primeiro-projeto-e-ara.md, 003-nuvem-de-conflito.md, 007-a-travessia.md)
-  capturas em disco: 36  ·  citações de imagem: 36  ·  data das capturas (manifesto): 2026-09-06
+  jornadas examinadas: 5 (001-chegada-e-embarque.md, 002-primeiro-projeto-e-ara.md, 003-nuvem-de-conflito.md, 007-a-travessia.md, 009-cinco-passos-de-focalizacao.md)
+  capturas em disco: 52  ·  citações de imagem: 52  ·  data das capturas (manifesto): 2026-09-06
   invariantes: J1 órfã/duplicada · J2 citada e inexistente · J3 heurística datada e >= captura · J4 comando de regeneração
-  verificações executadas: 80  ·  heurísticas datadas: 4/4  ·  comandos de regeneração: 4/4
+  verificações executadas: 114  ·  heurísticas datadas: 5/5  ·  comandos de regeneração: 5/5
 
 ✓ toda captura é citada por exatamente uma jornada, toda imagem citada existe,
   toda jornada traz heurística datada não anterior às capturas e o comando que as regenera.

@@ -867,3 +867,429 @@ mark {
   margin: 0;
   font-size: 0.85rem;
 }
+
+/* =========================================================================================
+   M6 · Focalização (spec 009) — a jornada dos cinco passos
+   =========================================================================================
+
+   Siglas, uma vez: TOC — Teoria das Restrições · RI/RN — requisito de interface / regra de
+   negócio.
+
+   A regra visual que governa tudo aqui é a RI-01: **estado distinguível por forma e
+   rótulo, nunca só por cor**. Cada passo carrega um marcador (`✓`, `▶`, `·`), o número da
+   ordem e o nome do estado por extenso; a cor é o terceiro sinal, não o primeiro. Quem
+   apagar a cor deste arquivo continua lendo a trilha.
+   ======================================================================================= */
+
+.tela-da-focalizacao,
+.tela-de-focalizacao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-4);
+}
+
+.cabecalho-da-analise h2 {
+  margin: var(--toc-espaco-2) 0 var(--toc-espaco-1);
+}
+
+.cabecalho-da-analise p {
+  margin: 0 0 var(--toc-espaco-1);
+}
+
+.sistema-descricao,
+.progresso-do-ciclo {
+  color: var(--toc-suave);
+  font-size: 0.9rem;
+}
+
+/* -- a trilha (RI-01) ------------------------------------------------------------------ */
+
+.trilha-dos-passos ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--toc-espaco-2);
+}
+
+.trilha-dos-passos li {
+  flex: 1 1 160px;
+}
+
+.passo-da-trilha {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: var(--toc-espaco-1) var(--toc-espaco-2);
+  padding: var(--toc-espaco-2) var(--toc-espaco-3);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  background: var(--toc-color-surface, #fff);
+  text-align: left;
+  cursor: pointer;
+}
+
+.passo-marcador {
+  font-weight: 700;
+  line-height: 1;
+}
+
+.passo-ordem {
+  color: var(--toc-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.passo-nome {
+  font-weight: 600;
+}
+
+/* O estado ocupa a linha inteira abaixo do nome: ele é texto, não decoração. */
+.passo-estado {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  color: var(--toc-suave);
+}
+
+.passo-pendencias {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  min-width: 1.5rem;
+  padding: 0 var(--toc-espaco-1);
+  border-radius: 999px;
+  background: var(--toc-realce);
+  color: var(--toc-color-text, inherit);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* Forma antes de cor: a borda do passo atual é mais grossa, e o concluído fica esmaecido —
+   as duas diferenças sobrevivem ao monocromático, e nenhuma delas é a única pista. */
+.passo-da-trilha[data-atual="true"] {
+  border-width: 3px;
+  border-color: var(--toc-color-primary, #1d4ed8);
+}
+
+.passo-da-trilha[data-selecionado="true"] {
+  box-shadow: var(--toc-sombra);
+}
+
+.passo-da-trilha[data-estado="concluido"] .passo-nome {
+  color: var(--toc-ok);
+}
+
+.passo-da-trilha[data-estado="pendente"] {
+  opacity: 0.75;
+}
+
+/* -- a restrição do ciclo -------------------------------------------------------------- */
+
+.restricao-do-ciclo,
+.painel-do-passo,
+.julgamento-de-heranca,
+.linha-do-tempo,
+.recomeco {
+  padding: var(--toc-espaco-3);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  background: var(--toc-color-surface, #fff);
+}
+
+.restricao-descricao {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 var(--toc-espaco-1);
+}
+
+.restricao-tipo {
+  display: inline-block;
+  margin: 0 0 var(--toc-espaco-2);
+  padding: 0 var(--toc-espaco-2);
+  border: 1px solid var(--toc-borda);
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.restricao-aviso,
+.heranca-explicacao,
+.canonicas-do-passo,
+.recomeco p {
+  color: var(--toc-suave);
+  font-size: 0.85rem;
+}
+
+/* -- o painel do passo, em três camadas (RI-02) ---------------------------------------- */
+
+.painel-do-passo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-3);
+}
+
+.camada-herdado {
+  padding: var(--toc-espaco-2) var(--toc-espaco-3);
+  border-left: 4px solid var(--toc-borda);
+  background: var(--toc-fundo);
+}
+
+.camada-herdado ul {
+  margin: 0;
+  padding-left: var(--toc-espaco-4);
+}
+
+.pendencias-do-passo {
+  margin: 0;
+  padding-left: var(--toc-espaco-4);
+  color: var(--toc-atencao);
+  font-size: 0.9rem;
+}
+
+.avisos-do-passo {
+  margin: 0;
+  padding-left: var(--toc-espaco-4);
+  color: var(--toc-atencao);
+  font-size: 0.85rem;
+}
+
+.notas-do-passo,
+.cartoes-de-vinculo,
+.decisoes-herdadas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-2);
+}
+
+.notas-do-passo li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--toc-espaco-2);
+}
+
+.nota-autor,
+.decisao-autor,
+.vinculo-papel {
+  color: var(--toc-suave);
+  font-size: 0.8rem;
+}
+
+/* -- o cartão de vínculo (RI-03) ------------------------------------------------------- */
+
+.cartoes-de-vinculo li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--toc-espaco-2);
+  padding: var(--toc-espaco-2);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+}
+
+.vinculo-ferramenta {
+  padding: 0 var(--toc-espaco-2);
+  border-radius: var(--toc-raio);
+  background: var(--toc-fundo);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.vinculo-nome {
+  font-weight: 600;
+}
+
+.vinculo-estado,
+.vinculo-legenda {
+  font-size: 0.8rem;
+  color: var(--toc-suave);
+}
+
+/* Estado do alvo por FORMA (traço) e por texto, nunca só por cor (RNF-04, RI-01). */
+.cartoes-de-vinculo li[data-estado="arquivado"] {
+  border-style: dashed;
+}
+
+.cartoes-de-vinculo li[data-estado="ausente"] {
+  border-style: dotted;
+}
+
+.cartoes-de-vinculo li[data-canonico="false"] .vinculo-ferramenta {
+  outline: 1px dashed var(--toc-atencao);
+}
+
+/* -- formulários do painel -------------------------------------------------------------- */
+
+.forma-de-nota,
+.forma-de-vinculo,
+.forma-de-decisao,
+.forma-de-reabertura,
+.forma-de-restricao,
+.forma-de-analise,
+.forma-de-veredito {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--toc-espaco-2);
+}
+
+.forma-de-nota label,
+.forma-de-vinculo label,
+.forma-de-decisao label,
+.forma-de-reabertura label,
+.forma-de-restricao label,
+.forma-de-analise label,
+.forma-de-veredito label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-1);
+  font-size: 0.8rem;
+  color: var(--toc-suave);
+}
+
+.camada-decisao {
+  padding-top: var(--toc-espaco-3);
+  border-top: 1px solid var(--toc-borda);
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-2);
+}
+
+.historico-de-decisoes ul {
+  list-style: none;
+  margin: var(--toc-espaco-1) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-1);
+}
+
+/* -- o julgamento de herança (RI-05) ---------------------------------------------------- */
+
+.decisoes-herdadas li {
+  padding: var(--toc-espaco-2) var(--toc-espaco-3);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+}
+
+.heranca-origem {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--toc-suave);
+}
+
+.heranca-texto {
+  margin: var(--toc-espaco-1) 0;
+  font-weight: 600;
+}
+
+/* MESMO peso visual para os dois vereditos — é a RN-05 em pixels. Nenhuma regra abaixo
+   distingue `Manter` de `Revogar`: se uma delas fosse mais barata de clicar, a interface
+   estaria empurrando a inércia de volta. */
+.vereditos {
+  display: flex;
+  gap: var(--toc-espaco-2);
+}
+
+.vereditos .veredito {
+  flex: 1 1 0;
+  min-width: 8rem;
+}
+
+.decisoes-herdadas li[data-veredito="pendente"] {
+  border-left: 4px solid var(--toc-atencao);
+}
+
+.heranca-contador {
+  margin: var(--toc-espaco-1) 0;
+  font-weight: 600;
+}
+
+/* -- a linha do tempo (RI-04) ----------------------------------------------------------- */
+
+.linha-do-tempo ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-2);
+}
+
+.linha-do-tempo button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--toc-espaco-1) var(--toc-espaco-3);
+  padding: var(--toc-espaco-2) var(--toc-espaco-3);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  background: var(--toc-color-surface, #fff);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ciclo-ordem {
+  font-weight: 700;
+}
+
+.ciclo-restricao {
+  font-weight: 600;
+}
+
+.ciclo-estado,
+.ciclo-datas,
+.ciclo-decisoes,
+.ciclo-pendencias {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  color: var(--toc-suave);
+}
+
+/* O ciclo fechado é visualmente distinto — e o rótulo diz o mesmo (RI-04). */
+.linha-do-tempo li[data-estado="fechado"] button {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.linha-do-tempo li[data-selecionado="true"] button {
+  box-shadow: var(--toc-sombra);
+}
+
+/* -- a listagem de análises (RI-07) ------------------------------------------------------ */
+
+.tabela-de-analises {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela-de-analises th,
+.tabela-de-analises td {
+  padding: var(--toc-espaco-2);
+  border-bottom: 1px solid var(--toc-borda);
+  text-align: left;
+  vertical-align: top;
+}
+
+.sem-restricao,
+.ciclo-da-linha {
+  color: var(--toc-suave);
+  font-size: 0.85rem;
+}
+
+.pendencias-da-linha {
+  display: block;
+  margin-top: var(--toc-espaco-1);
+  color: var(--toc-atencao);
+  font-size: 0.8rem;
+}
+
+.aviso-somente-leitura {
+  margin: 0;
+  padding: var(--toc-espaco-1) var(--toc-espaco-2);
+  border: 1px dashed var(--toc-borda);
+  border-radius: var(--toc-raio);
+  font-size: 0.85rem;
+}

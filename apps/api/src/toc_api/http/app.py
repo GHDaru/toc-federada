@@ -30,6 +30,9 @@ from ..infra.persistencia.fabrica import Persistencia, criar_persistencia
 from ..infra.relogio import RelogioDoSistema
 from . import erros as tradutores
 from .aph import INTERVALO_DO_TURNO_S, criar_router_aph
+from .roteadores import arvores as roteadores_do_m4
+from .roteadores import cadeia as roteador_da_cadeia
+from .roteadores import focalizacao as roteador_da_focalizacao
 from .roteadores import projetos as roteador_de_projetos
 from .roteadores import ara as roteador_da_ara
 from .roteadores import nuvem as roteador_da_nuvem
@@ -131,6 +134,17 @@ def criar_app(ambiente: dict[str, str] | None = None) -> FastAPI:
     app.include_router(roteador_de_projetos.roteador)
     app.include_router(roteador_da_ara.roteador)
     app.include_router(roteador_da_nuvem.roteador)
+    # M4 — as três árvores e o encadeamento (spec 008). Três roteadores e não um: ARF, APR
+    # e AT têm lógicas distintas (suficiência × necessidade × precedência), e um prefixo
+    # comum convidaria a rota compartilhada — onde as lógicas se misturariam (RN-05).
+    app.include_router(roteadores_do_m4.arf)
+    app.include_router(roteadores_do_m4.apr)
+    app.include_router(roteadores_do_m4.at)
+    app.include_router(roteador_da_cadeia.roteador)
+    # M6 — a jornada dos cinco passos (spec 009). Roteador próprio e não uma rota do M1:
+    # a análise de focalização não é diagrama, e as operações dela — registrar restrição,
+    # concluir passo, julgar herança, recomeçar — não têm par no núcleo.
+    app.include_router(roteador_da_focalizacao.roteador)
     # O gate humano visto pela própria interface: a proposta de ação nasce e é
     # decidida aqui, pelos MESMOS casos de uso que o fio usa (spec 006, RI-01).
     app.include_router(roteador_de_propostas.roteador)

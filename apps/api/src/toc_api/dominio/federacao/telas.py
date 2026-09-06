@@ -143,6 +143,131 @@ REGISTRO_DE_TELAS = RegistroDeTelas(
                 CampoDeTela("rascunho_de_parecer", "text", ai_visible=False),
             ),
         ),
+        # M4 — Árvores de Futuro e Implementação (spec 008, INT-09). Os textos de efeito,
+        # obstáculo, objetivo intermediário, passo e justificativa são `ai_visible` campo a
+        # campo; o que fica de fora fica declarado, como o rascunho de parecer do M2.
+        Tela(
+            id="toc.arf_canvas",
+            route="/toc/arf",
+            title="Arvore da Realidade Futura",
+            ai_actions=("READ", "FILL_FIELDS", "SUBMIT", "NAVIGATE"),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Projeto"),
+                CampoDeTela("injecoes", "number", label="Injeções"),
+                CampoDeTela("efeitos_futuros", "number", label="Efeitos futuros"),
+                CampoDeTela("no_selecionado", "entity", label="Nó selecionado"),
+                CampoDeTela("ramos_abertos", "number", label="Ramos negativos abertos"),
+                # A justificativa de um ramo ACEITO é a decisão de alguém de conviver com
+                # um efeito colateral. Ela é registro de responsabilidade, e mandá-la ao
+                # modelo transformaria a assistência em juíza da decisão — não é o papel.
+                CampoDeTela("justificativa_do_aceite", "text", ai_visible=False),
+            ),
+        ),
+        Tela(
+            id="toc.apr_canvas",
+            route="/toc/apr",
+            title="Arvore de Pre-Requisitos",
+            ai_actions=("READ", "FILL_FIELDS", "SUBMIT", "NAVIGATE"),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Projeto"),
+                CampoDeTela("objetivo", "text", label="Objetivo"),
+                CampoDeTela("obstaculos", "number", label="Obstáculos"),
+                CampoDeTela("objetivos_intermediarios", "number", label="Objetivos intermediários"),
+                CampoDeTela("no_selecionado", "entity", label="Nó selecionado"),
+                # O julgamento do teste de validade é humano por regra (RN-07). Em
+                # rascunho, ele é opinião ainda não registrada — a mesma decisão do
+                # `rascunho_de_parecer` do M2.
+                CampoDeTela("rascunho_de_julgamento", "text", ai_visible=False),
+            ),
+        ),
+        Tela(
+            id="toc.apr_sequencia",
+            route="/toc/apr/sequencia",
+            title="Sequenciamento da Arvore de Pre-Requisitos",
+            ai_actions=("READ", "NAVIGATE"),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Projeto"),
+                CampoDeTela("camadas", "number", label="Camadas"),
+                CampoDeTela("pendencias", "number", label="Pendências"),
+                CampoDeTela("bloqueado", "boolean", label="Sequência bloqueada"),
+            ),
+        ),
+        Tela(
+            id="toc.at_canvas",
+            route="/toc/at",
+            title="Arvore de Transicao",
+            ai_actions=("READ", "FILL_FIELDS", "SUBMIT", "NAVIGATE"),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Projeto"),
+                CampoDeTela("passos", "number", label="Passos"),
+                CampoDeTela("passo_selecionado", "entity", label="Passo selecionado"),
+                CampoDeTela("bloqueados", "number", label="Passos bloqueados"),
+            ),
+        ),
+        Tela(
+            id="toc.cadeia",
+            route="/toc/cadeia",
+            title="Vista da cadeia",
+            ai_actions=("READ", "NAVIGATE"),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Projeto de partida"),
+                CampoDeTela("elos", "number", label="Elos"),
+                CampoDeTela("elos_pendentes", "number", label="Elos pendentes"),
+            ),
+        ),
+        # M6 — Focalização (spec 009, INT-06). Três telas, e a regra que decide o
+        # `ai_visible` é a mesma dos módulos anteriores: **grandeza e vocabulário sim,
+        # texto de pessoa não**. Passo atual, tipo de restrição e contagem de pendências
+        # descrevem ONDE a análise está; a descrição da restrição, as notas e as decisões
+        # são o que o grupo escreveu — e é o item 7 da constituição ("tela é dado e nunca
+        # instrução"): texto de usuário é sempre camada não-confiável.
+        Tela(
+            id="toc.foco_jornada",
+            route="/toc/focalizacao",
+            title="Jornada dos cinco passos",
+            ai_actions=("READ", "NAVIGATE"),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Análise"),
+                CampoDeTela("ciclo", "number", label="Ciclo"),
+                CampoDeTela("passo_atual", "select", label="Passo atual"),
+                CampoDeTela("passos_concluidos", "number", label="Passos concluídos"),
+                CampoDeTela("tipo_de_restricao", "select", label="Tipo da restrição"),
+                CampoDeTela("pendencias", "number", label="Pendências"),
+                CampoDeTela("herancas_pendentes", "number", label="Vereditos pendentes"),
+                # O enunciado da restrição é texto de quem facilitou a sessão. Ele não é
+                # segredo — é conteúdo do inquilino, e a assistência só o recebe quando a
+                # pessoa o coloca numa ação governada, nunca por raspagem de tela.
+                CampoDeTela("descricao_da_restricao", "text", ai_visible=False),
+            ),
+        ),
+        Tela(
+            id="toc.foco_passo",
+            route="/toc/focalizacao/passo",
+            title="Painel do passo",
+            ai_actions=("READ", "NAVIGATE"),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Análise"),
+                CampoDeTela("passo", "select", label="Passo"),
+                CampoDeTela("estado", "select", label="Estado do passo"),
+                CampoDeTela("vinculos", "number", label="Vínculos de ferramenta"),
+                CampoDeTela("vinculos_nao_canonicos", "number", label="Vínculos com aviso"),
+                # A decisão que encerra um passo e as notas do grupo são o trabalho da
+                # sessão. Mesma decisão do `rascunho_de_parecer` do M2, pelo mesmo motivo.
+                CampoDeTela("decisao_em_rascunho", "text", ai_visible=False),
+                CampoDeTela("notas", "text", ai_visible=False),
+            ),
+        ),
+        Tela(
+            id="toc.foco_linha_do_tempo",
+            route="/toc/focalizacao/linha-do-tempo",
+            title="Linha do tempo dos ciclos",
+            ai_actions=("READ",),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Análise"),
+                CampoDeTela("ciclos", "number", label="Ciclos"),
+                CampoDeTela("ciclos_fechados", "number", label="Ciclos fechados"),
+            ),
+        ),
         Tela(
             id="toc.lixeira",
             route="/toc/lixeira",

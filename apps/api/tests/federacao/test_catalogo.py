@@ -96,7 +96,7 @@ def test_catalogo_composto_sem_write_nao_tem_nenhuma_acao_confirm() -> None:
     print(medida)
     assert [a.risk for a in visiveis_leitura].count("confirm") == 0
     assert len(visiveis_leitura) < len(visiveis_completo)
-    assert "11 ações declaradas" in medida, medida
+    assert "16 ações declaradas" in medida, medida
 
 
 def test_principal_anonimo_ve_catalogo_vazio() -> None:

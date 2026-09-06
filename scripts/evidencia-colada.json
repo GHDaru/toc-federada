@@ -32,7 +32,7 @@
       "esperado": [
         {
           "arquivo": "docs/jornadas/README.md",
-          "molde": "verificações executadas: {v}  ·  heurísticas datadas: 4/4"
+          "molde": "verificações executadas: {v}  ·  heurísticas datadas: 5/5"
         }
       ]
     },
@@ -305,38 +305,34 @@
     },
     {
       "id": "codigos-proprios-do-a7",
-      "porque": "o ADR 0010 conta os códigos próprios ao justificar o acréscimo de VERSION_CONFLICT; um código novo entra e a conta envelhece em silêncio",
+      "porque": "o ADR 0010 conta os códigos próprios ao justificar o acréscimo de VERSION_CONFLICT; um código novo entra e a conta envelhece em silêncio — reapontado do ADR 0010 para o 0011 quando IDEMPOTENCY_KEY_REUSED entrou: o corpo de um ADR nao se reescreve, entao o numero corrente passa a ser cobrado do ADR mais novo, e o do 0010 fica sendo o numero da data dele — reapontado do ADR 0011 para o 0012 quando os nove códigos do M4 entraram — reapontado do ADR 0012 para o 0013 quando os cinco códigos do M6 entraram",
       "comando": "grep -cE '^    \"[A-Z][A-Z0-9_]*\": ' apps/api/src/toc_api/dominio/federacao/wire.py",
       "esperado": [
         {
-          "arquivo": "docs/adr/0010-trava-otimista-por-versao-lida.md",
+          "arquivo": "docs/adr/0013-taxonomia-fechada-da-restricao-e-heranca-que-volta-a-mesa.md",
           "molde": "`CODIGOS_PROPRIOS` tem {v} linhas com esta"
         }
       ]
     },
     {
       "id": "sabotagens-da-trava-otimista",
-      "porque": "o ADR 0010 e o CHANGELOG afirmam quantas mutações derrubam o portão novo; sabotagem removida sem atualizar o texto é portão menor do que o documento promete",
+      "porque": "o ADR 0010 e o CHANGELOG afirmam quantas mutações derrubam o portão novo; sabotagem removida sem atualizar o texto é portão menor do que o documento promete — reapontado do ADR 0010 e do CHANGELOG para o ADR 0012 quando os três caminhos de escrita do M4 e a referência cruzada entraram na lista do portão",
       "comando": "grep -c '\"scripts/check-trava-otimista.sh\" \"trava-otimista\"' scripts/tests/run-sabotagem.sh",
       "esperado": [
         {
-          "arquivo": "docs/adr/0010-trava-otimista-por-versao-lida.md",
-          "molde": "com\n{v} mutações, que ele reprova"
-        },
-        {
-          "arquivo": "CHANGELOG.md",
+          "arquivo": "docs/adr/0012-modulo-m4-suficiencia-compartilhada-e-referencia-como-agregado.md",
           "molde": "ganhou {v} mutações que provam"
         }
       ]
     },
     {
       "id": "registro-a7-inteiro",
-      "porque": "o ADR 0010 afirma o tamanho do registro §A.7 inteiro (mínimo normativo + próprios) ao justificar o acréscimo; a soma envelhece assim que qualquer um dos dois lados cresce",
+      "porque": "o ADR 0010 afirma o tamanho do registro §A.7 inteiro (mínimo normativo + próprios) ao justificar o acréscimo; a soma envelhece assim que qualquer um dos dois lados cresce — reapontado do ADR 0010 para o 0011 quando IDEMPOTENCY_KEY_REUSED entrou: o corpo de um ADR nao se reescreve, entao o numero corrente passa a ser cobrado do ADR mais novo, e o do 0010 fica sendo o numero da data dele — reapontado do ADR 0011 para o 0012 quando os nove códigos do M4 entraram — reapontado do ADR 0012 para o 0013 quando os cinco códigos do M6 entraram",
       "comando": "W=apps/api/src/toc_api/dominio/federacao/wire.py; echo $(( $(grep -cE '^    \"[A-Z][A-Z0-9_]*\",$' $W) + $(grep -cE '^    \"[A-Z][A-Z0-9_]*\": ' $W) ))",
       "esperado": [
         {
-          "arquivo": "docs/adr/0010-trava-otimista-por-versao-lida.md",
-          "molde": "tem {v} códigos)."
+          "arquivo": "docs/adr/0013-taxonomia-fechada-da-restricao-e-heranca-que-volta-a-mesa.md",
+          "molde": "tem {v} códigos."
         }
       ]
     }

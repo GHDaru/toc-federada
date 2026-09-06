@@ -58,6 +58,13 @@ class RepositorioDePropostas(Protocol):
     agregado, porque a proposta é do **domínio da governança** e o dono é da **fronteira**:
     enfiar o usuário dentro dos `args` para o repositório achá-lo lá seria contrabandear
     identidade por dentro do payload — que é a classe de defeito que o §B.9.4 nomeia.
+
+    **`salvar` é a trava, e por isso é a serialização.** A gravação é condicionada ao
+    `estado_lido` do agregado (`UPDATE … WHERE estado = :estado_lido`): quem não partiu do
+    estado que a linha tem recebe `CorridaDeDecisao`. É o que faz a transição
+    `confirmed → executing` existir **no banco e antes do efeito** — sem isso a máquina de
+    estados finitos (FSM) guarda o objeto e não a linha, e oito confirmações simultâneas da
+    mesma proposta executam oito vezes.
     """
 
     def salvar(self, inquilino_id: str, usuario_id: str, proposta: PropostaDeAcao) -> None: ...
@@ -65,6 +72,10 @@ class RepositorioDePropostas(Protocol):
     def obter(self, inquilino_id: str, proposal_id: str) -> PropostaDeAcao | None: ...
 
     def listar_pendentes(self, inquilino_id: str) -> list[PropostaDeAcao]: ...
+
+    def aguardar_desfecho(
+        self, inquilino_id: str, proposal_id: str
+    ) -> PropostaDeAcao | None: ...
 
 
 @runtime_checkable

@@ -54,6 +54,13 @@ PORTOES=(
   # — verde em tudo, 19 pessoas perdendo trabalho em silêncio. Sem esta linha o agregador
   # diria "todos os portões verdes" sobre uma aplicação que se vende como multiusuário.
   "scripts/check-trava-otimista.sh|trava otimista: escrita condicionada à versão lida|arquivos varridos|caminhos de escrita conferidos|guardas .* encontradas"
+  # Entrou com o conserto da execução múltipla: a trava otimista fechou o agregado Projeto
+  # e deixou a PROPOSTA DE AÇÃO de fora — o único agregado persistido sem trava, e o que
+  # carrega o gate humano. Oito confirmações simultâneas da mesma proposta devolviam oito
+  # `200`, gravavam 50 nós para 30 pedidos e deixavam oito linhas de traço. Sem esta linha
+  # o agregador diria "todos os portões verdes" sobre um portão humano multiplicável por
+  # uma corrida.
+  "scripts/check-trava-da-proposta.sh|trava da proposta: uma aprovação humana, uma execução|arquivos varridos|caminhos de escrita classificados|verificações: |^  com "
   # Entrou com a varredura de honestidade: nenhum portão media se a saída COLADA num
   # documento ainda é o que o comando devolve. Um número colado com honestidade em março é
   # uma afirmação falsa em setembro, vestida de prova. Sem esta linha o agregador diria

@@ -19,6 +19,8 @@
  *    permite ao teste provar o cabeçalho, o verbo e a rota de cada comando.
  */
 import type {
+  AnaliseDeFocalizacao,
+  AnaliseResumo,
   Ara,
   ChaveDaAresta,
   EstadoDaPremissa,
@@ -39,6 +41,7 @@ import type {
   Proposta,
   ProjetoResumo,
   RelatorioEstrutural,
+  Restricao,
   SeparacaoTRIZ,
   Solucao,
   StatusDeInjecao,
@@ -49,6 +52,14 @@ import type {
   ValidacaoFormal,
   Aresta,
   ConectorLido,
+  CicloNaLinha,
+  FerramentaVinculada,
+  Jornada,
+  SugestaoDeRestricao,
+  TipoDePasso,
+  TipoDeRestricao,
+  VereditoDeHeranca,
+  VinculoDeFerramenta,
 } from "../dominio/tipos";
 import type { Sessao } from "../federacao/embarque";
 import { ErroDaApi } from "./erros";
@@ -453,6 +464,121 @@ export function criarCliente(opcoes: OpcoesDoCliente) {
       sugerirInjecoes: (projeto: string, premissa: string) =>
         pedir<SugestoesDeInjecao>(
           `/toc/nc/projetos/${seg(projeto)}/premissas/${seg(premissa)}/sugestoes/injecoes`,
+          { metodo: "POST" },
+        ),
+    },
+
+    /**
+     * M6 — a jornada dos cinco passos de focalização (spec 009).
+     *
+     * Um método por comando do agregado, como no resto deste cliente: não existe
+     * `salvarJornada(estadoInteiro)`. Concluir um passo é `POST …/conclusao`; anotar é
+     * `POST …/notas`; recomeçar é `POST …/recomecos`. A diferença não é estética — é o
+     * que faz o servidor recusar o que tem de recusar, com a regra nomeada, em vez de
+     * receber um retrato e gravá-lo.
+     */
+    foco: {
+      criarAnalise: (nome: string, sistema: string, descricao_do_sistema = "") =>
+        pedir<AnaliseDeFocalizacao>("/toc/focalizacao/analises", {
+          metodo: "POST",
+          corpo: { nome, sistema, descricao_do_sistema },
+        }),
+      listar: () => pedir<AnaliseResumo[]>("/toc/focalizacao/analises"),
+      abrir: (projeto: string) =>
+        pedir<AnaliseDeFocalizacao>(`/toc/focalizacao/analises/${seg(projeto)}`),
+      excluir: (projeto: string) =>
+        pedir<AnaliseDeFocalizacao>(`/toc/focalizacao/analises/${seg(projeto)}`, {
+          metodo: "DELETE",
+        }),
+      restaurar: (projeto: string) =>
+        pedir<AnaliseDeFocalizacao>(`/toc/focalizacao/analises/${seg(projeto)}/restauracao`, {
+          metodo: "POST",
+        }),
+      /** O ciclo FECHADO abre por aqui, e o servidor é quem diz que é somente leitura. */
+      jornada: (projeto: string, ciclo?: string) =>
+        pedir<Jornada>(
+          `/toc/focalizacao/analises/${seg(projeto)}/jornada` +
+            (ciclo ? `?ciclo_id=${seg(ciclo)}` : ""),
+        ),
+      linhaDoTempo: (projeto: string) =>
+        pedir<CicloNaLinha[]>(`/toc/focalizacao/analises/${seg(projeto)}/linha-do-tempo`),
+      registrarRestricao: (
+        projeto: string,
+        corpo: {
+          descricao: string;
+          tipo: TipoDeRestricao;
+          justificativa: string;
+          autor: string;
+          origem?: { ferramenta: string; projeto_id: string; no_id: string } | null;
+        },
+      ) =>
+        pedir<Restricao>(`/toc/focalizacao/analises/${seg(projeto)}/restricao`, {
+          metodo: "POST",
+          corpo,
+        }),
+      /** RF-07: **sem `tipo`** — trocar o alvo da análise é recomeçar, não editar (RN-03). */
+      editarRestricao: (
+        projeto: string,
+        campos: { descricao?: string; justificativa?: string },
+      ) =>
+        pedir<Restricao>(`/toc/focalizacao/analises/${seg(projeto)}/restricao`, {
+          metodo: "PUT",
+          corpo: campos,
+        }),
+      concluirPasso: (projeto: string, passo: TipoDePasso, decisao: string, autor: string) =>
+        pedir<Jornada>(
+          `/toc/focalizacao/analises/${seg(projeto)}/passos/${seg(passo)}/conclusao`,
+          { metodo: "POST", corpo: { decisao, autor } },
+        ),
+      reabrirAnterior: (projeto: string, justificativa: string, autor: string) =>
+        pedir<Jornada>(`/toc/focalizacao/analises/${seg(projeto)}/reaberturas`, {
+          metodo: "POST",
+          corpo: { justificativa, autor },
+        }),
+      anotar: (projeto: string, passo: TipoDePasso, texto: string, autor: string) =>
+        pedir<Jornada>(`/toc/focalizacao/analises/${seg(projeto)}/passos/${seg(passo)}/notas`, {
+          metodo: "POST",
+          corpo: { texto, autor },
+        }),
+      vincular: (
+        projeto: string,
+        passo: TipoDePasso,
+        corpo: {
+          ferramenta: FerramentaVinculada;
+          projeto_id: string;
+          papel?: string;
+          justificativa?: string;
+        },
+      ) =>
+        pedir<VinculoDeFerramenta>(
+          `/toc/focalizacao/analises/${seg(projeto)}/passos/${seg(passo)}/vinculos`,
+          { metodo: "POST", corpo },
+        ),
+      removerVinculo: (projeto: string, passo: TipoDePasso, vinculo: string) =>
+        pedir<Jornada>(
+          `/toc/focalizacao/analises/${seg(projeto)}/passos/${seg(passo)}/vinculos/${seg(vinculo)}`,
+          { metodo: "DELETE" },
+        ),
+      /** RN-05: `mantida` e `revogada`, as duas com justificativa. `pendente` não entra. */
+      julgarHeranca: (
+        projeto: string,
+        decisao: string,
+        veredito: Exclude<VereditoDeHeranca, "pendente">,
+        justificativa: string,
+        autor: string,
+      ) =>
+        pedir<Jornada>(
+          `/toc/focalizacao/analises/${seg(projeto)}/heranca/${seg(decisao)}/veredito`,
+          { metodo: "POST", corpo: { veredito, justificativa, autor } },
+        ),
+      recomecar: (projeto: string) =>
+        pedir<AnaliseDeFocalizacao>(`/toc/focalizacao/analises/${seg(projeto)}/recomecos`, {
+          metodo: "POST",
+        }),
+      /** Sugerir NÃO aplica: devolve as candidatas e o `action_id` da ação governada. */
+      sugerirRestricao: (projeto: string) =>
+        pedir<SugestaoDeRestricao>(
+          `/toc/focalizacao/analises/${seg(projeto)}/sugestoes-de-restricao`,
           { metodo: "POST" },
         ),
     },
