@@ -1,84 +1,165 @@
-# Jornadas — por que esta pasta está vazia, e o que vai morar aqui
+# Jornadas vivas — o que mora aqui, e o que ainda não pode morar
 
-> Siglas: TOC — Teoria das Restrições · ARA — Árvore da Realidade Atual · NC — Nuvem de
-> Conflito · ARF — Árvore da Realidade Futura · APR — Árvore de Pré-Requisitos · AT —
-> Árvore de Transição · S&T — Árvore de Estratégia & Táticas · UDE — Undesirable Effect
-> (Efeito Indesejável) · OI — Objetivo Intermediário · P6 — princípio "Jornada viva" da
-> constituição do projeto · ADR — Architecture Decision Record
+> **Siglas**, na primeira ocorrência: **TOC** — Teoria das Restrições · **ARA** — Árvore da
+> Realidade Atual · **NC** — Nuvem de Conflito · **ARF** — Árvore da Realidade Futura ·
+> **APR** — Árvore de Pré-Requisitos · **AT** — Árvore de Transição · **S&T** — Árvore de
+> Estratégia & Táticas · **UDE** — Efeito Indesejável (*Undesirable Effect*) · **OI** —
+> Objetivo Intermediário · **APH** — Aplicação ↔ Harness, o padrão da fronteira · **P6** —
+> o princípio "Jornada viva" da constituição do projeto · **ADR** — Registro de Decisão
+> Arquitetural · **API** — interface de programação de aplicações.
 
-- **Status**: convenção do ciclo 001 · **Data**: 2026-09-03
+- **Status**: quatro jornadas vivas · **Capturas geradas em**: 2026-09-06
 
-## Por que não há jornada ainda
+## A regra que manda aqui
 
-A Iron Law da skill `living-journey` é curta: **jornada sem captura de build real é
-ficção**. Um documento de jornada só existe quando as suas capturas foram geradas do
-build, por script versionado, com avaliação heurística datada — tudo no mesmo pull
-request (P6). Hoje não existe build nenhum: o ciclo 001 é documental, e nenhuma linha de
-código de produção nasce antes do ciclo 003
-([`../roadmap.md`](../roadmap.md)).
+A Iron Law da skill `living-journey` é curta: **jornada sem captura do build real é
+ficção — e heurística sem data é ficção vencida.** Um documento desta pasta só existe
+quando as suas capturas foram geradas do build por script versionado, com avaliação
+heurística datada, tudo no mesmo pull request (P6).
 
-Escrever agora "a Facilitadora abre o canvas e vê a árvore" seria repetir o vício da
-linhagem TOC-Builder, que "funcionava" em descrição e nunca se soube exatamente o quê:
-prosa sobre telas que ninguém capturou. **As jornadas nascem nos ciclos de
-implementação**, cada uma no ciclo em que a sua ferramenta passa a existir de verdade —
-e é por isso que esta pasta abre com um README e nenhuma jornada.
+Enquanto o ciclo 001 escreveu este arquivo, não havia build nenhum e a pasta abriu com um
+README e nenhuma jornada. Agora há build: serviço FastAPI em
+[`../../apps/api`](../../apps/api), interface React em [`../../apps/web`](../../apps/web),
+PostgreSQL de verdade. As jornadas abaixo nasceram desse build.
 
-## Como uma jornada nasce (e o que nunca entra)
+**Nunca entra**: dado real de pessoa. Toda jornada usa a base sintética da Instituição
+Horizonte ([`../produto/dados/`](../produto/dados/README.md) — ADR 0006), com personas que
+são papéis e não pessoas. É essa regra que mantém o repositório apto a ser aberto, e
+`scripts/check-vazamento.sh` é o portão.
 
-1. A ferramenta é implementada no seu ciclo, com build real.
-2. Um script versionado gera as capturas desse build em `capturas/` — nunca imagem colada
-   à mão, e rodar o script de novo regenera as imagens byte-idênticas.
-3. O documento `NNN-<slug>.md` narra a jornada sobre essas capturas, com avaliação
-   heurística **datada** e o limite declarado (quem avaliou, em que contexto).
-4. Toda captura é citada por exatamente uma jornada — captura órfã é defeito.
+## Como as capturas nascem
 
-**Nunca entra**: dado real de pessoa. Toda jornada usa a base sintética (ADR 0006 —
-personas fictícias como "Facilitadora TOC" e a "Instituição Horizonte"); é essa regra que
-mantém o repositório apto a ser aberto.
+Um script só, versionado, sobe **tudo** e percorre a aplicação com um navegador de verdade:
 
-**Nota sobre o ciclo 002**: o protótipo descartável
-([`../../specs/002-prototipo-de-interfaces/spec.md`](../../specs/002-prototipo-de-interfaces/spec.md))
-também tem build — descartável, mas real — e produz **versões de protótipo** das
-jornadas, com capturas geradas por script e declaradas como tal. Elas validam a forma das
-telas; **não** são a jornada viva definitiva, que só existe quando a captura vem do build
-de produção da ferramenta, no ciclo dela. Este README marca o estágio de cada uma.
+```bash
+PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node docs/jornadas/scripts/capturar-telas.mjs
+```
 
-## As jornadas planejadas
+Pré-requisito único: o PostgreSQL de desenvolvimento de pé. O script sobe o `toc-api` com
+os seis parâmetros de admissão do §B.4 preenchidos, três instâncias da interface (autônoma,
+embarcada e sem admissão) e um **hospedeiro de bancada** que fala o `ghd.*` e responde
+`POST /auth/introspect`; percorre as jornadas; grava as imagens em
+[`capturas/`](capturas/); e escreve [`capturas/manifesto.json`](capturas/manifesto.json)
+com o tamanho e o resumo criptográfico de cada uma, mais as medidas colhidas na corrida.
 
-| J | Jornada | Nasce no ciclo | Estágio |
-|---|---|---|---|
-| J-01 | Chegada e embarque | 003 | 🟡 planejada |
-| J-02 | Primeiro projeto e ARA | 004 (abre) · 005 (consolida) | 🟡 planejada |
-| J-03 | Nuvem de Conflito | 007 | 🟡 planejada |
-| J-04 | Da injeção ao plano (ARF → APR → AT) | 008 | 🟡 planejada |
-| J-05 | Focalização | 009 | 🟡 planejada |
-| J-06 | Estratégia & Táticas | 010 | 🟡 planejada |
+Saída da corrida de 2026-09-06, últimas linhas, copiadas:
 
-O que cada uma vai mostrar:
+```text
+33 captura(s), 5144889 bytes, 0 falha(s), 44.3s
+```
 
-- **J-01 — Chegada e embarque.** Uma pessoa entra na plataforma hospedeira, clica na
-  aplicação TOC e a vê embarcada sob a identidade dela — modo só-conteúdo, tema do
-  inquilino com *fallback*, projetos sintéticos listados. É a prova visual de que "a
-  junta fecha contra a `ghdaru` real", capturada do build embarcado.
-- **J-02 — Primeiro projeto e ARA.** A Facilitadora TOC cria o primeiro projeto, monta
-  nós e arestas causais no canvas e alterna para a vista tabular; no ciclo 005 a mesma
-  jornada ganha as UDEs da "Instituição Horizonte" com validação formal e a análise de
-  suficiência até a causa raiz.
-- **J-03 — Nuvem de Conflito.** O dilema sintético narrado vira as cinco entidades e as
-  sete premissas, e a Facilitadora registra a injeção ligada à premissa que invalida.
-  Inclui a geração assistida entrando como proposta governada — recusar deixa o projeto
-  intacto.
-- **J-04 — Da injeção ao plano.** A injeção da NC semeia a ARF; a ARF revela obstáculos;
-  a APR os sequencia em OIs; a AT desce ao passo executável. É o encadeamento que
-  nenhuma das quatro gerações da linhagem modelou, mostrado elo a elo.
-- **J-05 — Focalização.** Uma análise sintética atravessa os cinco passos — identificar →
-  explorar → subordinar → elevar → recomeçar — com captura por passo e o estado herdado
-  de um passo ao seguinte; "recomeçar" reabre sem apagar histórico.
-- **J-06 — Estratégia & Táticas.** Uma S&T sintética de três níveis (1, 1.1, 1.1.2), com
-  as três premissas lógicas por nó e o status de acompanhamento — a ferramenta que
-  regrediu na linhagem, de volta e provada por captura.
+Se uma captura não sair, o script **sai diferente de zero** e a falha entra no manifesto.
+Não existe imagem de outro dia costurada num documento de hoje.
 
-A lista cresce por decisão, não por acúmulo: jornada nova entra com ciclo que a
-implemente e captura que a prove (a documentação embutida do ciclo 011 e as jornadas
-consolidadas do 012 são as candidatas já conhecidas —
-[`../roadmap.md`](../roadmap.md)).
+## O portão que guarda esta pasta
+
+A Iron Law da skill é uma frase, e frase não reprova nada. O portão
+[`../../scripts/check-jornadas.sh`](../../scripts/check-jornadas.sh) mede quatro
+invariantes e sai diferente de zero quando qualquer uma cai:
+
+| Invariante | O que exige |
+|---|---|
+| **J1** | toda captura em `capturas/` é citada por **exatamente uma** jornada — captura órfã é defeito, e captura citada duas vezes não tem dono que a regenere |
+| **J2** | toda imagem citada por uma jornada existe em disco |
+| **J3** | toda jornada traz `## Avaliação heurística — AAAA-MM-DD`, e a data **não é anterior** à das capturas (que o manifesto declara). É o passo que a skill chama de "o que todo mundo esquece" |
+| **J4** | toda jornada declara o comando que regenera as capturas dela, e o gerador citado existe |
+
+```text
+$ scripts/check-jornadas.sh
+── Jornadas vivas: captura, citação e heurística datada (P6) ──
+  jornadas examinadas: 4 (001-chegada-e-embarque.md, 002-primeiro-projeto-e-ara.md, 003-nuvem-de-conflito.md, 007-a-travessia.md)
+  capturas em disco: 33  ·  citações de imagem: 33  ·  data das capturas (manifesto): 2026-09-06
+  invariantes: J1 órfã/duplicada · J2 citada e inexistente · J3 heurística datada e >= captura · J4 comando de regeneração
+  verificações executadas: 74  ·  heurísticas datadas: 4/4  ·  comandos de regeneração: 4/4
+
+✓ toda captura é citada por exatamente uma jornada, toda imagem citada existe,
+  toda jornada traz heurística datada não anterior às capturas e o comando que as regenera.
+```
+
+**E o portão sabe reprovar**: cinco sabotagens em `scripts/tests/run-sabotagem.sh` mutam
+uma cópia da fixture (`scripts/tests/sabotagem/jornadas/`) — captura órfã, imagem citada e
+inexistente, heurística sem data, heurística mais velha que a captura e jornada sem comando
+de regeneração — e cada uma tem de derrubá-lo **pelo motivo declarado**.
+
+## As jornadas
+
+| J | Jornada | Documento | Capturas | Estágio |
+|---|---|---|---|---|
+| J-01 | Chegada e embarque | [`001-chegada-e-embarque.md`](001-chegada-e-embarque.md) | 5 | 🟢 viva |
+| J-02 | Primeiro projeto e ARA | [`002-primeiro-projeto-e-ara.md`](002-primeiro-projeto-e-ara.md) | 16 | 🟢 viva |
+| J-03 | Nuvem de Conflito | [`003-nuvem-de-conflito.md`](003-nuvem-de-conflito.md) | 7 | 🟢 viva |
+| J-04 | Da injeção ao plano (ARF → APR → AT) | — | — | 🟡 planejada (ciclo 008) |
+| J-05 | Focalização | — | — | 🟡 planejada (ciclo 009) |
+| J-06 | Estratégia & Táticas | — | — | 🟡 planejada (ciclo 010) |
+| **J-07** | **A travessia — da ARA à Nuvem** | [`007-a-travessia.md`](007-a-travessia.md) | 5 | 🟢 viva |
+
+### Por que J-04, J-05 e J-06 continuam sem documento
+
+**Porque as ferramentas delas não existem no build**, e escrever a jornada assim mesmo
+seria exatamente a ficção que a Iron Law proíbe. A evidência é uma listagem, não uma
+lembrança:
+
+```text
+$ ls apps/api/src/toc_api/dominio/ | tr '\n' ' '
+__init__.py __pycache__ analise.py ara.py criterios_ude.py erros.py eventos.py
+federacao formulacao.py geracao.py grafo.py identidade.py lexico.py nuvem.py
+portas.py projeto.py valores.py
+
+$ ls apps/web/src/telas/ | tr '\n' ' '
+TelaDaAra.test.tsx TelaDaAra.tsx TelaDaLixeira.tsx TelaDaNuvem.test.tsx
+TelaDaNuvem.tsx TelaDeProjetos.test.tsx TelaDeProjetos.tsx registro.test.ts
+registro.ts
+```
+
+Há domínio para grafo (M1), ARA (M2) e Nuvem (M3), e quatro telas. Não há módulo de ARF,
+APR e AT (M4, ciclo 008), nem de focalização (M6, ciclo 009), nem de S&T (M5, ciclo 010).
+As três jornadas nascem nos ciclos delas, com as capturas delas.
+
+### Por que J-07 entrou na lista
+
+A lista "cresce por decisão, não por acúmulo", e esta é a decisão: **o encadeamento entre
+duas ferramentas não pertence a nenhuma das duas.** A escolha dos efeitos acontece na tela
+da ARA, a rastreabilidade aparece na tela da Nuvem, e o que importa é justamente a costura
+entre elas — o requisito INT-05, e a única coisa que nenhuma das quatro gerações da
+linhagem TOC-Builder entregou. Documentá-la dentro da J-02 a esconderia no fim de uma
+jornada longa; dentro da J-03, no começo de outra. Ela é a sua própria jornada.
+
+## O que estas jornadas encontraram
+
+Uma jornada viva que só elogia não está olhando. As quatro avaliações heurísticas de
+2026-09-06 registraram **20 achados** e **17 itens conformes** — contados pelos portões
+do próprio repositório:
+
+```text
+$ for f in docs/jornadas/00{1,2,3,7}-*.md; do echo -n "$f "; grep -cE '^\| A-[0-9]+ \|' "$f"; done
+docs/jornadas/001-chegada-e-embarque.md 5
+docs/jornadas/002-primeiro-projeto-e-ara.md 7
+docs/jornadas/003-nuvem-de-conflito.md 5
+docs/jornadas/007-a-travessia.md 3
+```
+
+Três achados são de severidade **Alta**:
+
+| Achado | Onde | Severidade |
+|---|---|---|
+| A sessão nascida do embarque autentica `/aph/*` (`200`) mas não `/toc/*` (`401`): embarcada de verdade, a aplicação não carrega conteúdo | [J-01](001-chegada-e-embarque.md) A-01 | Alta |
+| A ficha do UDE mostra o veredito antigo depois de "Reformular", até ser fechada e reaberta | [J-02](002-primeiro-projeto-e-ara.md) A-02 | Alta |
+| "Ajustar à tela" enquadra a árvore abaixo da dobra: canvas visível vazio com 16 nós no projeto | [J-02](002-primeiro-projeto-e-ara.md) A-03 | Alta |
+
+Nenhum deles foi corrigido neste lote, e a razão está escrita em cada documento: são
+mudanças em código de produção, e código de produção aqui nasce por ciclo, com spec e com
+o teste que falha antes (P4). O que este lote entrega é o **diagnóstico com evidência por
+`arquivo:linha`** — que é o insumo do ciclo que os corrigir.
+
+## Limites declarados destas avaliações
+
+- **Quem avaliou**: um agente, em contexto de construção, sobre as capturas geradas na
+  mesma data. Não houve revisão independente em contexto fresco destas avaliações.
+- **Não houve teste com pessoa usuária.** Nenhum achado vem de observação de uso real;
+  todos vêm de inspeção heurística e de medição no navegador.
+- **O hospedeiro da J-01 é uma bancada**, não a `ghdaru`. Ela prova o lado da aplicação da
+  junta; não prova o lado do hospedeiro.
+- **As capturas não regeneram byte-idênticas entre dias**: a lista de projetos mostra a
+  data da última alteração, e os identificadores de projeto são novos a cada corrida. O que
+  regenera é o percurso e o conjunto de arquivos — o manifesto guarda tamanho e resumo
+  criptográfico de cada corrida para a comparação ser possível.

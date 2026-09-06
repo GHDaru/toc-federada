@@ -39,6 +39,7 @@ BASES=(
   "scripts/check-rounds.sh"         "rounds"
   "scripts/check-specs.sh"          "specs"
   "scripts/check-vazamento.sh"      "vazamento"
+  "scripts/check-jornadas.sh"       "jornadas"
 )
 
 # ── as sabotagens ───────────────────────────────────────────────────────────────
@@ -167,6 +168,29 @@ SABOTAGENS=(
   "scripts/check-vazamento.sh" "vazamento" "vazamento-base-real-lida-por-codigo"
   "sed -i 's,docs/produto/dados/base-sintetica.json,/home/user/gestaodeprioridades/prototipo/dados/fixture.json,' scripts/gera-base.py"  # SABOTAGEM-SINTETICA — dado fictício plantado de propósito nesta linha
   "[V3] scripts/gera-base.py"
+
+  # --- check-jornadas.sh (P6 · Iron Law da skill `living-journey`) ---
+  # As cinco mutações atacam uma invariante cada. A quarta é a que a própria skill chama
+  # de "o passo que todo mundo esquece": capturas novas com heurística velha.
+  "scripts/check-jornadas.sh" "jornadas" "jornada-captura-orfa"
+  "cp docs/jornadas/capturas/001-jornada-sintetica/01-tela.png docs/jornadas/capturas/001-jornada-sintetica/02-ninguem-cita.png"
+  "J1 captura órfã"
+
+  "scripts/check-jornadas.sh" "jornadas" "jornada-imagem-citada-inexistente"
+  "rm docs/jornadas/capturas/001-jornada-sintetica/01-tela.png"
+  "J2 imagem citada e inexistente"
+
+  "scripts/check-jornadas.sh" "jornadas" "jornada-sem-heuristica-datada"
+  "sed -i 's,^## Avaliação heurística — 2026-09-06$,## Avaliação heurística,' docs/jornadas/001-jornada-sintetica.md"
+  "J3 001-jornada-sintetica.md: sem seção"
+
+  "scripts/check-jornadas.sh" "jornadas" "jornada-heuristica-mais-velha-que-a-captura"
+  "sed -i 's,^## Avaliação heurística — 2026-09-06$,## Avaliação heurística — 2026-08-01,' docs/jornadas/001-jornada-sintetica.md"
+  "é ANTERIOR às capturas"
+
+  "scripts/check-jornadas.sh" "jornadas" "jornada-sem-comando-de-regeneracao"
+  "sed -i '/capturar-telas.mjs/d' docs/jornadas/001-jornada-sintetica.md"
+  "J4 001-jornada-sintetica.md: não declara o comando"
 )
 
 falhas=0

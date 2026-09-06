@@ -5,6 +5,44 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Jornadas vivas — J-01, J-02, J-03 e J-07 (princípio P6, skill `living-journey`)
+
+- **`docs/jornadas/scripts/capturar-telas.mjs`**: o gerador versionado das capturas. Sobe
+  o `toc-api` com os seis parâmetros de admissão do §B.4 preenchidos, três instâncias da
+  interface (autônoma, embarcada sem token e sem admissão) e um **hospedeiro de bancada**
+  que fala o `ghd.*` do Anexo B e responde `POST /auth/introspect`; percorre a aplicação
+  com Chromium de verdade; grava `docs/jornadas/capturas/` e um `manifesto.json` com
+  tamanho, resumo SHA-256 e as medidas colhidas na corrida. Falha de captura derruba a
+  corrida — não existe imagem de outro dia num documento de hoje.
+- **Quatro jornadas vivas**, com avaliação heurística datada de 2026-09-06:
+  `001-chegada-e-embarque.md`, `002-primeiro-projeto-e-ara.md`,
+  `003-nuvem-de-conflito.md` e `007-a-travessia.md`. Corrida de 2026-09-06:
+  **33 capturas, 5 153 510 bytes, 0 falhas, 44,1 s**.
+- **A travessia (J-07) é jornada própria**: a mesma pessoa monta a Árvore da Realidade
+  Atual com Efeitos Indesejáveis validados por regra pura, promove dois deles a dilema em
+  um clique, e a Nuvem que nasce declara a origem — conferida pelo script contra os nós
+  escolhidos, sob pena de derrubar a corrida. É o encadeamento (INT-05) que nenhuma das
+  quatro gerações da linhagem entregou.
+- **J-04, J-05 e J-06 continuam sem documento, com a evidência da ausência**: não há
+  módulo de domínio nem tela para Árvore da Realidade Futura, Pré-Requisitos, Transição,
+  focalização ou Estratégia & Táticas. Jornada sem captura é ficção, e a Iron Law da skill
+  proíbe.
+- **`scripts/check-jornadas.sh`**: a Iron Law virada portão executável — toda captura
+  citada por exatamente uma jornada (J1), toda imagem citada existindo (J2), heurística
+  datada e **não anterior** às capturas (J3, o passo que a skill chama de "o que todo
+  mundo esquece") e o comando de regeneração declarado (J4). Corrida: 4 jornadas, 33
+  capturas, 33 citações, **74 verificações**. Registrado em `scripts/evidencia.sh`
+  (agora **13 portões, 13 verdes**) e provado por **cinco sabotagens** em
+  `scripts/tests/run-sabotagem.sh` sobre a fixture `scripts/tests/sabotagem/jornadas/`
+  (a suíte passa a ser **6 portões e 32 sabotagens**, todas reprovando pelo motivo
+  declarado).
+- **20 achados registrados**, três de severidade Alta e nenhum corrigido neste lote (são
+  código de produção, e código de produção nasce por ciclo com teste que falha antes —
+  P4): a sessão do embarque autentica `/aph/*` (`200`) e não `/toc/*` (`401`); a ficha do
+  Efeito Indesejável mostra o veredito antigo depois de "Reformular"; e "Ajustar à tela"
+  enquadra a árvore abaixo da dobra porque a área de trabalho cresce com o painel
+  (2 761 px numa janela de 900 px). Cada um com evidência por `arquivo:linha`.
+
 ### Ciclo 007 — Nuvem de Conflito (M3, spec 007 · serviço)
 
 - **Agregado `NuvemDeConflito`** (`apps/api/src/toc_api/dominio/nuvem.py`): topologia

@@ -1,0 +1,11 @@
+{
+  "gerado_em": "2026-09-06T00:00:00.000Z",
+  "script": "docs/jornadas/scripts/capturar-telas.mjs",
+  "base_sintetica": "fixture de sabotagem — nada aqui vem de sistema real",
+  "capturas": 1,
+  "bytes": 70,
+  "falhas": [],
+  "itens": [
+    { "jornada": "001-jornada-sintetica", "captura": "001-jornada-sintetica/01-tela.png", "bytes": 70 }
+  ]
+}

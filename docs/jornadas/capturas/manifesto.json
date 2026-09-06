@@ -1,0 +1,252 @@
+{
+  "gerado_em": "2026-09-06T00:26:19.645Z",
+  "script": "docs/jornadas/scripts/capturar-telas.mjs",
+  "base_sintetica": "docs/produto/dados/analise-horizonte.json v1.0.0",
+  "capturas": 33,
+  "bytes": 5144889,
+  "medidas": {
+    "pedidosAoHospedeiro": 5,
+    "saude": {
+      "servico": "toc-api",
+      "ambiente": "desenvolvimento",
+      "persistencia": "postgres",
+      "banco": "postgresql+psycopg://***@/toc_federada?host=/var/run/postgresql&port=5433",
+      "traco": "RastreadorNulo",
+      "geracao": "local-deterministico",
+      "identidade": "ProvedorDeIdentidadeFalso",
+      "admissao": "admitida",
+      "app_id": "toc-federada"
+    },
+    "embarque": {
+      "embarque": 201,
+      "conteudo": 401,
+      "catalogo": 200
+    },
+    "canal": [
+      "recebido ghd.ready {\"app_id\":\"toc-federada\"}",
+      "enviado ghd.handshake (grant de uso único, tema do inquilino)",
+      "recebido ghd.ready {\"app_id\":\"toc-federada\"}",
+      "enviado ghd.handshake (grant de uso único, tema do inquilino)"
+    ],
+    "cascaEmbarcada": 0,
+    "canvas": {
+      "altura_da_janela": 900,
+      "altura_da_area_do_canvas": 2761,
+      "transformacao_do_plano": "translate(14.561px, 1143.08px) scale(0.557317)",
+      "topo_do_primeiro_no": 1497
+    },
+    "resumo_por_status": {
+      "pendente": 3,
+      "requer_refinamento": 9,
+      "validado": 0,
+      "rejeitado": 0
+    },
+    "udes": 12,
+    "reformulacao": {
+      "titulo_no_servidor": "A instituição responde 31% das mensagens de aluno em até cinco dias úteis.",
+      "aprovado_nos_decidiveis": true,
+      "reprovacoes": 0
+    }
+  },
+  "falhas": [],
+  "itens": [
+    {
+      "jornada": "001-chegada-e-embarque",
+      "captura": "001-chegada-e-embarque/01-admissao-recusada.png",
+      "bytes": 27214,
+      "sha256": "bfbec4ad27c6f2d65d6d1523675a68ca690c45d9f2ed6edfb1598f7514e3f234"
+    },
+    {
+      "jornada": "001-chegada-e-embarque",
+      "captura": "001-chegada-e-embarque/02-hospedeiro-com-a-aplicacao.png",
+      "bytes": 78731,
+      "sha256": "6f095db1f69a86bcac2d362b575d6e08a49845ec4e505ad0d2a35bcda620171a"
+    },
+    {
+      "jornada": "001-chegada-e-embarque",
+      "captura": "001-chegada-e-embarque/03-canal-ghd-no-hospedeiro.png",
+      "bytes": 20343,
+      "sha256": "05bb53efef0cb5dfc076efd6e7be9a29eae3755f17bba5c5f6180e8ad0f98c98"
+    },
+    {
+      "jornada": "001-chegada-e-embarque",
+      "captura": "001-chegada-e-embarque/04-embarcada-420px.png",
+      "bytes": 45670,
+      "sha256": "b2bce3bcbf6c756605b44547ac5ede8652b97c458f342a329a95a78616db144b"
+    },
+    {
+      "jornada": "001-chegada-e-embarque",
+      "captura": "001-chegada-e-embarque/05-autonoma-com-casca.png",
+      "bytes": 54048,
+      "sha256": "0d514fad1fe4506d6c69508e0ebf569e63f063d16e681f721bd83ab9e2a1fdcf"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/01-lista-vazia.png",
+      "bytes": 54048,
+      "sha256": "0d514fad1fe4506d6c69508e0ebf569e63f063d16e681f721bd83ab9e2a1fdcf"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/02-projeto-criado.png",
+      "bytes": 62427,
+      "sha256": "8dc19ff5aa3766b35680e410097892d0a9b988d9bf584cedc6df16449012919f"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/03-ara-vazia.png",
+      "bytes": 68962,
+      "sha256": "353fef8871bf01b5f6eeaefb732d9a7bb618e008bff1277c4cad323d1511e5b1"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/04-arvore-da-horizonte.png",
+      "bytes": 478808,
+      "sha256": "6566e6a7f4a5c4e23de85f9920522d23489bfd893d2a2180ce49c2c91e519537"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/05-canvas-abaixo-da-dobra.png",
+      "bytes": 135138,
+      "sha256": "375730e56426036ebcb7ba31597a2f316ab46777b9dec797f2d46b1632d74bff"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/06-painel-de-arestas.png",
+      "bytes": 210996,
+      "sha256": "027159f17c87391cc1385bbb95f6dec30fabf71a775e01c834dd0ca9bff216aa"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/07-ficha-de-ude-reprovado.png",
+      "bytes": 149301,
+      "sha256": "6876c86464dada555ee063af9b323d1398522fa7f85344d4df5c4e8d2cc42f07"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/08-ficha-logo-apos-reformular.png",
+      "bytes": 150907,
+      "sha256": "97172343eba70be2d4b98fe3c14916981bf1818591ce430be26b9059f75f0335"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/09-ficha-reaberta-com-veredito-novo.png",
+      "bytes": 148989,
+      "sha256": "ec7ee0a01e6fef6ab44b7fe78cd970afcd879c87d677ec3a2180dcc677613716"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/10-ficha-de-ude-aprovado.png",
+      "bytes": 145319,
+      "sha256": "dbe946385352e12213254d8b4aa14aa8b0a043aeca2e387e9802c36c5b9c3386"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/11-parecer-e-status-validado.png",
+      "bytes": 152849,
+      "sha256": "5d75994b730cd69880f880217122daa3485507e90e129d6c6d8e730beff7fce0"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/12-resumo-por-status-filtrado.png",
+      "bytes": 101171,
+      "sha256": "d4a114e54cf640f382e2a681c5052983068bf6c346869ef61eb33c0623af722c"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/13-exame-de-elo.png",
+      "bytes": 37442,
+      "sha256": "aa02a5d5f341bf4fe96a27ea053166c5afa1a09105ee492d533d5ebea2273ba3"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/14-relatorio-estrutural.png",
+      "bytes": 217209,
+      "sha256": "0d7caffbe39c2ad34a50153f1e11ded0730ee8c178395a220716ca8dedf83bdb"
+    },
+    {
+      "jornada": "007-a-travessia",
+      "captura": "007-a-travessia/01-udes-escolhidos-na-ara.png",
+      "bytes": 607507,
+      "sha256": "8130211cc31d4efd153d4fd346a55277570686016c95cd1d4fa9f87fbd53f1ca"
+    },
+    {
+      "jornada": "007-a-travessia",
+      "captura": "007-a-travessia/02-botao-derivar-armado.png",
+      "bytes": 20236,
+      "sha256": "20665e1a0b88f712a6b9e85570f1cb80a278e5a48d079ac702967671062f9614"
+    },
+    {
+      "jornada": "007-a-travessia",
+      "captura": "007-a-travessia/03-nuvem-derivada.png",
+      "bytes": 112304,
+      "sha256": "10b763ee348abc77047619bfff0b3ad23a4348385de41b1e1b74b41e700a58bd"
+    },
+    {
+      "jornada": "007-a-travessia",
+      "captura": "007-a-travessia/04-linha-de-origem.png",
+      "bytes": 12014,
+      "sha256": "48d4df57574ad740fb3034bb19d8b0b38f6122c93ef55bfe9856978d8e1bfbb1"
+    },
+    {
+      "jornada": "007-a-travessia",
+      "captura": "007-a-travessia/05-ara-intacta-depois-da-derivacao.png",
+      "bytes": 511955,
+      "sha256": "0bf91acf45cf2c6bf455d1cf22eb7ba92a91aa5718f477a382d0fee5b486a3a6"
+    },
+    {
+      "jornada": "003-nuvem-de-conflito",
+      "captura": "003-nuvem-de-conflito/01-diagrama-do-conflito.png",
+      "bytes": 124951,
+      "sha256": "0c3c79d513ec7bb7f51f4da6729a994c7168e54b0d4c7a1a1f4f83bd52bc37db"
+    },
+    {
+      "jornada": "003-nuvem-de-conflito",
+      "captura": "003-nuvem-de-conflito/02-ficha-da-aresta-com-premissa.png",
+      "bytes": 65121,
+      "sha256": "afd4ed624903f9a18b5eda1414ccf400a0c43016ea0c95b43b3413aaed5959cc"
+    },
+    {
+      "jornada": "003-nuvem-de-conflito",
+      "captura": "003-nuvem-de-conflito/03-injecao-ligada-a-premissa.png",
+      "bytes": 75641,
+      "sha256": "7667a485eb814b767e41d9f83ec5a2769b2dea397c9323cc0b433e2a41005a81"
+    },
+    {
+      "jornada": "003-nuvem-de-conflito",
+      "captura": "003-nuvem-de-conflito/04-visao-de-solucao.png",
+      "bytes": 189249,
+      "sha256": "f56d3eafdde8c25f6b36234c6a3f4eb667548d9b72d38a54be499968f805a1e9"
+    },
+    {
+      "jornada": "003-nuvem-de-conflito",
+      "captura": "003-nuvem-de-conflito/05-lado-a-lado.png",
+      "bytes": 257999,
+      "sha256": "2b11311491a9bfdb83d8e946362cb6a0522f0ebc9e3cf25379da821fdb62c62a"
+    },
+    {
+      "jornada": "003-nuvem-de-conflito",
+      "captura": "003-nuvem-de-conflito/06-vista-tabular.png",
+      "bytes": 283125,
+      "sha256": "a8c398b594868e865af9176431ebdd3a9d14e4b7c900bfcbccb8744d788c69a9"
+    },
+    {
+      "jornada": "003-nuvem-de-conflito",
+      "captura": "003-nuvem-de-conflito/07-previa-da-geracao.png",
+      "bytes": 406345,
+      "sha256": "0c76a78d11ebf4c00c4bd3f816561ad20c5d13ea95ec91d2c0398b5f41e5e166"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/15-exclusao-nomeia-o-projeto.png",
+      "bytes": 97417,
+      "sha256": "f086b6b1d5322eb9a2a0ab39d4602f98f4760c4e1afecad4ed48ac0c72730397"
+    },
+    {
+      "jornada": "002-primeiro-projeto-e-ara",
+      "captura": "002-primeiro-projeto-e-ara/16-lixeira-com-restaurar.png",
+      "bytes": 41453,
+      "sha256": "163000093733617e79bdbb28d969908ae4a617af64407ac7e7ce9ec3880354fc"
+    }
+  ]
+}
