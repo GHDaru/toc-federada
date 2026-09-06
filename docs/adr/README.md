@@ -21,3 +21,4 @@ verificada por `scripts/check-adr.sh`.
 | 0007 | [Inteligência artificial somente pela fundação: sem SDK de provedor, chave nunca no cliente, prompts no servidor](0007-ia-somente-pela-fundacao.md) | Aceita | P2, P7 (INEGOCIÁVEIS) | 2026-09-03 |
 | 0008 | [Site de produto gerado por script versionado, nunca escrito à mão](0008-site-de-produto-gerado-por-script.md) | Aceita | P6 | 2026-09-03 |
 | 0009 | [A interface decide proposta por `/toc/propostas`: mesma máquina de estados, mesmo traço, projeção estruturada](0009-superficie-de-proposta-para-a-interface-da-aplicacao.md) | Aceita | P2 (INEGOCIÁVEL) | 2026-09-06 |
+| 0010 | [Trava otimista por versão lida: a escrita do agregado condiciona-se à versão que leu, e o perdedor recebe `409 VERSION_CONFLICT`](0010-trava-otimista-por-versao-lida.md) | Aceita | P2 (INEGOCIÁVEL), P3, P4 | 2026-09-06 |

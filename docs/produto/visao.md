@@ -185,7 +185,8 @@ uma linha de instrumentação:
 ```console
 $ grep -rniE "analytics|telemetr|mixpanel|amplitude|posthog|gtag|sentry|opentelemetry" \
     TOC-Builder TOC-Builder-APP TOC-Builder-V2 tocbuilderv3 --include="*.ts" \
-    --include="*.tsx" --include="*.md" --include="*.json" --include="*.html" | wc -l
+    --include="*.tsx" --include="*.md" --include="*.json" --include="*.html" \
+    --exclude-dir=node_modules | wc -l
 0
 ```
 
@@ -193,6 +194,18 @@ Zero ocorrências 🟢 — nenhuma sessão registrada, nenhuma análise concluí
 nenhum usuário fora dos autores. Tudo o que este documento afirma sobre utilidade é
 inferência a partir de código, e a correção não é retórica: é o princípio P5
 (observabilidade de nascença) valendo do ciclo 003 em diante.
+
+> **Sobre o `--exclude-dir=node_modules` desta busca e das outras três deste documento.**
+> Ele não estava aqui quando estes números foram colhidos, e sem ele os quatro comandos
+> deixaram de reproduzir: alguém instalou as dependências de `tocbuilderv3` na máquina, e
+> a mesma busca passou a devolver 122 em vez de 0 — todas as ocorrências dentro de
+> bibliotecas de terceiros. A **afirmação** continuava certa e o **comando** tinha deixado
+> de ser a testemunha dela, que é a pior das duas situações porque não parece defeito. O
+> filtro delimita a busca ao código que a linhagem escreveu, que é sobre o que a
+> afirmação sempre falou. A partir daqui os quatro comandos e as saídas coladas deles são
+> re-executados pelo portão
+> [`../../scripts/check-evidencia-colada.sh`](../../scripts/check-evidencia-colada.sh),
+> para o mesmo apodrecimento não voltar em silêncio.
 
 ## 4. Por que federada
 
@@ -338,7 +351,8 @@ impedir.
 
 ```console
 $ find TOC-Builder TOC-Builder-APP TOC-Builder-V2 tocbuilderv3 \
-    -iname "*test*" -o -iname "*.spec.*" | wc -l
+    -path "*/node_modules/*" -prune \
+    -o \( -iname "*test*" -o -iname "*.spec.*" \) -print | wc -l
 0
 ```
 
@@ -349,7 +363,8 @@ ciclos de implementação — ver "não corrigidos" em [`rounds.md`](rounds.md).
 **D-07 · O dado vive preso a um navegador.**
 
 ```console
-$ grep -rn "localStorage" tocbuilderv3 --include="*.ts" --include="*.tsx" | wc -l
+$ grep -rn "localStorage" tocbuilderv3 --include="*.ts" --include="*.tsx" \
+    --exclude-dir=node_modules | wc -l
 16
 ```
 
@@ -371,11 +386,12 @@ pura** (E2.1), com o modelo reservado ao que é genuinamente julgamento.
 
 ```console
 $ grep -rniE "focaliza|five focusing|cinco passos" TOC-Builder TOC-Builder-APP \
-    TOC-Builder-V2 tocbuilderv3 --include="*.ts" --include="*.tsx" --include="*.md" | wc -l
+    TOC-Builder-V2 tocbuilderv3 --include="*.ts" --include="*.tsx" --include="*.md" \
+    --exclude-dir=node_modules | wc -l
 0
 $ grep -rniE "drum|buffer.rope|tambor|pulm[aã]o|corda|throughput" TOC-Builder \
     TOC-Builder-APP TOC-Builder-V2 tocbuilderv3 --include="*.ts" --include="*.tsx" \
-    --include="*.md" | wc -l
+    --include="*.md" --exclude-dir=node_modules | wc -l
 0
 ```
 

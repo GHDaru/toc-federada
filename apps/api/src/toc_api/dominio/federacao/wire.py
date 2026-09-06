@@ -95,6 +95,18 @@ CODIGOS_PROPRIOS: dict[str, str] = {
     "INVALID_EDGE": "aresta que viola regra de grafo; `details.regra` diz qual (409, RF-18)",
     "INVALID_CONNECTOR": "conector E que viola a RN-11; `details.regra` diz qual (409)",
     "MUTATION_REFUSED": "operação válida em geral, recusada NESTE estado do agregado (409)",
+    "VERSION_CONFLICT": (
+        "a escrita partiu de uma versão do agregado que já não é a do banco: outra "
+        "pessoa gravou antes (409). `details.versao_lida` é a versão de que a escrita "
+        "partiu e `details.versao_atual` é a que o registro tem, e os dois viajam porque "
+        "é com eles que o cliente recarrega e refaz sozinho. **Acréscimo declarado**: o "
+        "registro mínimo do §A.7 não tem código para perda de atualização — "
+        "INVALID_TRANSITION é a máquina de estados da proposta (APH-5.1) e "
+        "PROPOSAL_CONTEXT_STALE é a tela que mudou entre propor e confirmar (APH-5.4); "
+        "nenhum dos dois nomeia duas escritas concorrentes sobre o MESMO agregado, que é "
+        "o que uma ferramenta multiusuário encontra o tempo todo. Usar um deles diria ao "
+        "cliente para tratar um caso que não é o dele"
+    ),
     "AGGREGATE_ROOT_REQUIRED": (
         "o estado pertence a uma ferramenta e a mutação NÃO veio pela raiz do agregado "
         "dela; `details.ferramenta` diz de quem é o estado e `details.raiz` diz qual é a "

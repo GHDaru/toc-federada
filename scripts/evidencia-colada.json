@@ -1,0 +1,344 @@
+{
+  "nota": "Registro de afirmações coladas: cada entrada tem um COMANDO reproduzível e os lugares onde o valor dele está colado, com o MOLDE literal em que aparece ({v} é o valor). Lido por scripts/check-evidencia-colada.sh. O que muda a cada execução (tempo em segundos, identificador sorteado, suíte cara de 839 testes) NÃO entra aqui: entra no documento com a volatilidade dita ao lado.",
+  "afirmacoes": [
+    {
+      "id": "capturas-em-disco",
+      "porque": "o CHANGELOG anunciou 33 capturas quando existiam 36 — o achado que criou este portão",
+      "comando": "find docs/jornadas/capturas -name '*.png' | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/README.md",
+          "molde": "capturas em disco: {v}  ·  citações de imagem: {v}"
+        },
+        {
+          "arquivo": "CHANGELOG.md",
+          "molde": "**{v} capturas,"
+        }
+      ]
+    },
+    {
+      "id": "bytes-das-capturas",
+      "comando": "python3 -c \"import json;print(f\\\"{json.load(open('docs/jornadas/capturas/manifesto.json'))['bytes']:,}\\\".replace(',', ' '))\"",
+      "esperado": [
+        {
+          "arquivo": "CHANGELOG.md",
+          "molde": "{v} bytes, 0 falhas"
+        }
+      ]
+    },
+    {
+      "id": "verificacoes-do-portao-de-jornadas",
+      "comando": "scripts/check-jornadas.sh | sed -n 's/.*verificações executadas: \\([0-9]*\\).*/\\1/p'",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/README.md",
+          "molde": "verificações executadas: {v}  ·  heurísticas datadas: 4/4"
+        }
+      ]
+    },
+    {
+      "id": "capturas-da-j01",
+      "comando": "ls docs/jornadas/capturas/001-chegada-e-embarque/*.png | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/README.md",
+          "molde": "[`001-chegada-e-embarque.md`](001-chegada-e-embarque.md) | {v} |"
+        }
+      ]
+    },
+    {
+      "id": "capturas-da-j02",
+      "comando": "ls docs/jornadas/capturas/002-primeiro-projeto-e-ara/*.png | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/README.md",
+          "molde": "[`002-primeiro-projeto-e-ara.md`](002-primeiro-projeto-e-ara.md) | {v} |"
+        }
+      ]
+    },
+    {
+      "id": "capturas-da-j03",
+      "comando": "ls docs/jornadas/capturas/003-nuvem-de-conflito/*.png | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/README.md",
+          "molde": "[`003-nuvem-de-conflito.md`](003-nuvem-de-conflito.md) | {v} |"
+        }
+      ]
+    },
+    {
+      "id": "capturas-da-j07",
+      "comando": "ls docs/jornadas/capturas/007-a-travessia/*.png | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/README.md",
+          "molde": "[`007-a-travessia.md`](007-a-travessia.md) | {v} |"
+        }
+      ]
+    },
+    {
+      "id": "achados-das-jornadas",
+      "comando": "grep -hcE '^\\| A-[0-9]+ \\|' docs/jornadas/00{1,2,3,7}-*.md | paste -sd+ | bc",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/README.md",
+          "molde": "**{v} achados**"
+        }
+      ]
+    },
+    {
+      "id": "conformes-das-jornadas",
+      "comando": "grep -hcE '^\\| ✅ \\|' docs/jornadas/00{1,2,3,7}-*.md | paste -sd+ | bc",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/README.md",
+          "molde": "**{v} itens conformes**"
+        }
+      ]
+    },
+    {
+      "id": "achados-de-severidade-alta",
+      "comando": "grep -hE '^\\| A-[0-9]+ \\|' docs/jornadas/00{1,2,3,7}-*.md | grep -c '\\*\\*Alta\\*\\*'",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/README.md",
+          "molde": "{v} achados são de severidade **Alta**"
+        }
+      ]
+    },
+    {
+      "id": "adrs-do-repositorio",
+      "porque": "o README do gerador colava adrs=8 depois que o ADR 0009 nasceu",
+      "comando": "ls docs/adr/[0-9]*.md | wc -l",
+      "esperado": [
+        {
+          "arquivo": "tools/product-site/README.md",
+          "molde": "adrs={v} "
+        }
+      ]
+    },
+    {
+      "id": "bytes-do-index-do-site",
+      "comando": "stat -c %s docs/product-site/index.html",
+      "esperado": [
+        {
+          "arquivo": "tools/product-site/README.md",
+          "molde": "index.html ({v} bytes)"
+        }
+      ]
+    },
+    {
+      "id": "bytes-do-modules-do-site",
+      "comando": "stat -c %s docs/product-site/modules.html",
+      "esperado": [
+        {
+          "arquivo": "tools/product-site/README.md",
+          "molde": "modules.html ({v} bytes)"
+        }
+      ]
+    },
+    {
+      "id": "bytes-do-traceability-do-site",
+      "comando": "stat -c %s docs/product-site/traceability.html",
+      "esperado": [
+        {
+          "arquivo": "tools/product-site/README.md",
+          "molde": "traceability.html ({v} bytes)"
+        }
+      ]
+    },
+    {
+      "id": "bytes-do-roadmap-do-site",
+      "comando": "stat -c %s docs/product-site/roadmap.html",
+      "esperado": [
+        {
+          "arquivo": "tools/product-site/README.md",
+          "molde": "roadmap.html ({v} bytes)"
+        }
+      ]
+    },
+    {
+      "id": "bytes-do-styles-do-site",
+      "comando": "stat -c %s docs/product-site/styles.css",
+      "esperado": [
+        {
+          "arquivo": "tools/product-site/README.md",
+          "molde": "styles.css ({v} bytes)"
+        }
+      ]
+    },
+    {
+      "id": "selos-da-visao",
+      "comando": "python3 -c \"t=open('docs/produto/visao.md',encoding='utf-8').read(); print(' · '.join(f'{n}: {t.count(chr(c))}' for n,c in (('CONFIRMADO',0x1F7E2),('PLANEJADO',0x1F7E1),('LACUNA',0x1F534))))\"",
+      "esperado": [
+        {
+          "arquivo": "docs/produto/visao.md",
+          "molde": "{v}\n```"
+        }
+      ]
+    },
+    {
+      "id": "instrumentacao-na-linhagem",
+      "porque": "a busca passou a devolver 122 quando tocbuilderv3/node_modules/ apareceu na máquina",
+      "comando": "cd /home/user && grep -rniE \"analytics|telemetr|mixpanel|amplitude|posthog|gtag|sentry|opentelemetry\" TOC-Builder TOC-Builder-APP TOC-Builder-V2 tocbuilderv3 --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.md\" --include=\"*.json\" --include=\"*.html\" --exclude-dir=node_modules | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/produto/visao.md",
+          "molde": "    --include=\"*.tsx\" --include=\"*.md\" --include=\"*.json\" --include=\"*.html\" \\\n    --exclude-dir=node_modules | wc -l\n{v}\n```"
+        }
+      ]
+    },
+    {
+      "id": "testes-na-linhagem",
+      "comando": "cd /home/user && find TOC-Builder TOC-Builder-APP TOC-Builder-V2 tocbuilderv3 -path \"*/node_modules/*\" -prune -o \\( -iname \"*test*\" -o -iname \"*.spec.*\" \\) -print | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/produto/visao.md",
+          "molde": "    -o \\( -iname \"*test*\" -o -iname \"*.spec.*\" \\) -print | wc -l\n{v}\n```"
+        }
+      ]
+    },
+    {
+      "id": "localstorage-na-linhagem",
+      "comando": "cd /home/user && grep -rn \"localStorage\" tocbuilderv3 --include=\"*.ts\" --include=\"*.tsx\" --exclude-dir=node_modules | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/produto/visao.md",
+          "molde": "$ grep -rn \"localStorage\" tocbuilderv3 --include=\"*.ts\" --include=\"*.tsx\" \\\n    --exclude-dir=node_modules | wc -l\n{v}\n```"
+        },
+        {
+          "arquivo": "docs/produto/visao.md",
+          "molde": "{v} ocorrências em 5 arquivos"
+        }
+      ]
+    },
+    {
+      "id": "focalizacao-na-linhagem",
+      "comando": "cd /home/user && grep -rniE \"focaliza|five focusing|cinco passos\" TOC-Builder TOC-Builder-APP TOC-Builder-V2 tocbuilderv3 --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.md\" --exclude-dir=node_modules | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/produto/visao.md",
+          "molde": "    TOC-Builder-V2 tocbuilderv3 --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.md\" \\\n    --exclude-dir=node_modules | wc -l\n{v}\n"
+        }
+      ]
+    },
+    {
+      "id": "dbr-na-linhagem",
+      "comando": "cd /home/user && grep -rniE \"drum|buffer.rope|tambor|pulm[aã]o|corda|throughput\" TOC-Builder TOC-Builder-APP TOC-Builder-V2 tocbuilderv3 --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.md\" --exclude-dir=node_modules | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/produto/visao.md",
+          "molde": "    --include=\"*.md\" --exclude-dir=node_modules | wc -l\n{v}\n```"
+        }
+      ]
+    },
+    {
+      "id": "canvas-medido-na-corrida-das-capturas",
+      "porque": "a J-02 colava a medida de uma corrida anterior, não a do manifesto que está no disco",
+      "comando": "python3 -c \"import json;m=json.load(open('docs/jornadas/capturas/manifesto.json'))['medidas']['canvas'];print(f\\\"  · canvas: janela {m['altura_da_janela']}px · área do canvas {m['altura_da_area_do_canvas']}px · {m['transformacao_do_plano']} · topo do 1º nó em {m['topo_do_primeiro_no']}px\\\")\"",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/002-primeiro-projeto-e-ara.md",
+          "molde": "{v}"
+        }
+      ]
+    },
+    {
+      "id": "resumo-por-status-na-corrida-das-capturas",
+      "comando": "python3 -c \"import json;m=json.load(open('docs/jornadas/capturas/manifesto.json'))['medidas'];r=m['resumo_por_status'];print(f\\\"  · {m['udes']} UDEs marcados · resumo por status: pendente={r['pendente']} requer_refinamento={r['requer_refinamento']} validado={r['validado']} rejeitado={r['rejeitado']}\\\")\"",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/002-primeiro-projeto-e-ara.md",
+          "molde": "{v}"
+        }
+      ]
+    },
+    {
+      "id": "geracao-aplicada-na-corrida-das-capturas",
+      "comando": "python3 -c \"import json;g=json.load(open('docs/jornadas/capturas/manifesto.json'))['medidas']['geracaoAplicada'];print(f\\\"  · confirmada: {g['entidades_reescritas']} de 5 entidades reescritas · premissas {g['premissas_antes']} → {g['premissas_depois']} · traço da ação: {json.dumps(g['traco'])}\\\")\"",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/003-nuvem-de-conflito.md",
+          "molde": "{v}"
+        }
+      ]
+    },
+    {
+      "id": "achados-por-jornada",
+      "porque": "o bloco colado no README das jornadas listava 5 achados na J-03, que já tinha 7",
+      "comando": "for f in docs/jornadas/00{1,2,3,7}-*.md; do echo -n \"$f \"; grep -cE '^\\| A-[0-9]+ \\|' \"$f\"; done",
+      "esperado": [
+        {
+          "arquivo": "docs/jornadas/README.md",
+          "molde": "{v}\n\n$ grep -hcE"
+        }
+      ]
+    },
+    {
+      "id": "sabotagens-declaradas",
+      "porque": "o README da sabotagem dizia 27 mutações depois que a suíte já tinha crescido",
+      "comando": "grep -cE '^  \"scripts/check-[a-z-]+\\.sh\" +\"[a-z-]+\" \"[a-z0-9-]+\"$' scripts/tests/run-sabotagem.sh",
+      "esperado": [
+        {
+          "arquivo": "scripts/tests/sabotagem/README.md",
+          "molde": "São **{v}** mutações"
+        },
+        {
+          "arquivo": "scripts/tests/sabotagem/README.md",
+          "molde": "\"[a-z0-9-]+\"$' scripts/tests/run-sabotagem.sh\n{v}\n"
+        }
+      ]
+    },
+    {
+      "id": "bases-de-sabotagem",
+      "comando": "ls -d scripts/tests/sabotagem/*/ | wc -l",
+      "esperado": [
+        {
+          "arquivo": "scripts/tests/sabotagem/README.md",
+          "molde": "sobre **{v}** bases"
+        },
+        {
+          "arquivo": "scripts/tests/sabotagem/README.md",
+          "molde": "$ ls -d scripts/tests/sabotagem/*/ | wc -l\n{v}\n```"
+        }
+      ]
+    },
+    {
+      "id": "codigos-proprios-do-a7",
+      "porque": "o ADR 0010 conta os códigos próprios ao justificar o acréscimo de VERSION_CONFLICT; um código novo entra e a conta envelhece em silêncio",
+      "comando": "grep -cE '^    \"[A-Z][A-Z0-9_]*\": ' apps/api/src/toc_api/dominio/federacao/wire.py",
+      "esperado": [
+        {
+          "arquivo": "docs/adr/0010-trava-otimista-por-versao-lida.md",
+          "molde": "`CODIGOS_PROPRIOS` tem {v} linhas com esta"
+        }
+      ]
+    },
+    {
+      "id": "sabotagens-da-trava-otimista",
+      "porque": "o ADR 0010 e o CHANGELOG afirmam quantas mutações derrubam o portão novo; sabotagem removida sem atualizar o texto é portão menor do que o documento promete",
+      "comando": "grep -c '\"scripts/check-trava-otimista.sh\" \"trava-otimista\"' scripts/tests/run-sabotagem.sh",
+      "esperado": [
+        {
+          "arquivo": "docs/adr/0010-trava-otimista-por-versao-lida.md",
+          "molde": "com\n{v} mutações, que ele reprova"
+        },
+        {
+          "arquivo": "CHANGELOG.md",
+          "molde": "ganhou {v} mutações que provam"
+        }
+      ]
+    },
+    {
+      "id": "registro-a7-inteiro",
+      "porque": "o ADR 0010 afirma o tamanho do registro §A.7 inteiro (mínimo normativo + próprios) ao justificar o acréscimo; a soma envelhece assim que qualquer um dos dois lados cresce",
+      "comando": "W=apps/api/src/toc_api/dominio/federacao/wire.py; echo $(( $(grep -cE '^    \"[A-Z][A-Z0-9_]*\",$' $W) + $(grep -cE '^    \"[A-Z][A-Z0-9_]*\": ' $W) ))",
+      "esperado": [
+        {
+          "arquivo": "docs/adr/0010-trava-otimista-por-versao-lida.md",
+          "molde": "tem {v} códigos)."
+        }
+      ]
+    }
+  ]
+}

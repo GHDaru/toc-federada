@@ -17,6 +17,7 @@ DONO = DonoDoProjeto(inquilino_id="inq-horizonte", usuario_id="usr-facilitadora"
 T0 = datetime(2026, 9, 5, 12, 0, tzinfo=timezone.utc)
 T1 = datetime(2026, 9, 5, 13, 0, tzinfo=timezone.utc)
 T2 = datetime(2026, 9, 5, 14, 0, tzinfo=timezone.utc)
+UUID_FIXO = uuid4()
 
 
 def novo_projeto(**kw) -> Projeto:
@@ -30,6 +31,13 @@ def novo_projeto(**kw) -> Projeto:
     )
     base.update(kw)
     return Projeto(**base)  # type: ignore[arg-type]
+
+
+def reidratado_na_versao(versao: int) -> Projeto:
+    """Um agregado como o adaptador o entrega: `versao` e `versao_lida` no mesmo número."""
+    p = novo_projeto(versao=versao)
+    p.versao_lida = versao
+    return p
 
 
 def test_projeto_nasce_ativo():
@@ -94,6 +102,51 @@ def test_toda_mutacao_avanca_a_versao_e_o_instante():
     assert (p.versao, p.alterado_em) == (2, T1)
     p.excluir(em=T2)
     assert (p.versao, p.alterado_em) == (3, T2)
+
+
+# -- a metade que faltava ao bloqueio otimista ------------------------------------------
+#
+# O teste acima existia e passava, e mesmo assim a trava não travava nada: `versao` subia
+# em memória e ninguém guardava **de que versão a escrita partiu**. Sem esse número o
+# adaptador não tem contra o que comparar, e o `UPDATE` sai sem `WHERE versao =` — que foi
+# exatamente o defeito medido (20 escritas concorrentes aceitas, 1 nó no banco).
+
+
+def test_agregado_novo_declara_que_nunca_foi_gravado():
+    """`versao_lida == 0` é o que distingue inserção de atualização, e não um `SELECT`."""
+    p = novo_projeto()
+    assert p.versao_lida == 0
+
+
+def test_a_versao_lida_nao_anda_com_as_mutacoes():
+    """É esta imobilidade que dá ao adaptador o número contra o qual condicionar a escrita."""
+    p = reidratado_na_versao(7)
+    p.renomear("outro nome", em=T1)
+    p.descrever_problema("a evasão cresce", em=T2)
+    assert (p.versao, p.versao_lida) == (9, 7)
+
+
+def test_confirmar_gravacao_sincroniza_a_versao_lida_com_a_versao():
+    """Depois do commit, e só depois: a próxima escrita parte de onde esta chegou."""
+    p = reidratado_na_versao(7)
+    p.renomear("outro nome", em=T1)
+    p.confirmar_gravacao()
+    assert p.versao_lida == p.versao == 8
+    p.renomear("mais outro", em=T2)
+    assert (p.versao, p.versao_lida) == (9, 8)
+
+
+def test_a_versao_lida_nao_entra_na_identidade_do_agregado():
+    """Dois agregados iguais continuam iguais com sincronias diferentes.
+
+    `versao_lida` é estado de SINCRONIA com o repositório, não de negócio — se entrasse na
+    comparação, um teste de ida e volta passaria a falhar por causa de um detalhe de
+    persistência, que é o oposto do que o domínio puro existe para permitir.
+    """
+    um = novo_projeto(id=UUID_FIXO)
+    outro = novo_projeto(id=UUID_FIXO)
+    outro.versao_lida = 3
+    assert um == outro
 
 
 def test_dominio_nao_le_o_relogio_do_sistema():

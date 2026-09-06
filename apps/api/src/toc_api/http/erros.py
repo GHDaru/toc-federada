@@ -58,6 +58,7 @@ from ..dominio.nuvem import (
 from ..dominio.federacao.wire import CODIGOS_PROPRIOS, ErroDoFio
 from ..dominio.erros import (
     ArestaInvalida,
+    ConflitoDeVersao,
     DadoInvalido,
     ErroDeDominio,
     MutacaoForaDaRaiz,
@@ -234,6 +235,30 @@ def registrar_tradutores(app: FastAPI) -> None:
                 "operacao": erro.operacao,
                 "ferramenta": erro.ferramenta,
                 "raiz": erro.raiz,
+            },
+        )
+
+    @app.exception_handler(ConflitoDeVersao)
+    async def _conflito_de_versao(request: Request, erro: ConflitoDeVersao):
+        """Perda de atualização recusada — e recusada em voz alta.
+
+        Antes desta tradução a segunda escrita não era recusada de jeito nenhum: ela
+        gravava o retrato que tinha em memória e a reconciliação apagava do banco o que a
+        primeira acabara de acrescentar. Vinte requisições concorrentes de criação de nó
+        respondiam vinte vezes `201 Created` e persistiam UM nó.
+
+        Os dois números vão no `details` porque é com eles que o cliente se recupera
+        sozinho — recarrega a `versao_atual`, reaplica a intenção, tenta de novo — e
+        porque reconstruí-los do texto da mensagem é o que o §A.7 proíbe.
+        """
+        return _resposta(
+            409,
+            "VERSION_CONFLICT",
+            str(erro),
+            detalhes={
+                "agregado": erro.agregado,
+                "versao_lida": erro.versao_lida,
+                "versao_atual": erro.versao_atual,
             },
         )
 

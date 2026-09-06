@@ -18,7 +18,7 @@
       },
       {
         "title": "📐 Corpus de planejamento",
-        "content": "12 specs · 8 módulos (M1–M8) · 8 ADRs · 359 RF · 114 RI · 105 RNF · 71 regras de negócio · 61 integrações. Números contados pelo gerador, não declarados."
+        "content": "12 specs · 8 módulos (M1–M8) · 10 ADRs · 359 RF · 114 RI · 105 RNF · 71 regras de negócio · 61 integrações. Números contados pelo gerador, não declarados."
       },
       {
         "title": "🤝 Federação",
@@ -414,6 +414,22 @@
       "description": "1. O site de produto é 100% gerado por script versionado neste repositório. Nenhuma página do site é editada à mão; mudança no site é mudança no gerador ou nas specs que ele lê. 2. O gerador é o `spec-to-code-docs` vendorizado em `tools/product-site/` 🟡 PLANEJADO (a vendorização é entrega deste ciclo 001), com atribuição à origem (`daruskills/spec-to-code-docs`) registrada no diretório vendorizado",
       "principios": "P6 — o site é rastreabilidade viva: uma projeção gerada das",
       "path": "docs/adr/0008-site-de-produto-gerado-por-script.md"
+    },
+    {
+      "n": "0009",
+      "title": "A interface da aplicação decide proposta por `/toc/propostas`: mesma máquina de estados, mesmo traço, projeção estruturada",
+      "status": "Aceita",
+      "description": "1. A aceitação da geração assistida é a confirmação de uma proposta de ação, e nada mais. A tela não escreve no estado: ela cria a proposta no servidor (que nasce `proposed` e vai a `awaiting_approval`, porque a ação é `confirm`) e depois a confirma (`confirmed → executing → executed`). Quem escreve na Nuvem de Conflito é o executor do catálogo, depois da decisão, com traço correlacionado ao `prop",
+      "principios": "P2 (INEGOCIÁVEL) — \"nada de segundo protocolo […] verbo",
+      "path": "docs/adr/0009-superficie-de-proposta-para-a-interface-da-aplicacao.md"
+    },
+    {
+      "n": "0010",
+      "title": "Trava otimista por versão lida: a escrita do agregado condiciona-se à versão que leu, e o perdedor recebe `409 VERSION_CONFLICT`",
+      "status": "Aceita",
+      "description": "1. O agregado guarda a versão que leu. `Projeto.versao_lida` (com `init=False`, `compare=False`, `repr=False`, como o contador `_profundidade_da_raiz`) é preenchido pelo adaptador ao reidratar e sincronizado por `Projeto.confirmar_gravacao()` depois do commit. `0` significa \"nunca foi gravado\", e é ele que distingue inserção de atualização. Não é estado de negócio: é estado de sincronia com o repo",
+      "principios": "P2 (INEGOCIÁVEL) — \"nada de segundo protocolo […] tela é",
+      "path": "docs/adr/0010-trava-otimista-por-versao-lida.md"
     }
   ],
   "principles": [
@@ -471,7 +487,7 @@
     ],
     [
       "ADRs",
-      "8"
+      "10"
     ],
     [
       "Princípios do projeto (P1–P7)",
@@ -519,11 +535,11 @@
     ],
     [
       "Scripts de aptidão",
-      "18"
+      "28"
     ],
     [
       "Jornadas vivas",
-      "0"
+      "4"
     ],
     [
       "Linhas de código de produção",
@@ -533,7 +549,7 @@
   "counts": {
     "specs": 12,
     "modules": 8,
-    "adrs": 8,
+    "adrs": 10,
     "rf": 359,
     "ri": 114,
     "rnf": 105,
@@ -543,8 +559,8 @@
     "lacunas": 58,
     "clarify": 55,
     "skills": 6,
-    "scripts": 18,
-    "journeys": 0,
+    "scripts": 28,
+    "journeys": 4,
     "cycles": 12,
     "principles": 7,
     "requisitos": 578
@@ -9551,16 +9567,34 @@
       "path": "scripts/check-agents.sh"
     },
     {
+      "name": "check-arquitetura.sh",
+      "description": "a função de aptidão do P3 (DDD + hexagonal), executável.",
+      "type": "Bash",
+      "path": "scripts/check-arquitetura.sh"
+    },
+    {
       "name": "check-caminhos.sh",
       "description": "fitness function for rule R4 (CLAUDE.md): a cited path is an open path.",
       "type": "Bash",
       "path": "scripts/check-caminhos.sh"
     },
     {
+      "name": "check-canal.sh",
+      "description": "o canal `ghd.*` recusa os três defeitos que a norma registrou.",
+      "type": "Bash",
+      "path": "scripts/check-canal.sh"
+    },
+    {
       "name": "check-conformance.sh",
       "description": "the executable answer to \"are you following Maestro?\".",
       "type": "Bash",
       "path": "scripts/check-conformance.sh"
+    },
+    {
+      "name": "check-conformidade-aph.sh",
+      "description": "sobe o serviço e roda a suíte de conformidade do Padrão APH.",
+      "type": "Bash",
+      "path": "scripts/check-conformidade-aph.sh"
     },
     {
       "name": "check-ecosystem.sh",
@@ -9575,16 +9609,46 @@
       "path": "scripts/check-evals.sh"
     },
     {
+      "name": "check-evidencia-colada.sh",
+      "description": "a regra R1 virada portão executável.",
+      "type": "Bash",
+      "path": "scripts/check-evidencia-colada.sh"
+    },
+    {
       "name": "check-install.sh",
       "description": "is the method installed in THIS repository, and does the",
       "type": "Bash",
       "path": "scripts/check-install.sh"
     },
     {
+      "name": "check-jornadas.sh",
+      "description": "a Iron Law da skill `living-journey`, virada portão executável.",
+      "type": "Bash",
+      "path": "scripts/check-jornadas.sh"
+    },
+    {
       "name": "check-links.sh",
       "description": "every relative link in the repository points at a file that exists.",
       "type": "Bash",
       "path": "scripts/check-links.sh"
+    },
+    {
+      "name": "check-manifesto.sh",
+      "description": "o manifesto valida contra o schema NORMATIVO do Padrão APH.",
+      "type": "Bash",
+      "path": "scripts/check-manifesto.sh"
+    },
+    {
+      "name": "check-politica.sh",
+      "description": "a política sempre-verdadeira nunca é composta em produção.",
+      "type": "Bash",
+      "path": "scripts/check-politica.sh"
+    },
+    {
+      "name": "check-raiz-do-agregado.sh",
+      "description": "a chave da raiz do agregado não sai do domínio.",
+      "type": "Bash",
+      "path": "scripts/check-raiz-do-agregado.sh"
     },
     {
       "name": "check-retro.sh",
@@ -9609,6 +9673,18 @@
       "description": "fitness function for `specs/NNN-slug/`: the four artifacts exist, the",
       "type": "Bash",
       "path": "scripts/check-specs.sh"
+    },
+    {
+      "name": "check-trava-otimista.sh",
+      "description": "nenhuma escrita de agregado sai sem a trava de versão.",
+      "type": "Bash",
+      "path": "scripts/check-trava-otimista.sh"
+    },
+    {
+      "name": "check-vazamento.sh",
+      "description": "fitness function for rule RNF-03 / ADR 0006: no real person's data",
+      "type": "Bash",
+      "path": "scripts/check-vazamento.sh"
     },
     {
       "name": "evidencia.sh",
@@ -9641,8 +9717,37 @@
       "path": "scripts/retro.sh"
     }
   ],
-  "journeys": [],
-  "journeys_note": "Nenhuma jornada ainda, por decisão: jornada sem captura de build real é ficção (princípio P6). A convenção está em `docs/jornadas/README.md`; as jornadas nascem no ciclo em que a sua ferramenta passa a existir.",
+  "journeys": [
+    {
+      "id": "001-chegada-e-embarque",
+      "name": "J-01 · Chegada e embarque",
+      "description": "",
+      "steps": 0,
+      "path": "docs/jornadas/001-chegada-e-embarque.md"
+    },
+    {
+      "id": "002-primeiro-projeto-e-ara",
+      "name": "J-02 · Primeiro projeto e a Árvore da Realidade Atual",
+      "description": "",
+      "steps": 0,
+      "path": "docs/jornadas/002-primeiro-projeto-e-ara.md"
+    },
+    {
+      "id": "003-nuvem-de-conflito",
+      "name": "J-03 · A Nuvem de Conflito",
+      "description": "",
+      "steps": 0,
+      "path": "docs/jornadas/003-nuvem-de-conflito.md"
+    },
+    {
+      "id": "007-a-travessia",
+      "name": "J-07 · A travessia — da Árvore da Realidade Atual à Nuvem de Conflito",
+      "description": "",
+      "steps": 0,
+      "path": "docs/jornadas/007-a-travessia.md"
+    }
+  ],
+  "journeys_note": "",
   "stack": {
     "interface": "React + TypeScript (Vite)",
     "serviço": "FastAPI (Python)",
@@ -17071,16 +17176,18 @@
         "desc": "Este corpus: método instalado, constituição, visão medida da linhagem, 8 ADRs, 12 specs, roadmap, site de produto",
         "raia": "plena",
         "portoes": [
-          "Portão humano: o Product Steward ratifica constituição, os 8 ADRs e as respostas às cinco perguntas da `docs/produto/visao.md` §7 (ou o adiamento explícito de cada uma).",
-          "Portão de revisão: revisão independente em contexto fresco sobre o corpus inteiro, com as contas reconferidas (regra R1 — toda medição citada re-executa).",
-          "Portões executáveis: `scripts/check-install.sh`, `scripts/check-links.sh` e `scripts/check-caminhos.sh` verdes, com o tamanho do que examinaram na saída (regra R2).",
-          "Portão de honestidade: nenhum selo 🟢 sem `arquivo:linha`; nenhuma contagem sem a saída colada."
+          "Portão humano — ABERTO, indelegável: são sete itens, tabelados no §8 do `qa-report.md` — ratificar a constituição e os 8 ADRs; responder as cinco perguntas da `docs/produto/visao.md` §7 e as três dúvidas do `## Clarify`; ratificar o critério 11 reescrito; autorizar a entrega da mensagem 002 ao método; aceitar ou recusar as sete dívidas do §9; e autorizar a promoção. O procedimento executável da promoção — comando, variáveis de ambiente, o que fica gravado e como reverter — está em `docs/governance/como-fechar-um-ciclo.md`, escrito por um agente que não a executou e não pode executá-la.",
+          "Portão de revisão — cumprido: a revisão independente foi um gauntlet de crítica às cegas, 10 peças julgadas por críticos em contexto fresco contra dois corpora externos (o da irmã `gestaodeprioridades` e o do PROJETO_ECS). Placar: 9 vitórias na primeira rodada, uma derrota real — a visão de produto, por circularidade da base autoral —, retrabalho dirigido pela lacuna nomeada e vitória no rejulgamento: 10/10. Os achados que ficaram abertos estão listados no `qa-report.md` §5, não foram apagados.",
+          "Portões executáveis — verdes, com o denominador na saída (regra R2, medidos em 2026-09-04): `scripts/check-install.sh` (7 camadas, 6 skills) · `scripts/check-links.sh` (`checked: 342`) · `scripts/check-caminhos.sh` (76 arquivos, 701 caminhos) · `scripts/check-specs.sh` (12 ciclos, 628 verificações) · `scripts/check-rounds.sh` (11 rounds, 77 conferências) · `scripts/check-adrs-sucessao.sh` (8 ADRs, 32 verificações) · `scripts/check-vazamento.sh` (195 arquivos, 51 485 linhas, 2 557 registros JSON) · `scripts/tests/run-sabotagem.sh` (5 bases aceitas, 27 sabotagens reprovadas) · `python3 docs/produto/dados/medir-base.py` (base sintética válida). Os denominadores que dependem do tamanho do corpus sobem quando ele cresce — é o comportamento que a regra R2 pede, não instabilidade.",
+          "Portão executável — um vermelho, declarado em vez de contornado: `scripts/check-conformance.sh 001` sai 1 por causa externa (os pisos do script são números absolutos de ciclo do repositório canônico do método, e um repositório que começa em 001 nunca os alcança — P1 impede consertar lá, então foi relatado e parado em `mensagens/002-para-maestro-pisos-absolutos-de-ciclo.md`). Consequência prática: o `scripts/promote-main.sh` aborta no próprio portão de conformidade, e a rota manual que o script autoriza está escrita em `docs/governance/como-fechar-um-ciclo.md` §4 e §5.",
+          "O segundo vermelho foi corrigido pela ponta certa e não existe mais: a linha 11 da DoD casava o caminho citado no bloco de evidência do ADR 0006 quando dizia medir vazamento de dado real de pessoa. O critério foi reescrito para medir conteúdo (portão `scripts/check-vazamento.sh`, três sinais), a troca está declarada na `spec.md`, e quatro sabotagens plantam vazamento fictício e o veem reprovar. O que falta é ratificação, não execução.",
+          "Portão de honestidade — cumprido: nenhum selo 🟢 sem `arquivo:linha`; nenhuma contagem sem a saída colada; nenhuma caixa marcada sem a evidência escrita ao lado."
         ],
         "entrada": [
           "O método Maestro instalado pelo instalador oficial e verificado (`scripts/check-install.sh`) — feito, é a condição em que este repositório nasceu.",
           "A linhagem inteira legível na sessão (as quatro gerações e os cinco natimortos) — feito, contagem colada na `docs/produto/visao.md` §3."
         ],
-        "state": "em curso",
+        "state": "planejado",
         "specDir": "001-fundacao-e-planejamento",
         "specPath": "specs/001-fundacao-e-planejamento/spec.md",
         "rf": 12,
@@ -17118,7 +17225,7 @@
           "Portão de revisão: avaliação heurística datada por jornada, no mesmo pull request."
         ],
         "entrada": [
-          "O gate humano do ciclo 001 fechado — em particular a pergunta 1 da `docs/produto/visao.md` §7 (colaboração por projeto ou isolamento por usuário) respondida, porque ela muda as telas de projeto do E1.1.",
+          "O gate humano do ciclo 001 fechado — os sete itens do §8 do `specs/001-fundacao-e-planejamento/qa-report.md` assinados e a promoção autorizada pelo procedimento de `docs/governance/como-fechar-um-ciclo.md`. Em particular a pergunta 1 da `docs/produto/visao.md` §7 (colaboração por projeto ou isolamento por usuário) respondida, porque ela muda as telas de projeto do E1.1.",
           "As specs dos módulos M1–M3 aprovadas ao menos em rascunho ratificado (os requisitos de interface saem delas)."
         ],
         "state": "planejado",
@@ -17605,7 +17712,7 @@
       },
       {
         "from": "Ciclo 002",
-        "why": "O gate humano do ciclo 001 fechado — em particular a pergunta 1 da `docs/produto/visao.md` §7 (colaboração por projeto ou isolamento por usuário) respondida, porque ela muda as telas de projeto do E1.1."
+        "why": "O gate humano do ciclo 001 fechado — os sete itens do §8 do `specs/001-fundacao-e-planejamento/qa-report.md` assinados e a promoção autorizada pelo procedimento de `docs/governance/como-fechar-um-ciclo.md`. Em particular a pergunta 1 da `docs/produto/visao.md` §7 (colaboração por projeto ou isolamento por usuário) respondida, porque ela muda as telas de projeto do E1.1."
       },
       {
         "from": "Ciclo 002",

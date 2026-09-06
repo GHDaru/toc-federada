@@ -42,20 +42,31 @@ Python 3.11.15
 
 $ python3 tools/product-site/generate.py . --output docs/product-site/data.json
 JSON escrito em docs/product-site/data.json
-  módulos=8 specs=12 adrs=8 RF=359 RI=114 RNF=105 RN=71 INT=61 fontes=176 lacunas=58 ciclos=12
+  módulos=8 specs=12 adrs=10 RF=359 RI=114 RNF=105 RN=71 INT=61 fontes=176 lacunas=58 ciclos=12
 
 $ python3 tools/product-site/render.py docs/product-site/data.json --output docs/product-site
   docs/product-site/styles.css (6209 bytes)
-  docs/product-site/index.html (48126 bytes)
-  docs/product-site/modules.html (91018 bytes)
-  docs/product-site/traceability.html (392415 bytes)
-  docs/product-site/roadmap.html (36806 bytes)
+  docs/product-site/index.html (51973 bytes)
+  docs/product-site/modules.html (91019 bytes)
+  docs/product-site/traceability.html (392417 bytes)
+  docs/product-site/roadmap.html (39783 bytes)
 Site renderizado em docs/product-site/
 ```
 
 Regerar duas vezes seguidas produz bytes idênticos (`diff -r` vazio sobre os seis
 arquivos) — é o que torna verificável o portão do ciclo 012: *"o site regenerado não diverge
 do commitado"*.
+
+> **Esta saída é derivada do repositório e envelhece com ele — e envelheceu.** A redação
+> anterior colava `adrs=8`, `index.html (48126 bytes)` e `roadmap.html (36806 bytes)`:
+> números de antes do ADR 0009 nascer e de antes de o `docs/roadmap.md` ganhar os portões
+> escritos por extenso. O site commitado tinha ficado para trás junto, e a divergência
+> passava despercebida porque ninguém re-executava o par de comandos. As **contagens** e
+> os **tamanhos** acima são agora re-derivados pelo portão
+> [`../../scripts/check-evidencia-colada.sh`](../../scripts/check-evidencia-colada.sh),
+> que lê `ls docs/adr/[0-9]*.md | wc -l` e `stat -c %s` de cada arquivo do site e reprova
+> se o que está colado aqui não bater. Mudou o corpus? Rode os dois comandos, regere o
+> site e recole — nesta ordem.
 
 ## O que o gerador lê
 

@@ -41,6 +41,8 @@ BASES=(
   "scripts/check-vazamento.sh"      "vazamento"
   "scripts/check-jornadas.sh"       "jornadas"
   "scripts/check-raiz-do-agregado.sh" "raiz-do-agregado"
+  "scripts/check-trava-otimista.sh"   "trava-otimista"
+  "scripts/check-evidencia-colada.sh" "evidencia-colada"
 )
 
 # ── as sabotagens ───────────────────────────────────────────────────────────────
@@ -208,6 +210,68 @@ SABOTAGENS=(
   "scripts/check-raiz-do-agregado.sh" "raiz-do-agregado" "ferramenta-que-nao-registra-a-raiz"
   "sed -i '/^registrar_raiz_de_ferramenta(FERRAMENTA_NC/d' apps/api/src/toc_api/dominio/nuvem.py"
   "esperava ao menos duas raízes registradas"
+
+  # --- check-trava-otimista.sh (perda de atualização) ---
+  # Cada mutação reabre UMA peça da correção — e cada peça sozinha já devolve a perda de
+  # atualização inteira, que foi medida em 20 escritas concorrentes aceitas e 1 nó no
+  # banco. A quarta é a que separa fechar a CLASSE de fechar o caso: a trava continua no
+  # M1 (Núcleo de Diagramas Lógicos) e some da Nuvem de Conflito, que grava pelo MESMO
+  # adaptador.
+  "scripts/check-trava-otimista.sh" "trava-otimista" "escrita-sem-where-de-versao"
+  "sed -i '/tabela_projeto.c.versao == projeto.versao_lida,/d' apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py"
+  "grava sem condicionar à versão lida"
+
+  "scripts/check-trava-otimista.sh" "trava-otimista" "reidratacao-sem-versao-lida"
+  "sed -i '/projeto.versao_lida = linha.versao/d' apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py"
+  "reidratação sem \`versao_lida\`"
+
+  "scripts/check-trava-otimista.sh" "trava-otimista" "rowcount-ignorado"
+  "sed -i 's/if resultado.rowcount == 0:/if False:/' apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py"
+  "não confere o \`rowcount\`"
+
+  "scripts/check-trava-otimista.sh" "trava-otimista" "nuvem-grava-por-fora-da-trava"
+  "sed -i '/def salvar_nuvem/,/confirmar_gravacao/{/_gravar_projeto(s, projeto)/d}' apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py"
+  "caminho de escrita que não passa pela trava: salvar_nuvem"
+
+  "scripts/check-trava-otimista.sh" "trava-otimista" "escrita-que-nao-confirma-a-gravacao"
+  "sed -i '/def salvar_ara/,/def salvar_nuvem/{/confirmar_gravacao/d}' apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py"
+  "não confirma a gravação: salvar_ara"
+
+  "scripts/check-trava-otimista.sh" "trava-otimista" "duplo-em-memoria-mais-permissivo"
+  "sed -i '/self._exigir_versao_lida(ara.projeto)/d' apps/api/src/toc_api/infra/persistencia/memoria.py"
+  "duplo em memória é mais permissivo"
+
+  "scripts/check-trava-otimista.sh" "trava-otimista" "codigo-fora-do-registro-do-a7"
+  "sed -i '/\"VERSION_CONFLICT\": (/,+3d' apps/api/src/toc_api/dominio/federacao/wire.py"
+  "fora do registro único"
+
+  "scripts/check-trava-otimista.sh" "trava-otimista" "409-sem-a-versao-atual"
+  "sed -i '/\"versao_atual\": erro.versao_atual,/d' apps/api/src/toc_api/http/erros.py"
+  "não carrega \`details.versao_atual\`"
+
+  # --- check-evidencia-colada.sh (regra R1 depois que o número já entrou) ---
+  # As cinco mutações atacam as duas metades do portão: a saída que envelheceu (o defeito
+  # que o criou) e as três formas de desligá-lo por dentro — registro sem destino, molde
+  # que casaria com qualquer valor, e documento citado que não existe.
+  "scripts/check-evidencia-colada.sh" "evidencia-colada" "numero-que-saiu-do-lugar"
+  "sed -i 's,arquivos de dados: 3,arquivos de dados: 2,' docs/nota.md"
+  "o comando devolve '3' e o documento não traz o molde"
+
+  "scripts/check-evidencia-colada.sh" "evidencia-colada" "saida-colada-que-envelheceu"
+  "sed -i 's,^conteudo um$,conteudo outro,' docs/nota.md"
+  "o comando devolve 'conteudo um' e o documento não traz o molde"
+
+  "scripts/check-evidencia-colada.sh" "evidencia-colada" "registro-sem-documento-de-destino"
+  "python3 -c \"import json;p='scripts/evidencia-colada.json';r=json.load(open(p));r['afirmacoes'][0]['esperado']=[];json.dump(r,open(p,'w'))\""
+  "um registro que não aponta nenhum documento passaria"
+
+  "scripts/check-evidencia-colada.sh" "evidencia-colada" "molde-que-casa-com-qualquer-valor"
+  "python3 -c \"import json;p='scripts/evidencia-colada.json';r=json.load(open(p));r['afirmacoes'][0]['esperado'][0]['molde']='arquivos de dados:';json.dump(r,open(p,'w'))\""
+  "o molde não contém"
+
+  "scripts/check-evidencia-colada.sh" "evidencia-colada" "documento-citado-e-inexistente"
+  "rm docs/nota.md"
+  "o arquivo citado não existe"
 )
 
 falhas=0

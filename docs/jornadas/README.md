@@ -68,9 +68,9 @@ invariantes e sai diferente de zero quando qualquer uma cai:
 $ scripts/check-jornadas.sh
 ── Jornadas vivas: captura, citação e heurística datada (P6) ──
   jornadas examinadas: 4 (001-chegada-e-embarque.md, 002-primeiro-projeto-e-ara.md, 003-nuvem-de-conflito.md, 007-a-travessia.md)
-  capturas em disco: 33  ·  citações de imagem: 33  ·  data das capturas (manifesto): 2026-09-06
+  capturas em disco: 36  ·  citações de imagem: 36  ·  data das capturas (manifesto): 2026-09-06
   invariantes: J1 órfã/duplicada · J2 citada e inexistente · J3 heurística datada e >= captura · J4 comando de regeneração
-  verificações executadas: 74  ·  heurísticas datadas: 4/4  ·  comandos de regeneração: 4/4
+  verificações executadas: 80  ·  heurísticas datadas: 4/4  ·  comandos de regeneração: 4/4
 
 ✓ toda captura é citada por exatamente uma jornada, toda imagem citada existe,
   toda jornada traz heurística datada não anterior às capturas e o comando que as regenera.
@@ -87,7 +87,7 @@ de regeneração — e cada uma tem de derrubá-lo **pelo motivo declarado**.
 |---|---|---|---|---|
 | J-01 | Chegada e embarque | [`001-chegada-e-embarque.md`](001-chegada-e-embarque.md) | 5 | 🟢 viva |
 | J-02 | Primeiro projeto e ARA | [`002-primeiro-projeto-e-ara.md`](002-primeiro-projeto-e-ara.md) | 16 | 🟢 viva |
-| J-03 | Nuvem de Conflito | [`003-nuvem-de-conflito.md`](003-nuvem-de-conflito.md) | 7 | 🟢 viva |
+| J-03 | Nuvem de Conflito | [`003-nuvem-de-conflito.md`](003-nuvem-de-conflito.md) | 10 | 🟢 viva |
 | J-04 | Da injeção ao plano (ARF → APR → AT) | — | — | 🟡 planejada (ciclo 008) |
 | J-05 | Focalização | — | — | 🟡 planejada (ciclo 009) |
 | J-06 | Estratégia & Táticas | — | — | 🟡 planejada (ciclo 010) |
@@ -127,24 +127,31 @@ jornada longa; dentro da J-03, no começo de outra. Ela é a sua própria jornad
 ## O que estas jornadas encontraram
 
 Uma jornada viva que só elogia não está olhando. As quatro avaliações heurísticas de
-2026-09-06 registraram **20 achados** e **17 itens conformes** — contados pelos portões
+2026-09-06 registraram **22 achados** e **20 itens conformes** — contados pelos portões
 do próprio repositório:
 
 ```text
 $ for f in docs/jornadas/00{1,2,3,7}-*.md; do echo -n "$f "; grep -cE '^\| A-[0-9]+ \|' "$f"; done
 docs/jornadas/001-chegada-e-embarque.md 5
 docs/jornadas/002-primeiro-projeto-e-ara.md 7
-docs/jornadas/003-nuvem-de-conflito.md 5
+docs/jornadas/003-nuvem-de-conflito.md 7
 docs/jornadas/007-a-travessia.md 3
+
+$ grep -hcE '^\| ✅ \|' docs/jornadas/00{1,2,3,7}-*.md | paste -sd+ | bc
+20
 ```
 
-Três achados são de severidade **Alta**:
+Dos 22, 4 achados são de severidade **Alta** — o quarto entrou com a travessia e ficou
+fora desta tabela por uma corrida, que é exatamente o defeito que o portão
+[`../../scripts/check-evidencia-colada.sh`](../../scripts/check-evidencia-colada.sh)
+passou a reprovar:
 
 | Achado | Onde | Severidade |
 |---|---|---|
 | A sessão nascida do embarque autentica `/aph/*` (`200`) mas não `/toc/*` (`401`): embarcada de verdade, a aplicação não carrega conteúdo | [J-01](001-chegada-e-embarque.md) A-01 | Alta |
 | A ficha do UDE mostra o veredito antigo depois de "Reformular", até ser fechada e reaberta | [J-02](002-primeiro-projeto-e-ara.md) A-02 | Alta |
 | "Ajustar à tela" enquadra a árvore abaixo da dobra: canvas visível vazio com 16 nós no projeto | [J-02](002-primeiro-projeto-e-ara.md) A-03 | Alta |
+| A linha de origem da nuvem derivada identifica o projeto por identificador universal em vez do nome, e não diz quais efeitos foram promovidos | [J-07](007-a-travessia.md) A-01 | Alta |
 
 Nenhum deles foi corrigido neste lote, e a razão está escrita em cada documento: são
 mudanças em código de produção, e código de produção aqui nasce por ciclo, com spec e com

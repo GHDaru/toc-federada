@@ -41,6 +41,10 @@ temporário criado com `mktemp -d` e sabota a cópia.
 | `rounds/` | `scripts/check-rounds.sh` | dois rounds com os sete campos, uma dependência acíclica e dois defeitos com um destino cada |
 | `specs/` | `scripts/check-specs.sh` | um ciclo sintético com os quatro artefatos, as quinze seções, as duas tabelas de Constitution Check, a cauda e nota 96,7 na régua de prontidão do ADR 0004 §5 |
 | `vazamento/` | `scripts/check-vazamento.sh` | uma base sintética declarada (personas de papel, organização fictícia), uma jornada cuja coluna de responsável guarda **papel**, um gerador que lê só a base local — e, de propósito, um ADR com bloco de evidência **citando o caminho da base real da irmã**: é o controle de regressão do critério antigo, que confundia citação com vazamento |
+| `jornadas/` | `scripts/check-jornadas.sh` | uma jornada sintética com captura, heurística datada e o comando que a regenera, mais o `manifesto.json` que dá a data das capturas |
+| `raiz-do-agregado/` | `scripts/check-raiz-do-agregado.sh` | um agregado sintético com a guarda de raiz nas mutações e as raízes de ferramenta registradas |
+| `trava-otimista/` | `scripts/check-trava-otimista.sh` | um adaptador sintético que condiciona a escrita à versão lida e confere o `rowcount` |
+| `evidencia-colada/` | `scripts/check-evidencia-colada.sh` | um registro de duas afirmações com comando reproduzível e um documento que cola os dois valores — a base mínima do portão que confere se a saída colada ainda é a que o comando devolve |
 
 Base 100% sintética, por regra do ADR 0006: personas fictícias (**Facilitadora TOC**,
 "Instituição Horizonte"), nenhum nome, enunciado ou data de pessoa real. A regra vale aqui
@@ -50,7 +54,18 @@ como vale em spec e em captura — fixture é exatamente onde a dívida da irmã
 ## As sabotagens
 
 A tabela viva está em `scripts/tests/run-sabotagem.sh` (a mutação e o trecho exigido moram
-juntos, para não divergirem). Em resumo, 27 mutações cobrindo:
+juntos, para não divergirem). São **48** mutações sobre **9** bases — número medido, não
+lembrado, e conferido pelo `scripts/check-evidencia-colada.sh` para não envelhecer como a
+redação anterior desta linha, que dizia 27 depois que a suíte já tinha crescido:
+
+```text
+$ grep -cE '^  "scripts/check-[a-z-]+\.sh" +"[a-z-]+" "[a-z0-9-]+"$' scripts/tests/run-sabotagem.sh
+48
+$ ls -d scripts/tests/sabotagem/*/ | wc -l
+9
+```
+
+Em resumo, elas cobrem:
 
 - **`check-caminhos.sh`** — caminho nosso inexistente; caminho de repositório não isento.
 - **`check-adrs-sucessao.sh`** — antigo sem `Superseded by`; ADR sem `Princípios tocados`;
@@ -67,6 +82,14 @@ juntos, para não divergirem). Em resumo, 27 mutações cobrindo:
   coluna de responsável de tabela; registro no formato da base real da irmã (quatro campos
   do esquema dela no mesmo registro, que é como enunciado de trabalho e data de desempenho
   viajam mesmo sem nome); base real da irmã lida por código `*.py` deste repositório.
+- **`check-jornadas.sh`** — captura órfã; imagem citada e inexistente; heurística sem data;
+  heurística mais velha que a captura; jornada sem comando de regeneração.
+- **`check-raiz-do-agregado.sh`** — chave da raiz vazando para a aplicação; mutação de
+  grafo sem guarda; ferramenta que não registra a raiz.
+- **`check-trava-otimista.sh`** — as oito formas de perder escrita concorrente em silêncio.
+- **`check-evidencia-colada.sh`** — número que saiu do lugar; saída colada que envelheceu; e
+  as três formas de desligar o portão por dentro (registro sem documento de destino, molde
+  que casaria com qualquer valor, documento citado que não existe).
 
 ### Os nomes plantados são inventados, e isso foi verificado
 

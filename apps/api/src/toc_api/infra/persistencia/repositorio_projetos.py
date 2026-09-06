@@ -17,6 +17,23 @@ nó realmente sai, o que dependia dele sai com ele.
 
 A ordem das operações não é estética, é a ordem que as chaves estrangeiras impõem:
 projeto → apaga arestas que saíram → apaga nós que saíram → grava nós → grava arestas.
+
+**A trava otimista, e por que a reconciliação a torna obrigatória.** A reconciliação
+grava o retrato do agregado que está em memória e apaga do banco o que ficou fora dele.
+Isso é correto quando existe UM retrato por vez e catastrófico quando existem dois: duas
+pessoas que abriram a mesma análise leem a versão 7, cada uma acrescenta o seu nó, e a
+segunda gravação apaga o nó da primeira pelo `id.notin_` — sem exceção, sem código de
+erro, sem aviso. Medido antes do conserto: **20 escritas concorrentes de nó, 20 aceitas,
+1 nó no banco**. A coluna `versao` existia e era incrementada, mas nunca aparecia num
+`WHERE`, então era um contador, não uma trava.
+
+Agora toda gravação passa por `_gravar_projeto`, e ela condiciona a escrita à versão que
+foi LIDA (`UPDATE … WHERE versao = :versao_lida`). É o mesmo ponto para as três portas —
+`salvar` (M1), `salvar_ara` (M2) e `salvar_nuvem` (M3) —, o que fecha a classe e não o
+caso: nenhuma delas alcança as reconciliações sem passar pela trava primeiro. Quem perde
+a corrida recebe `ConflitoDeVersao` com os dois números, a transação inteira volta atrás,
+e a borda HTTP traduz em `409 VERSION_CONFLICT`. Perder é legítimo; perder sem saber, não.
+A aptidão que impede o retorno é `scripts/check-trava-otimista.sh`.
 """
 from __future__ import annotations
 
@@ -50,6 +67,7 @@ from ...dominio.nuvem import (
     StatusDeInjecao,
     reidratar_nuvem,
 )
+from ...dominio.erros import ConflitoDeVersao, NaoEncontrado
 from ...dominio.identidade import DonoDoProjeto
 from ...dominio.projeto import Projeto
 from ...dominio.valores import PosicaoNoCanvas
@@ -83,6 +101,9 @@ def _para_agregado(linha: Any, nos: tuple[No, ...], arestas: tuple[ArestaCausal,
     )
     # Carregar não é mutar: o agregado volta do banco sem eventos pendentes.
     projeto.eventos = ()
+    # A base da trava otimista: o agregado sai daqui sabendo de que versão ele partiu.
+    # Sem esta linha `versao` é só um contador em memória — que foi exatamente o defeito.
+    projeto.versao_lida = linha.versao
     return projeto
 
 
@@ -111,6 +132,7 @@ class RepositorioDeProjetosSQL:
         with self._sessao.begin() as s:
             self._gravar_projeto(s, projeto)
             self._reconciliar_grafo(s, projeto)
+        projeto.confirmar_gravacao()
 
     def _gravar_projeto(self, s, projeto: Projeto) -> None:
         linha = _para_linha(projeto)
@@ -130,21 +152,57 @@ class RepositorioDeProjetosSQL:
             )
         )
         existe = s.execute(
-            select(tabela_projeto.c.id).where(
+            select(tabela_projeto.c.versao).where(
                 tabela_projeto.c.id == projeto.id,
                 tabela_projeto.c.tenant_id == projeto.dono.inquilino_id,
             )
         ).first()
-        if existe is None:
+
+        if projeto.versao_lida == 0:
+            # Agregado que nunca foi gravado. Se já existe linha com este identificador,
+            # quem chamou está prestes a passar por cima de um registro que não leu — e é
+            # a mesma perda de atualização, só que com o retrato inteiro.
+            if existe is not None:
+                raise ConflitoDeVersao(
+                    f"projeto:{projeto.id}", versao_lida=0, versao_atual=existe.versao
+                )
             s.execute(insert(tabela_projeto).values(**linha))
-        else:
-            s.execute(
-                update(tabela_projeto)
-                .where(
+            return
+
+        if existe is None:
+            # O registro sumiu debaixo de quem o leu (exclusão DEFINITIVA por outro
+            # caminho). Recriá-lo aqui ressuscitaria dado apagado de propósito.
+            raise NaoEncontrado(str(projeto.id))
+
+        # A TRAVA. O `WHERE versao = :versao_lida` é a linha inteira do conserto: quem
+        # não leu a versão que está no banco não escreve. O PostgreSQL serializa as duas
+        # escritas no bloqueio desta linha — a segunda espera a primeira comitar, refaz o
+        # predicado sob READ COMMITTED, não casa mais, e volta com `rowcount` 0.
+        resultado = s.execute(
+            update(tabela_projeto)
+            .where(
+                tabela_projeto.c.id == projeto.id,
+                tabela_projeto.c.tenant_id == projeto.dono.inquilino_id,
+                tabela_projeto.c.versao == projeto.versao_lida,
+            )
+            .values(**{k: v for k, v in linha.items() if k != "id"})
+        )
+        if resultado.rowcount == 0:
+            # Relê a versão AGORA, e não a do `select` acima: entre um e outro a
+            # concorrente pode ter comitado, e o número que o cliente recebe tem de ser
+            # o que o banco tem, para ele recarregar e refazer.
+            atual = s.execute(
+                select(tabela_projeto.c.versao).where(
                     tabela_projeto.c.id == projeto.id,
                     tabela_projeto.c.tenant_id == projeto.dono.inquilino_id,
                 )
-                .values(**{k: v for k, v in linha.items() if k != "id"})
+            ).first()
+            if atual is None:
+                raise NaoEncontrado(str(projeto.id))
+            raise ConflitoDeVersao(
+                f"projeto:{projeto.id}",
+                versao_lida=projeto.versao_lida,
+                versao_atual=atual.versao,
             )
 
     def _reconciliar_grafo(self, s, projeto: Projeto) -> None:
@@ -280,6 +338,7 @@ class RepositorioDeProjetosSQL:
             self._gravar_projeto(s, projeto)
             self._reconciliar_grafo(s, projeto)
             self._reconciliar_ara(s, ara)
+        projeto.confirmar_gravacao()
 
     def _reconciliar_ara(self, s, ara: ProjetoARA) -> None:
         projeto_id = ara.projeto.id
@@ -488,6 +547,7 @@ class RepositorioDeProjetosSQL:
             self._gravar_projeto(s, projeto)
             self._reconciliar_grafo(s, projeto)
             self._reconciliar_nuvem(s, nuvem)
+        projeto.confirmar_gravacao()
 
     def _reconciliar_nuvem(self, s, nuvem: NuvemDeConflito) -> None:
         projeto_id = nuvem.projeto.id

@@ -95,12 +95,21 @@ painel de entidades, e o enquadramento é calculado sobre essa altura inteira. M
 navegador, na mesma corrida:
 
 ```text
-  · canvas: janela 900px · área do canvas 2761px · translate(14.561px, 1143.08px) scale(0.557317) · topo do 1º nó em 1497px
+  · canvas: janela 900px · área do canvas 2762px · translate(14.561px, 1143.33px) scale(0.557317) · topo do 1º nó em 1414px
 ```
 
-Em português: a janela tem 900 px de altura, a área do canvas tem **2 761 px**, e
+Em português: a janela tem 900 px de altura, a área do canvas tem **2 762 px**, e
 "Ajustar à tela" centrou a árvore a **1 143 px** do topo dessa área — o primeiro nó
-aparece a 1 497 px, ou seja, cerca de 600 px abaixo da dobra. É o achado **A-03**.
+aparece a 1 414 px, ou seja, cerca de 500 px abaixo da dobra. É o achado **A-03**.
+
+> **Estes quatro números vêm do `manifesto.json` da corrida cujas imagens estão acima**, e
+> não de uma corrida anterior — que foi exatamente o defeito corrigido em 2026-09-06: o
+> bloco colado dizia `2761px`, `1143.08px` e `1497px`, medidas de uma corrida que já tinha
+> sido substituída, ao lado de capturas de outra. **A medida do canvas é sensível à
+> corrida** (o layout é calculado sobre o conteúdo que o banco tem naquele instante), por
+> isso ela não é uma constante do produto e sim um dado datado. O portão
+> [`../../scripts/check-evidencia-colada.sh`](../../scripts/check-evidencia-colada.sh)
+> re-deriva esta linha do manifesto que está no disco e reprova se as duas divergirem.
 
 ### 6 · As arestas, na vista tabular
 
@@ -232,7 +241,7 @@ data. **Não houve teste com pessoa usuária.**
 | # | Achado | Heurística | Severidade | Destino |
 |---|---|---|---|---|
 | A-02 | Depois de "Reformular", a ficha continua mostrando o texto e o veredito antigos até ser fechada e reaberta — o veredito velho ao lado do texto novo | Visibilidade do estado do sistema | **Alta** | 📝 registrado — correção fora deste lote (código de produção da interface) |
-| A-03 | A área de trabalho cresce com o painel (2 761 px numa janela de 900 px) e "Ajustar à tela" enquadra a árvore **abaixo da dobra**: o canvas visível fica vazio com 16 nós no projeto | Visibilidade do estado do sistema / correspondência com o mundo real | **Alta** | 📝 registrado |
+| A-03 | A área de trabalho cresce com o painel (2 762 px numa janela de 900 px) e "Ajustar à tela" enquadra a árvore **abaixo da dobra**: o canvas visível fica vazio com 16 nós no projeto | Visibilidade do estado do sistema / correspondência com o mundo real | **Alta** | 📝 registrado |
 | A-01 | A rota vive no estado do React e não na URL: recarregar a página devolve à lista de projetos, e não há como enviar o link de uma árvore a ninguém | Controle e liberdade / flexibilidade | Média | 📝 registrado |
 | A-04 | Na largura padrão do painel, a coluna "Ações" fica cortada ("Exclu…", "Foca no canva…") — as ações existem mas não se leem | Estética e design minimalista | Média | 📝 registrado (o painel é redimensionável, o que atenua mas não resolve o estado inicial) |
 | A-05 | O relatório estrutural lista os 16 "Elos não examinados" por identificador universal (`072261e0-9546-…`), que não diz a ninguém qual elo é | Correspondência com o mundo real | Média | 📝 registrado |

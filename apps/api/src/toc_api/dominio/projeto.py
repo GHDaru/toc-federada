@@ -122,6 +122,18 @@ class Projeto:
     #: agregado que volta do banco. É o contador do `sob_a_raiz`, e é contador (e não
     #: booleano) porque uma raiz chama outra operação sua por dentro.
     _profundidade_da_raiz: int = field(default=0, init=False, repr=False, compare=False)
+    #: A versão que este agregado tinha **no banco** quando foi lido. `0` = nunca foi
+    #: gravado. É a base da trava otimista, e existe porque `versao` sozinha não serve:
+    #: ela é incrementada em memória a cada mutação, então na hora de gravar já não é
+    #: mais o número contra o qual o `WHERE` tem de casar. Sem este campo o adaptador
+    #: não teria como condicionar a escrita — que é exatamente por que a coluna `versao`
+    #: existia, era incrementada, e não protegia nada.
+    #:
+    #: Não é comparado nem entra no construtor pelo mesmo motivo do contador acima: é
+    #: estado de SINCRONIA com o repositório, não estado de negócio. Quem o preenche é o
+    #: adaptador, ao reidratar (`versao_lida = <coluna>`) e ao confirmar uma gravação
+    #: (`confirmar_gravacao()`).
+    versao_lida: int = field(default=0, init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         self.nome = _texto(self.nome, campo="nome", minimo=1, maximo=LIMITE_NOME)
@@ -380,6 +392,18 @@ class Projeto:
         self.arestas = tuple(a for a in self.arestas if a.id != alvo.id)
         self._avancar(em)
         self._emitir(ArestaExcluida, em, aresta_id=alvo.id)
+
+    # -- sincronia com o repositório ---------------------------------------------
+
+    def confirmar_gravacao(self) -> None:
+        """A gravação passou: a versão em memória passa a ser a versão do banco.
+
+        Chamado pelo adaptador DEPOIS do commit, nunca antes — confirmar uma escrita que
+        ainda pode falhar deixaria o agregado achando que está sincronizado com um banco
+        que não recebeu nada, e a próxima gravação passaria por cima de trabalho alheio
+        com a bênção da trava.
+        """
+        self.versao_lida = self.versao
 
     # -- eventos -----------------------------------------------------------------
 

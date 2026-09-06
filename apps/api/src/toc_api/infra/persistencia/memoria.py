@@ -8,12 +8,19 @@ banco. Duas diferenças conscientes em relação ao que lemos lá:
    publicava contas do repositório; aqui a fixture é responsabilidade de quem testa.
 2. **Filtra por inquilino igual ao SQL.** Um duplo mais permissivo que o adaptador real
    faz a suíte ficar verde sobre um isolamento que não existe.
+3. **Tem a MESMA trava otimista do SQL.** Pelo mesmo motivo do item 2, e com um caso
+   nomeado: enquanto o adaptador real passou a recusar a segunda escrita da mesma versão
+   (`ConflitoDeVersao`) e este duplo continuasse aceitando, os testes de contrato — que
+   rodam sobre ele — ficariam verdes sobre uma perda de atualização que o banco de
+   verdade recusa. A trava aqui é a comparação em Python do que lá é
+   `UPDATE … WHERE versao = :versao_lida`.
 """
 from __future__ import annotations
 
 from copy import deepcopy
 from uuid import UUID
 
+from ...dominio.erros import ConflitoDeVersao
 from ...dominio.projeto import Projeto
 
 
@@ -23,7 +30,24 @@ class RepositorioDeProjetosEmMemoria:
         self._aras: dict[UUID, object] = {}
         self._nuvens: dict[UUID, object] = {}
 
+    def _exigir_versao_lida(self, projeto: Projeto) -> None:
+        """A trava otimista do duplo — a mesma regra do `WHERE versao =` do adaptador SQL."""
+        guardado = self._itens.get(projeto.id)
+        if guardado is None:
+            # Nada guardado: é inserção. Não há caminho que apague neste duplo, então
+            # "sumiu debaixo de quem leu" — o `NaoEncontrado` do adaptador SQL — não tem
+            # como acontecer aqui.
+            return
+        if projeto.versao_lida != guardado.versao:
+            raise ConflitoDeVersao(
+                f"projeto:{projeto.id}",
+                versao_lida=projeto.versao_lida,
+                versao_atual=guardado.versao,
+            )
+
     def salvar(self, projeto: Projeto) -> None:
+        self._exigir_versao_lida(projeto)
+        projeto.confirmar_gravacao()
         # Cópia na fronteira: sem isso, mutar o agregado devolvido mutaria o "banco" sem
         # passar por `salvar` — e o teste de exclusão reversível passaria por acidente.
         self._itens[projeto.id] = deepcopy(projeto)
@@ -62,6 +86,8 @@ class RepositorioDeProjetosEmMemoria:
     # atende metade das portas faria a composição falhar em produção e passar em dev.
 
     def salvar_ara(self, ara) -> None:
+        self._exigir_versao_lida(ara.projeto)
+        ara.projeto.confirmar_gravacao()
         self._aras[ara.projeto.id] = deepcopy(ara)
         self._itens[ara.projeto.id] = self._aras[ara.projeto.id].projeto
 
@@ -77,6 +103,8 @@ class RepositorioDeProjetosEmMemoria:
     # desenvolvimento.
 
     def salvar_nuvem(self, nuvem) -> None:
+        self._exigir_versao_lida(nuvem.projeto)
+        nuvem.projeto.confirmar_gravacao()
         self._nuvens[nuvem.projeto.id] = deepcopy(nuvem)
         self._itens[nuvem.projeto.id] = self._nuvens[nuvem.projeto.id].projeto
 

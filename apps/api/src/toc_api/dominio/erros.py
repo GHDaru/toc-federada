@@ -66,3 +66,34 @@ class MutacaoForaDaRaiz(MutacaoRecusada):
         self.operacao = operacao
         self.ferramenta = ferramenta
         self.raiz = raiz
+
+
+class ConflitoDeVersao(ErroDeDominio):
+    """Duas escritas partiram da MESMA versão do agregado e a segunda foi recusada.
+
+    O defeito que este erro existe para tornar audível: a gravação era um retrato do
+    agregado que estava em memória, e a reconciliação apagava do banco toda linha fora
+    desse retrato. Quem lesse a versão 7, e gravasse depois de outra pessoa já ter
+    gravado a 8, **apagava o trabalho dela** — sem exceção, sem código diferente, sem
+    aviso. Numa ferramenta de facilitação em grupo isso é o pior desfecho possível: o
+    dado some e ninguém fica sabendo.
+
+    A trava é otimista: ninguém bloqueia ninguém para ler, e a escrita se condiciona à
+    versão que foi lida (`UPDATE … WHERE versao = :versao_lida`). Perder a corrida é
+    legítimo e acontece; o que não pode acontecer é perder sem saber.
+
+    `versao_lida` e `versao_atual` viajam no erro porque **o cliente precisa dos dois
+    números para se recuperar sozinho**: recarregar a versão atual, reaplicar a intenção
+    e tentar de novo. Reconstruí-los por texto de mensagem é o que o §A.7 do Anexo A do
+    Padrão APH (Aplicação ↔ Harness) proíbe — "o cliente discrimina por código e nunca
+    por mensagem", e o mesmo vale para o dado que vem no `details`.
+    """
+
+    def __init__(self, agregado: str, *, versao_lida: int, versao_atual: int) -> None:
+        super().__init__(
+            f"{agregado}: a escrita partiu da versão {versao_lida} e o registro está na "
+            f"{versao_atual} — outra escrita chegou antes; recarregue e refaça"
+        )
+        self.agregado = agregado
+        self.versao_lida = versao_lida
+        self.versao_atual = versao_atual

@@ -1,0 +1,25 @@
+{
+  "nota": "Base VÁLIDA mínima do portão check-evidencia-colada.sh. Cada sabotagem de run-sabotagem.sh muta uma cópia desta pasta.",
+  "afirmacoes": [
+    {
+      "id": "arquivos-de-dados",
+      "comando": "ls dados/*.txt | wc -l",
+      "esperado": [
+        {
+          "arquivo": "docs/nota.md",
+          "molde": "arquivos de dados: {v}"
+        }
+      ]
+    },
+    {
+      "id": "primeira-linha-do-dado",
+      "comando": "cat dados/um.txt",
+      "esperado": [
+        {
+          "arquivo": "docs/nota.md",
+          "molde": "$ cat dados/um.txt\n{v}\n```"
+        }
+      ]
+    }
+  ]
+}

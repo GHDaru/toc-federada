@@ -5,6 +5,100 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Correção — saída colada que envelheceu, e o portão que passa a reprová-la (achados de revisão independente)
+
+- **Três achados, os três de evidência e nenhum de código.** Num repositório cuja regra R1
+  diz *"nunca transcreva um `✓`: copie a linha que o script imprimiu"*, evidência que
+  envelheceu é defeito de primeira classe: o bloco tem cifrão, tem bloco de código, tem
+  cara de prova — e afirma o que o comando já não devolve.
+
+  1. `apps/api/README.md` colava `40 passed, 786 deselected, 2 warnings in 35.29s`; o mesmo
+     comando devolveu `42 passed, 797 deselected` às 02:47Z e `48 passed, 806 deselected`
+     às 02:59Z do mesmo dia, porque a suíte cresce enquanto o serviço é construído.
+  2. O CHANGELOG anunciava **33 capturas** e existem **36**
+     (`find docs/jornadas/capturas -name '*.png' | wc -l` → `36`). A mensagem de commit que
+     disse "33 telas" é história e não se reescreve; este arquivo e as jornadas podem, e
+     agora trazem o número certo com o comando ao lado.
+  3. A cauda do ciclo 012 estava vazia enquanto o trabalho existia — corrigido em
+     `specs/012-jornadas-e-autodeclaracao/qa-report.md`.
+
+- **A varredura que o achado 1 obrigou encontrou 15 afirmações envelhecidas em 5 arquivos**,
+  e a mais instrutiva não era um número errado: quatro buscas de `docs/produto/visao.md`
+  colavam `0` e devolviam `122`, `212`, `33` e `53` porque as dependências de `tocbuilderv3`
+  passaram a existir na máquina e as buscas não passavam `--exclude-dir=node_modules`. A
+  **afirmação** continuava certa e o **comando** tinha deixado de ser a testemunha dela —
+  o caso mais traiçoeiro, porque não parece defeito. Também recolados:
+  `docs/jornadas/README.md` (contagens de captura, achados e conformes),
+  `docs/jornadas/002-primeiro-projeto-e-ara.md` (medida do canvas, que era de outra
+  corrida), `tools/product-site/README.md` (com o site regerado junto) e
+  `scripts/tests/sabotagem/README.md` (`27` mutações quando a suíte tem 48).
+
+- **Portão novo — `scripts/check-evidencia-colada.sh`**, com registro em
+  `scripts/evidencia-colada.json`: cada afirmação declara o **comando** que a produz e o
+  **molde** literal em que o valor está colado; o portão re-executa e reprova quando os dois
+  divergem. Ele nasceu **vermelho** sobre as 15 afirmações do repositório e ficou verde só
+  depois das correções — o teste que reproduz o defeito veio antes da correção (P4). Entrou
+  no agregador `scripts/evidencia.sh` e ganhou **cinco sabotagens** que o derrubam pelo
+  motivo declarado, inclusive as três formas de o desligar por dentro (registro sem
+  documento de destino, molde que casaria com qualquer valor, documento citado inexistente).
+  **Limite declarado no cabeçalho do portão**: ele confere o que o registro declara, e
+  saída cara ou instável — uma suíte inteira, um tempo em segundos, um identificador
+  sorteado a cada corrida — fica de fora de propósito, com a volatilidade **dita ao lado**
+  da saída no documento.
+
+- **`docs/integracao/aderencia-aph.md` ganhou ressalva datada**: o parágrafo "Estado
+  honesto" de 2026-09-03 dizia *"nada foi implementado"* enquanto a suíte do Nível 1 do
+  `GHDaru/protocolos` fecha **11/11 verificados** contra o serviço. A matriz **não** foi
+  preenchida (é a tarefa T-07 do ciclo 012, declarada como dívida com dono no
+  `qa-report.md`): encobrir o atraso trocaria um defeito de honestidade por outro.
+
+### Correção — perda de atualização silenciosa entre duas pessoas na mesma análise (achado de revisão independente)
+
+- **Vinte escritas concorrentes de nó respondiam vinte vezes `201 Created` e persistiam
+  UM nó.** `RepositorioDeProjetosSQL` gravava o **retrato** do agregado que estava em
+  memória, e a reconciliação apagava do banco toda linha fora desse retrato
+  (`delete(… id.notin_(ids))`). Com dois retratos, o segundo apaga o trabalho do primeiro
+  — sem exceção, sem código de erro, sem aviso. Numa ferramenta de facilitação em grupo,
+  que é o que esta aplicação se propõe a ser, é o pior desfecho possível.
+
+  **Causa raiz, em duas metades** (por isso "acrescentar um `WHERE`" não bastava): a
+  escrita era incondicional (`WHERE id AND tenant_id` casa sempre) **e** o agregado não
+  guardava de que versão tinha partido — `versao` é incrementada em memória a cada
+  mutação, então na hora de gravar já não era mais o número contra o qual comparar. A
+  coluna existia, era incrementada, e o teste de domínio que a cobria passava chamando-a
+  de "bloqueio otimista": era um contador, não uma trava.
+
+  **Medido antes do conserto**, contra o PostgreSQL real: `escritas aceitas: 20 · nós no
+  banco depois: 1 · TRABALHO PERDIDO EM SILÊNCIO: 19 nó(s)`.
+
+  **Conserto** (decisão em [ADR 0010](docs/adr/0010-trava-otimista-por-versao-lida.md)):
+  - **domínio**: `Projeto.versao_lida` guarda a versão que veio do banco e
+    `Projeto.confirmar_gravacao()` a sincroniza depois do commit
+    (`apps/api/src/toc_api/dominio/projeto.py`); a recusa é o erro tipado
+    `ConflitoDeVersao`, com os dois números (`apps/api/src/toc_api/dominio/erros.py`);
+  - **adaptador**: `UPDATE … WHERE versao = :versao_lida`, `rowcount == 0` relê a versão
+    atual e levanta a recusa, e a transação inteira volta atrás
+    (`apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py`). Fecha a
+    **classe**: as três portas de escrita — `salvar` (M1, Núcleo de Diagramas Lógicos),
+    `salvar_ara` (M2, Árvore da Realidade Atual) e `salvar_nuvem` (M3, Nuvem de Conflito)
+    — gravam pelo mesmo `_gravar_projeto` e nenhuma alcança as reconciliações sem passar
+    por ele. O duplo em memória recebeu a mesma trava, senão a suíte de contrato ficaria
+    verde sobre o que o banco recusa;
+  - **borda**: `409` com `VERSION_CONFLICT` e `details: {agregado, versao_lida,
+    versao_atual}` — código próprio **declarado** no registro único do §A.7 do Anexo A do
+    Padrão APH (Aplicação ↔ Harness), porque nenhum código do registro mínimo nomeia duas
+    escritas concorrentes sobre o mesmo agregado. Quem perde a corrida agora **sabe** que
+    perdeu, e recebe o número com que recarrega e refaz;
+  - **interface**: `apps/web/src/api/erros.ts` passa a discriminar o código novo.
+
+  **Portão novo, com sabotagem própria**: `scripts/check-trava-otimista.sh` (registrado em
+  `scripts/evidencia.sh`) confere as seis peças da correção, e
+  `scripts/tests/run-sabotagem.sh` ganhou 8 mutações que provam que ele reprova quando
+  qualquer uma delas é removida.
+
+  **Depois do conserto**: `concorrência M1: 20 escritas · aceitas 1 · recusadas 19 · nós
+  no banco 1` — e as aceitas são exatamente as persistidas, que é o invariante que faltava.
+
 ### Correção — o laço da assistência não fechava na tela (achado de revisão independente)
 
 - **A pré-visualização da geração assistida era um beco sem saída.** Ela mostrava o diff
@@ -188,8 +282,20 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
   corrida — não existe imagem de outro dia num documento de hoje.
 - **Quatro jornadas vivas**, com avaliação heurística datada de 2026-09-06:
   `001-chegada-e-embarque.md`, `002-primeiro-projeto-e-ara.md`,
-  `003-nuvem-de-conflito.md` e `007-a-travessia.md`. Corrida de 2026-09-06:
-  **33 capturas, 5 153 510 bytes, 0 falhas, 44,1 s**.
+  `003-nuvem-de-conflito.md` e `007-a-travessia.md`. Corrida de 2026-09-06, medida pelo
+  `manifesto.json` que a própria corrida escreveu: **36 capturas,
+  5 771 779 bytes, 0 falhas**
+  (`find docs/jornadas/capturas -name '*.png' | wc -l` → `36`, conferido pelo
+  portão `scripts/check-evidencia-colada.sh`). **O tempo de parede não entra aqui**: ele
+  muda a cada execução e fingi-lo estável seria o mesmo defeito com outra roupa. O
+  `manifesto.json` não grava duração, então não há de onde copiá-la: inventá-la aqui seria
+  a violação que esta própria entrada está corrigindo.
+
+  > **Correção de honestidade (2026-09-06).** A primeira redação desta entrada dizia
+  > **33 capturas, 5 153 510 bytes, 44,1 s** — números de uma corrida anterior, colados
+  > depois que a corrida seguinte já tinha gravado 36 imagens. A mensagem de commit que
+  > anunciou "33 telas" é história e não se reescreve; este arquivo e as jornadas podem, e
+  > por isso trazem o número certo com o comando ao lado.
 - **A travessia (J-07) é jornada própria**: a mesma pessoa monta a Árvore da Realidade
   Atual com Efeitos Indesejáveis validados por regra pura, promove dois deles a dilema em
   um clique, e a Nuvem que nasce declara a origem — conferida pelo script contra os nós

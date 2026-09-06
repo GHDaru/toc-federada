@@ -21,6 +21,18 @@
 > de propósito.** Uma linha só muda de status quando houver path e teste — nunca por
 > intenção. A norma evolui em `GHDaru/protocolos`; ao mudar de versão, revisar esta
 > matriz.
+>
+> **Ressalva de 2026-09-06 — este documento está ATRASADO em relação ao código, e dizê-lo
+> é mais honesto do que deixar o parágrafo acima passar por atual.** O parágrafo de
+> 2026-09-03 continua verdadeiro sobre a matriz (`○ planejado` em 54 linhas, nenhuma
+> `● atendido`) e **deixou de ser verdadeiro sobre o repositório**: o serviço existe, a
+> borda federada existe, e a suíte de conformidade do Nível 1 do `GHDaru/protocolos` roda
+> **11/11 verificados** contra ele — `scripts/check-conformidade-aph.sh`, saída colada em
+> [`../../specs/012-jornadas-e-autodeclaracao/qa-report.md`](../../specs/012-jornadas-e-autodeclaracao/qa-report.md).
+> Atualizar a matriz linha a linha é a tarefa **T-07 do ciclo 012**, que **não foi
+> executada**; a dívida está declarada lá, com dono. Ninguém deve ler esta matriz como o
+> estado de hoje da fronteira até que aquela tarefa feche — e nenhuma linha vai virar
+> `● atendido` aqui sem path e teste, que é a regra que este documento tem desde o começo.
 
 ## Como usar este documento
 

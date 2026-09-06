@@ -62,7 +62,11 @@ Sem `DATABASE_URL`, a fábrica de persistência devolve o backend em memória �
 serviço, e continua valendo:
 
 ```text
-$ env -u DATABASE_URL uv run python -c "..."   # Configuracao.do_ambiente + criar_persistencia
+$ env -u DATABASE_URL uv run python -c "import os
+from toc_api.infra.configuracao import Configuracao
+from toc_api.infra.persistencia.fabrica import criar_persistencia
+p = criar_persistencia(Configuracao.do_ambiente(os.environ))
+print(f'backend = {p.backend} | motor = {p.motor} | repositorio = {type(p.projetos).__name__}')"
 backend = memoria | motor = None | repositorio = RepositorioDeProjetosEmMemoria
 ```
 
@@ -72,19 +76,33 @@ local de desenvolvimento e usa `DATABASE_URL` só como sobreposição. Quem deci
 é o **banco responder**, não a variável existir:
 
 ```text
+# corrida de 2026-09-06 02:59Z — as contagens abaixo são desta corrida, não constantes
 $ env -u DATABASE_URL uv run pytest -m integracao -q
-40 passed, 786 deselected, 2 warnings in 35.29s
+48 passed, 806 deselected, 3 warnings in 44.54s
 
 $ DATABASE_URL='postgresql+psycopg://toc@/toc_federada?host=/var/run/postgresql&port=59999' \
     uv run pytest -m integracao -q -rs
-SKIPPED [1] tests/integracao/test_nuvem_no_postgres.py:232: PostgreSQL indisponível em
+SKIPPED [1] tests/integracao/test_concorrencia_no_postgres.py:113: PostgreSQL indisponível em
 postgresql+psycopg://toc@/toc_federada?host=/var/run/postgresql&port=59999: ...
-40 skipped, 786 deselected, 2 warnings in 1.38s
+48 skipped, 806 deselected, 2 warnings in 1.41s
 ```
 
-O que continua verdade, e é o que importa: a suíte de integração é **pulada com o motivo**
-quando o PostgreSQL não responde — nunca substituída por SQLite. Um teste de integração
-que cai em SQLite não integrou nada.
+> **Estes quatro números mudam, e o parágrafo antes fingia que não.** Até 2026-09-06 este
+> bloco colava `40 passed, 786 deselected, 2 warnings in 35.29s` como se fosse uma
+> propriedade do serviço; o mesmo comando devolveu `42 passed, 797 deselected` às 02:47Z e
+> `48 passed, 806 deselected` às 02:59Z do dia em que isto foi escrito — doze minutos, seis
+> testes de integração a mais, porque a suíte cresce enquanto o serviço é construído. O
+> **tempo em segundos** muda a cada execução, ponto — nem entre corridas iguais ele se
+> repete. Por isso a corrida está datada acima e por isso estes números **não** entram no
+> registro de `scripts/evidencia-colada.json` (cujo limite está escrito no cabeçalho do
+> portão): o que se registra ali é o que é barato e reproduzível, e uma suíte inteira não é
+> nenhum dos dois. Quem quiser o número de hoje roda a linha de cima; ela está aqui para
+> ser rodada, não para ser lida.
+
+O que **não** muda, e é o que este trecho existe para provar: a suíte de integração é
+**pulada com o motivo** quando o PostgreSQL não responde — nunca substituída por SQLite.
+`passed` vira `skipped` no mesmo denominador, e a linha `SKIPPED` nomeia o arquivo, a linha
+e o erro do banco. Um teste de integração que cai em SQLite não integrou nada.
 
 ## Variáveis de ambiente
 

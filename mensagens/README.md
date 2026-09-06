@@ -48,6 +48,8 @@ e nenhum dono.
 | [001](001-para-daruskills-defeitos-do-gerador-de-site.md) | `GHDaru/daruskills` | sete achados no gerador `spec-to-code-docs` | aberta |
 | [002](002-para-maestro-pisos-absolutos-de-ciclo.md) | `GHDaru/maestro` | pisos de retroatividade absolutos reprovam repositório recém-instalado | aberta |
 | [003](003-para-ghdaru-o-que-falta-para-embarcar-a-toc.md) | `GHDaru/ghdaru` | o que falta no lado hospedeiro para a `toc-federada` embarcar (sete achados, um bloqueio da irmã retirado) | aberta |
+| [004](004-para-protocolos-rodar-a-suite-sem-escrever-no-repo.md) | `GHDaru/protocolos` | a suíte de conformidade não roda a partir de um clone somente-leitura | aberta |
+| [005](005-para-protocolos-codigo-de-conflito-de-versao-no-a7.md) | `GHDaru/protocolos` | o registro mínimo do §A.7 não tem código para conflito de versão de agregado | aberta |
 
 > Toda mensagem nova entra no fim da tabela, com o próximo número livre. O estado muda
 > conforme o destino responde: aberta → respondida → resolvida, ou retirada.

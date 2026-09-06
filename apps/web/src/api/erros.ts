@@ -48,6 +48,8 @@ export const CODIGOS = {
   CONECTOR_INVALIDO: "INVALID_CONNECTOR",
   TRANSICAO_INVALIDA: "INVALID_TRANSITION",
   MUTACAO_RECUSADA: "MUTATION_REFUSED",
+  /** Outra pessoa gravou antes: `details.versao_atual` é a versão a recarregar. */
+  CONFLITO_DE_VERSAO: "VERSION_CONFLICT",
   TOPOLOGIA_FIXA: "FIXED_TOPOLOGY",
   /** O estado é de uma ferramenta e a chamada não veio pela raiz do agregado dela. */
   EXIGE_RAIZ_DO_AGREGADO: "AGGREGATE_ROOT_REQUIRED",

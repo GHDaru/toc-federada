@@ -49,6 +49,16 @@ PORTOES=(
   # `aplicacao → dominio` é o sentido permitido. Sem esta linha, o agregador diria "todos
   # os portões verdes" sobre um agregado que voltou a ter duas portas para o mesmo estado.
   "scripts/check-raiz-do-agregado.sh|raiz do agregado: operação só pela raiz (DDD)|arquivos Python varridos|guardas .* encontradas|raízes de ferramenta registradas"
+  # Entrou com o conserto da perda de atualização: nenhum portão media escrita
+  # concorrente, e o resultado foi um adaptador que aceitava 20 escritas e persistia 1 nó
+  # — verde em tudo, 19 pessoas perdendo trabalho em silêncio. Sem esta linha o agregador
+  # diria "todos os portões verdes" sobre uma aplicação que se vende como multiusuário.
+  "scripts/check-trava-otimista.sh|trava otimista: escrita condicionada à versão lida|arquivos varridos|caminhos de escrita conferidos|guardas .* encontradas"
+  # Entrou com a varredura de honestidade: nenhum portão media se a saída COLADA num
+  # documento ainda é o que o comando devolve. Um número colado com honestidade em março é
+  # uma afirmação falsa em setembro, vestida de prova. Sem esta linha o agregador diria
+  # "todos os portões verdes" sobre um README que anuncia 40 testes onde a suíte tem 48.
+  "scripts/check-evidencia-colada.sh|evidência colada: o comando ainda devolve o número (R1)|afirmações registradas|ocorrências conferidas"
   # Os quatro da federação (specs 003 e 006). Entraram com o módulo M7, pelo mesmo motivo
   # do de arquitetura: sem eles o agregador diria "todos os portões verdes" enquanto NADA
   # teria olhado para a fronteira — nem para o manifesto que circula na admissão, nem para
