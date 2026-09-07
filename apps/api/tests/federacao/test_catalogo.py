@@ -96,7 +96,7 @@ def test_catalogo_composto_sem_write_nao_tem_nenhuma_acao_confirm() -> None:
     print(medida)
     assert [a.risk for a in visiveis_leitura].count("confirm") == 0
     assert len(visiveis_leitura) < len(visiveis_completo)
-    assert "16 ações declaradas" in medida, medida
+    assert "20 ações declaradas" in medida, medida
 
 
 def test_principal_anonimo_ve_catalogo_vazio() -> None:
@@ -168,7 +168,14 @@ def test_a_projecao_de_manifesto_bate_campo_a_campo_com_o_contrato_versionado() 
 def test_batch_atomicity_so_existe_nas_acoes_desenhadas_para_lote() -> None:
     """RF-28 e §A.5: ausente significa "não desenhada para lote", nunca `per_item`."""
     de_lote = {a.action_id for a in CATALOGO_TOC.acoes if a.batch_atomicity}
-    assert de_lote == {"toc.criar_nos", "toc.criar_arestas", "toc.excluir_nos"}
+    assert de_lote == {
+        "toc.criar_nos", "toc.criar_arestas", "toc.excluir_nos",
+        # As três de criação da Árvore da Realidade Atual (ADR 0015). São de lote pela
+        # US-07 da spec 006 — oito Efeitos Indesejáveis numa confirmação só, desfecho por
+        # alvo —, com `minItems: 1` para a fundação poder propor um de cada vez, que é o
+        # que a RF-32 da spec 005 pede.
+        "toc.suggest_udes", "toc.suggest_causes", "toc.suggest_relations",
+    }
 
     for acao in CATALOGO_TOC.acoes:
         if acao.batch_atomicity:

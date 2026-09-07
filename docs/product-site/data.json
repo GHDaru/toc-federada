@@ -2,7 +2,7 @@
   "project": {
     "name": "TOC Federada",
     "mark": "TF",
-    "subtitle": "8 de 8 módulos com código · 48958 linhas",
+    "subtitle": "8 de 8 módulos com código · 49526 linhas",
     "lang": "pt-BR",
     "theme_key": "tocfed-theme",
     "generated_from": "docs/roadmap.md · docs/produto/modulos.md · specs/ · docs/adr/"
@@ -18,7 +18,7 @@
       },
       {
         "title": "📐 Corpus de planejamento",
-        "content": "12 specs · 8 módulos (M1–M8) · 14 ADRs · 359 RF · 114 RI · 105 RNF · 71 regras de negócio · 61 integrações. Números contados pelo gerador, não declarados."
+        "content": "12 specs · 8 módulos (M1–M8) · 15 ADRs · 359 RF · 114 RI · 105 RNF · 71 regras de negócio · 61 integrações. Números contados pelo gerador, não declarados."
       },
       {
         "title": "🤝 Federação",
@@ -26,11 +26,11 @@
       },
       {
         "title": "🧱 O que já existe em código",
-        "content": "48958 linhas de produção em 181 arquivos (<code>apps/api</code> + <code>apps/web</code>), com 1514 casos de teste escritos em 125 arquivos, 144 rotas HTTP publicadas, 9 migrações Alembic sobre 36 tabelas e 8 dos 8 módulos com código. Contado pelo gerador nos arquivos; que a suíte passe é afirmação do <code>qa-report.md</code> do ciclo, com a saída colada."
+        "content": "49526 linhas de produção em 181 arquivos (<code>apps/api</code> + <code>apps/web</code>), com 1566 casos de teste escritos em 133 arquivos, 144 rotas HTTP publicadas, 9 migrações Alembic sobre 36 tabelas e 8 dos 8 módulos com código. Contado pelo gerador nos arquivos; que a suíte passe é afirmação do <code>qa-report.md</code> do ciclo, com a saída colada."
       },
       {
         "title": "⚖️ Estado honesto",
-        "content": "Nenhum ciclo foi <b>promovido</b>: o gate humano é indelegável e continua aberto em todos eles. O que existe é construção fechada do lado do agente, com 26 portões executáveis e 76 sabotagens que provam que os portões sabem reprovar, e 7 jornadas vivas com captura do build real (P6). O selo 🟡 PLANEJADO continua no requisito que ninguém mediu; 🟢 só com <code>arquivo:linha</code>."
+        "content": "Nenhum ciclo foi <b>promovido</b>: o gate humano é indelegável e continua aberto em todos eles. O que existe é construção fechada do lado do agente, com 27 portões executáveis e 81 sabotagens que provam que os portões sabem reprovar, e 7 jornadas vivas com captura do build real (P6). O selo 🟡 PLANEJADO continua no requisito que ninguém mediu; 🟢 só com <code>arquivo:linha</code>."
       }
     ],
     "callout": "<b>Barra:</b> honestidade de estado medida contra o corpus da irmã <b>gestaodeprioridades</b> (nenhuma contagem sem a saída colada — regra R1); clareza e densidade pela <b>régua Linear</b>."
@@ -466,6 +466,14 @@
       "description": "### 1. `CategoriaDoPasso` é portada, como rótulo opcional de seis valores",
       "principios": "P3 (as duas decisões são regra de domínio puro —",
       "path": "docs/adr/0014-categoria-portada-e-transicao-de-status-livre-na-snt.md"
+    },
+    {
+      "n": "0015",
+      "title": "A ação de catálogo é **declarada de uma ferramenta** e despacha pela **raiz dela**; a Árvore da Realidade Atual ganha as ações que a spec 005 já lhe prometia",
+      "status": "Aceita",
+      "description": "1. Toda ação do catálogo declara a ferramenta cuja raiz de agregado governa o projeto que ela toca. Campo novo `ferramenta` em `AcaoDoCatalogo` (o `ActionSpec` do §4.4 do Padrão APH). Invariante de domínio: ação `risk: confirm` sem `ferramenta` não entra no catálogo; o valor aceito é a genérica ou uma ferramenta cuja raiz se registrou em `registrar_raiz_de_ferramenta` — ferramenta que esquecer de ",
+      "principios": "P2 (INEGOCIÁVEL) — a matéria é o catálogo `toc.*`, que é a",
+      "path": "docs/adr/0015-acao-de-catalogo-pela-raiz-da-ferramenta.md"
     }
   ],
   "principles": [
@@ -523,7 +531,7 @@
     ],
     [
       "ADRs",
-      "14"
+      "15"
     ],
     [
       "Princípios do projeto (P1–P7)",
@@ -571,7 +579,7 @@
     ],
     [
       "Scripts de aptidão",
-      "33"
+      "34"
     ],
     [
       "Jornadas vivas",
@@ -587,15 +595,15 @@
     ],
     [
       "Linhas de código de produção",
-      "48958"
+      "49526"
     ],
     [
       "Arquivos de teste",
-      "125"
+      "133"
     ],
     [
       "Casos de teste escritos",
-      "1514"
+      "1566"
     ],
     [
       "Rotas HTTP publicadas",
@@ -611,17 +619,17 @@
     ],
     [
       "Portões executáveis (scripts/check-*.sh)",
-      "26"
+      "27"
     ],
     [
       "Sabotagens declaradas",
-      "76"
+      "81"
     ]
   ],
   "counts": {
     "specs": 12,
     "modules": 8,
-    "adrs": 14,
+    "adrs": 15,
     "rf": 359,
     "ri": 114,
     "rnf": 105,
@@ -631,19 +639,19 @@
     "lacunas": 58,
     "clarify": 55,
     "skills": 6,
-    "scripts": 33,
+    "scripts": 34,
     "journeys": 7,
     "cycles": 12,
     "principles": 7,
-    "linhas_producao": 48958,
+    "linhas_producao": 49526,
     "arquivos_producao": 181,
-    "casos_de_teste": 1514,
-    "arquivos_de_teste": 125,
+    "casos_de_teste": 1566,
+    "arquivos_de_teste": 133,
     "rotas": 144,
     "migracoes": 9,
     "tabelas": 36,
-    "portoes": 26,
-    "sabotagens": 76,
+    "portoes": 27,
+    "sabotagens": 81,
     "modulos_com_codigo": 8,
     "requisitos": 578
   },
@@ -697,7 +705,7 @@
       "shared": [],
       "code": {
         "arquivos": 29,
-        "linhas": 6962,
+        "linhas": 7034,
         "api": 16,
         "web": 13,
         "caminhos": [
@@ -777,7 +785,7 @@
       "shared": [],
       "code": {
         "arquivos": 14,
-        "linhas": 3447,
+        "linhas": 3470,
         "api": 8,
         "web": 6,
         "caminhos": [
@@ -1119,7 +1127,7 @@
       ],
       "code": {
         "arquivos": 38,
-        "linhas": 8244,
+        "linhas": 8676,
         "api": 29,
         "web": 9,
         "caminhos": [
@@ -1226,7 +1234,7 @@
       ],
       "code": {
         "arquivos": 41,
-        "linhas": 12110,
+        "linhas": 12151,
         "api": 25,
         "web": 16,
         "caminhos": [
@@ -9921,6 +9929,12 @@
   ],
   "scripts": [
     {
+      "name": "check-acao-de-catalogo.sh",
+      "description": "a ação do catálogo despacha para a raiz da ferramenta dela.",
+      "type": "Bash",
+      "path": "scripts/check-acao-de-catalogo.sh"
+    },
+    {
       "name": "check-adr.sh",
       "description": "the decision index tells the truth about the decisions.",
       "type": "Bash",
@@ -18283,17 +18297,17 @@
   "codebase": {
     "producao": {
       "arquivos": 181,
-      "linhas": 48958,
+      "linhas": 49526,
       "api_arquivos": 106,
-      "api_linhas": 34221,
+      "api_linhas": 34789,
       "web_arquivos": 75,
       "web_linhas": 14737
     },
     "testes": {
-      "arquivos": 125,
+      "arquivos": 133,
       "apoio": 21,
-      "linhas": 34530,
-      "casos": 1514
+      "linhas": 38022,
+      "casos": 1566
     },
     "camadas_api": [
       {
@@ -18301,28 +18315,28 @@
         "papel": "puro: entidades, regras e portas",
         "prefixo": "apps/api/src/toc_api/dominio/",
         "arquivos": 38,
-        "linhas": 16132
+        "linhas": 16387
       },
       {
         "nome": "aplicação",
         "papel": "puro: casos de uso e política",
         "prefixo": "apps/api/src/toc_api/aplicacao/",
         "arquivos": 17,
-        "linhas": 4697
+        "linhas": 4792
       },
       {
         "nome": "infraestrutura",
         "papel": "adaptadores: SQLAlchemy, OTel, identidade",
         "prefixo": "apps/api/src/toc_api/infra/",
         "arquivos": 23,
-        "linhas": 5366
+        "linhas": 5550
       },
       {
         "nome": "HTTP",
         "papel": "roteadores FastAPI, wire APH, composição",
         "prefixo": "apps/api/src/toc_api/http/",
         "arquivos": 17,
-        "linhas": 6406
+        "linhas": 6440
       },
       {
         "nome": "migrações",
@@ -18390,37 +18404,37 @@
         "nome": "aplicação",
         "papel": "com duplos das portas",
         "prefixo": "apps/api/tests/aplicacao/",
-        "arquivos": 11,
+        "arquivos": 12,
         "apoio": 6,
-        "casos": 129,
-        "linhas": 3606
+        "casos": 133,
+        "linhas": 3733
       },
       {
         "nome": "federação",
         "papel": "fronteira APH: catálogo, FSM, wire, snapshot",
         "prefixo": "apps/api/tests/federacao/",
-        "arquivos": 18,
+        "arquivos": 19,
         "apoio": 2,
-        "casos": 246,
-        "linhas": 5138
+        "casos": 257,
+        "linhas": 5839
       },
       {
         "nome": "contrato",
         "papel": "portas, schemas e cadeia de migrações",
         "prefixo": "apps/api/tests/contrato/",
-        "arquivos": 17,
+        "arquivos": 18,
         "apoio": 2,
-        "casos": 214,
-        "linhas": 5020
+        "casos": 219,
+        "linhas": 5256
       },
       {
         "nome": "integração",
         "papel": "contra o PostgreSQL real",
         "prefixo": "apps/api/tests/integracao/",
-        "arquivos": 17,
+        "arquivos": 22,
         "apoio": 2,
-        "casos": 104,
-        "linhas": 4752
+        "casos": 136,
+        "linhas": 7180
       },
       {
         "nome": "interface (vitest)",
@@ -18444,7 +18458,7 @@
     "modulos": {
       "M8": {
         "arquivos": 41,
-        "linhas": 12110,
+        "linhas": 12151,
         "api": 25,
         "web": 16,
         "caminhos": [
@@ -18493,7 +18507,7 @@
       },
       "M2": {
         "arquivos": 14,
-        "linhas": 3447,
+        "linhas": 3470,
         "api": 8,
         "web": 6,
         "caminhos": [
@@ -18544,7 +18558,7 @@
       },
       "M1": {
         "arquivos": 29,
-        "linhas": 6962,
+        "linhas": 7034,
         "api": 16,
         "web": 13,
         "caminhos": [
@@ -18581,7 +18595,7 @@
       },
       "M7": {
         "arquivos": 38,
-        "linhas": 8244,
+        "linhas": 8676,
         "api": 29,
         "web": 9,
         "caminhos": [
@@ -19477,6 +19491,7 @@
     ],
     "tabelas": 36,
     "portoes": [
+      "check-acao-de-catalogo.sh",
       "check-adr.sh",
       "check-adrs-sucessao.sh",
       "check-agents.sh",
@@ -19504,8 +19519,8 @@
       "check-trava-otimista.sh",
       "check-vazamento.sh"
     ],
-    "sabotagens": 76,
-    "bases_de_sabotagem": 12,
+    "sabotagens": 81,
+    "bases_de_sabotagem": 13,
     "nota": "Contagens do código como ele está escrito: arquivos, linhas, casos de teste declarados, rotas por decorador, migrações e tabelas. O gerador NÃO roda a suíte — que os testes passem é afirmação do `qa-report.md` do ciclo, com a saída colada."
   }
 }

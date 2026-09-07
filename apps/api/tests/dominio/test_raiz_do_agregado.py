@@ -5,7 +5,7 @@ Domínio) · **M1** — Núcleo de Diagramas Lógicos · **M2** — Árvore da R
 (ARA) · **M3** — Nuvem de Conflito (NC) · **UDE** — Efeito Indesejável · **TOC** — Teoria
 das Restrições · **RN** — regra de negócio.
 
-Os testes de `tests/contrato/test_http_porta_dos_fundos.py` medem o defeito pela borda,
+Os testes de `apps/api/tests/contrato/test_http_porta_dos_fundos.py` medem o defeito pela borda,
 que é onde o crítico o achou. Estes medem a **causa**, sem banco e sem rede: o `Projeto`
 de uma ferramenta recusa mutação de grafo que não venha de dentro da raiz, e as duas
 raízes existentes delegam por dentro dela.

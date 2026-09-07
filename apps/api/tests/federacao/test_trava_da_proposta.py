@@ -9,7 +9,7 @@ finitos · **SQL** — *Structured Query Language* · **HTTP** — *HyperText Tr
 Oito confirmações simultâneas da MESMA proposta `toc.criar_nos` com 30 alvos devolveram
 `{200: 8}`, gravaram 50 nós para 30 pedidos, com 22 títulos repetidos, e deixaram **oito**
 linhas de traço para uma proposta só (reprodução em
-`tests/integracao/test_corrida_de_confirmacao_no_postgres.py`).
+`apps/api/tests/integracao/test_corrida_de_confirmacao_no_postgres.py`).
 
 O diagnóstico, e é ele que decide o conserto: **a FSM guardava o objeto, não a linha.**
 `RepositorioDePropostasSQL.obter` reidrata um `PropostaDeAcao` NOVO a cada chamada, e

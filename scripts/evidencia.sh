@@ -49,6 +49,14 @@ PORTOES=(
   # `aplicacao → dominio` é o sentido permitido. Sem esta linha, o agregador diria "todos
   # os portões verdes" sobre um agregado que voltou a ter duas portas para o mesmo estado.
   "scripts/check-raiz-do-agregado.sh|raiz do agregado: operação só pela raiz (DDD)|arquivos Python varridos|guardas .* encontradas|raízes de ferramenta registradas"
+  # Entrou com o conserto da regressão que o conserto anterior criou: fechada a porta dos
+  # fundos do agregado, as quatro ações mutadoras do catálogo continuaram apontadas para
+  # os casos de uso GENÉRICOS do M1 e passaram a falhar para sempre em toda ferramenta com
+  # raiz — a assistência da fundação, que é o motivo de a aplicação ser federada, deixou de
+  # alcançar qualquer ferramenta do produto. Nenhum portão olhava para a LIGAÇÃO entre a
+  # ação e o caso de uso; sem esta linha o agregador diria "todos os portões verdes" sobre
+  # um catálogo federado que não muta nada (ADR 0015).
+  "scripts/check-acao-de-catalogo.sh|ação de catálogo × raiz da ferramenta (ADR 0015)|ações lidas do catálogo|entradas no despacho|ligações ação . caso de uso resolvidas"
   # Entrou com o conserto da perda de atualização: nenhum portão media escrita
   # concorrente, e o resultado foi um adaptador que aceitava 20 escritas e persistia 1 nó
   # — verde em tudo, 19 pessoas perdendo trabalho em silêncio. Sem esta linha o agregador

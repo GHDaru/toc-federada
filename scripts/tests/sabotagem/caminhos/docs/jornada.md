@@ -9,3 +9,7 @@ Este arquivo existe para dar ao portão algo verdadeiro para conferir:
 - um caminho **nosso** que existe: `docs/produto/visao.md`
 - um caminho **isento declarado** (outro repositório, leitura apenas): `gestaodeprioridades/docs/produto/rounds.md`
 - um **molde**, que o portão ignora de propósito: `specs/NNN-slug/spec.md`
+- um caminho **nosso sob `apps/`**, que é onde mora a aplicação inteira e que o portão
+  precisa conferir: `apps/api/src/toc_api/http/app.py`
+- um caminho da **fundação sob `apps/`**, isento declarado por prefixo próprio:
+  `apps/api/src/ghdaru_api/documents/ports/storage.py`

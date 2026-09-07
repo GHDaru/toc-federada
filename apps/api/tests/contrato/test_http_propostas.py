@@ -21,7 +21,7 @@ desfecho — inclusive na recusa (RI-04 da spec 006: recusa silenciosa é defeit
 superfície `/toc/propostas` sobre o repositório em memória — forma da resposta, ordem das
 transições, recusa por capacidade e fronteira de inquilino. A prova de que a mudança
 **sobrevive à recarga** exige banco de verdade e está em
-`tests/integracao/test_propostas_no_postgres.py`.
+`apps/api/tests/integracao/test_propostas_no_postgres.py`.
 """
 from __future__ import annotations
 

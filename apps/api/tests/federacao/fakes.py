@@ -4,7 +4,7 @@ Siglas: **APH** — Aplicação ↔ Harness.
 
 Conformam às portas de `toc_api.dominio.federacao.portas` **estruturalmente**
 (`typing.Protocol`), sem herdar nada: se a porta mudar de forma, o teste de conformidade
-em `tests/federacao/test_portas_da_federacao.py` acusa.
+em `apps/api/tests/federacao/test_portas_da_federacao.py` acusa.
 """
 from __future__ import annotations
 

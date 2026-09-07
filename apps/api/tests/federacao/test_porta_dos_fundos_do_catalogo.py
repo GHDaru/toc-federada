@@ -15,6 +15,21 @@ governada, aprovada por gate humano, mutilaria a nuvem exatamente como a rota mu
 programada nesta camada — ela vem de graça, do mesmo lugar. E o desfecho é `failed` com o
 motivo, que é a forma que o §A.5.9(b) do Anexo A do Padrão APH dá para "este alvo não
 executou": recusa de invariante é dado de desfecho, não erro de sistema.
+
+── O que mudou com o ADR 0015, e o que NÃO mudou ────────────────────────────────────────
+
+Fechar esta porta deixou a Árvore da Realidade Atual sem nenhuma ação mutadora: as quatro
+genéricas passaram a falhar em toda ferramenta com raiz, e a assistência da fundação —
+motivo de a aplicação ser federada — não alcançava ferramenta nenhuma. O ADR 0015 deu a
+cada ferramenta a ação DELA, despachada para a raiz dela, e fez o executor recusar cedo o
+desencontro de ferramenta com uma mensagem que diz onde está a ação certa.
+
+Essa mensagem é conveniência, **não** é o que protege. O teste
+`test_a_recusa_do_dominio_sobrevive_ao_catalogo_mentir` prova isso: com um catálogo que
+declara `toc.criar_nos` como sendo da nuvem — ou seja, com a guarda de borda desarmada,
+concordando com o ataque —, a invariante do domínio recusa do mesmo jeito, e recusa
+dizendo "raiz do agregado". Trocar o defeito da porta aberta pelo defeito da porta que
+depende da borda seria trocar um por outro.
 """
 from __future__ import annotations
 
@@ -110,14 +125,65 @@ def test_nenhuma_acao_mutadora_do_catalogo_mutila_uma_nuvem(cenario):
 
     for action_id, status, mensagem in desfechos:
         assert status == "failed", f"{action_id} EXECUTOU sobre a nuvem: {mensagem}"
-        assert "raiz do agregado" in mensagem, f"{action_id} falhou por outro motivo: {mensagem}"
-        assert "NuvemDeConflito" in mensagem
+        # A recusa nomeia a ferramenta do projeto e a da ação: é o que permite à fundação
+        # corrigir a chamada em vez de desistir (ADR 0015).
+        assert "'nc'" in mensagem, f"{action_id} falhou sem dizer a ferramenta: {mensagem}"
+        assert "generico" in mensagem
     print("\n" + "\n".join(f"{a}: {s} — {m}" for a, s, m in desfechos))
 
     intacta = repositorio.obter_nuvem(DONA.inquilino_id, nuvem.projeto.id)
     assert len(intacta.entidades) == 5
     assert len(intacta.arestas) == 7
     assert sorted(c.value for c in intacta.chaves) == sorted(c.value for c in ChaveDaAresta)
+
+
+def test_a_recusa_do_dominio_sobrevive_ao_catalogo_mentir(cenario):
+    """Desarme a guarda de borda e a invariante recusa igual — quem protege é o domínio.
+
+    O catálogo de mentira declara `toc.criar_nos` como ação da Nuvem de Conflito. Para
+    `_ferramenta_errada` isso é um acerto: a ferramenta da ação bate com a do projeto, e
+    ela deixa passar. O que recusa é `Projeto._exigir_raiz`, no domínio — e é por isso
+    que a mensagem aqui volta a dizer "raiz do agregado" e a nomear a raiz.
+    """
+    from dataclasses import replace
+
+    from toc_api.dominio.federacao.catalogo import CATALOGO_TOC, Catalogo
+    from toc_api.dominio.nuvem import FERRAMENTA_NC
+
+    mentiroso = Catalogo(
+        tuple(
+            replace(a, ferramenta=FERRAMENTA_NC) if a.action_id == "toc.criar_nos" else a
+            for a in CATALOGO_TOC.acoes
+        )
+    )
+    assert mentiroso.acao("toc.criar_nos").ferramenta == FERRAMENTA_NC
+
+    executor = ExecutorDoCatalogo(
+        rastreador=RastreadorNulo(),
+        projetos=cenario["repositorio"],
+        aras=cenario["repositorio"],
+        relogio=RelogioDoSistema(),
+        nuvens=cenario["repositorio"],
+        catalogo=mentiroso,
+    )
+    nuvem = cenario["nuvem"]
+
+    status, mensagem = executor.executar(
+        action_id="toc.criar_nos",
+        args={
+            "projeto_id": str(nuvem.projeto.id),
+            "nos": [{"titulo": "Sexta entidade", "tipo": "ude"}],
+            "__indice__": 0,
+        },
+        principal=PRINCIPAL,
+    )
+
+    print(f"com catálogo mentiroso: {status} — {mensagem}")
+    assert status == "failed"
+    assert "raiz do agregado" in mensagem, mensagem
+    assert "NuvemDeConflito" in mensagem
+    intacta = cenario["repositorio"].obter_nuvem(DONA.inquilino_id, nuvem.projeto.id)
+    assert len(intacta.entidades) == 5 and len(intacta.arestas) == 7
 
 
 def test_a_acao_de_leitura_do_catalogo_continua_alcancando_a_nuvem(cenario):

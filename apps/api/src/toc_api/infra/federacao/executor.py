@@ -22,7 +22,14 @@ from __future__ import annotations
 from typing import Any, Callable, Mapping
 from uuid import UUID
 
-from ...aplicacao.ara import AnalisarArvore, ValidarTextoDeUde
+from ...aplicacao.ara import (
+    AdicionarEfeito,
+    AnalisarArvore,
+    LigarNaARA,
+    MarcarUde,
+    ReformularUde,
+    ValidarTextoDeUde,
+)
 from ...aplicacao.arvores import (
     AdicionarNoDaAPR,
     AdicionarNoDaARF,
@@ -41,6 +48,7 @@ from ...aplicacao.projetos import ListarProjetos
 from ...dominio.erros import ErroDeDominio
 from ...dominio.eventos import ORIGEM_DE_GERACAO
 from ...dominio.geracao import ResultadoDeGeracao
+from ...dominio.federacao.catalogo import CATALOGO_TOC, Catalogo
 from ...dominio.federacao.principal import Principal
 from ...dominio.apr import PapelNaAPR
 from ...dominio.focalizacao import ReferenciaDeOrigemDaRestricao
@@ -80,7 +88,13 @@ class ExecutorDoCatalogo:
         motor_de_geracao: MotorDeGeracaoDeNuvem | None = None,
         arvores: RepositorioDeARF | RepositorioDeAPR | RepositorioDeAT | None = None,
         focalizacoes: RepositorioDeFocalizacao | None = None,
+        catalogo: Catalogo = CATALOGO_TOC,
     ) -> None:
+        # O catálogo entra por injeção com o padrão real porque o executor precisa saber
+        # de QUAL ferramenta é cada `action_id` — é o que permite recusar cedo, com a
+        # mensagem que diz onde está a ação certa, em vez de deixar a invariante do
+        # domínio recusar com um texto que a fundação não sabe corrigir.
+        self._catalogo = catalogo
         self._listar = ListarProjetos(rastreador=rastreador, repositorio=projetos, relogio=relogio)
         self._adicionar = AdicionarNo(rastreador=rastreador, repositorio=projetos, relogio=relogio)
         self._editar = EditarNo(rastreador=rastreador, repositorio=projetos, relogio=relogio)
@@ -92,6 +106,15 @@ class ExecutorDoCatalogo:
             if aras is not None
             else None
         )
+        # M2 — as quatro ações mutadoras da Árvore da Realidade Atual (spec 005,
+        # RF-32..RF-34). Passam pelos casos de uso DA RAIZ (`ProjetoARA`), nunca pelos
+        # genéricos do M1: é essa a diferença entre a assistência funcionar na ferramenta
+        # e mutilá-la — ou, depois da guarda da raiz, falhar para sempre nela.
+        da_ara = dict(rastreador=rastreador, repositorio=aras, relogio=relogio)
+        self._adicionar_efeito = AdicionarEfeito(**da_ara) if aras is not None else None
+        self._marcar_ude = MarcarUde(**da_ara) if aras is not None else None
+        self._ligar_na_ara = LigarNaARA(**da_ara) if aras is not None else None
+        self._reformular_ude = ReformularUde(**da_ara) if aras is not None else None
         # M3 — Nuvem de Conflito. Os três casos de uso são montados só quando há
         # repositório de nuvens composto; sem ele, o `action_id` cai no ramo que devolve
         # `failed` com o motivo, e não num `AttributeError` disfarçado de erro de sistema.
@@ -156,6 +179,12 @@ class ExecutorDoCatalogo:
             "toc.sugerir_udes": self._acao_sugerir_udes,
             "toc.analisar_suficiencia": self._acao_analisar_suficiencia,
             "toc.exportar_projeto": self._acao_exportar_projeto,
+            # M2 — a ARA, pela raiz dela (spec 005, RF-32..RF-34).
+            "toc.suggest_udes": self._acao_registrar_ude,
+            "toc.suggest_causes": self._acao_sugerir_causa,
+            "toc.suggest_relations": self._acao_sugerir_relacao,
+            "toc.suggest_reformulation": self._acao_reformular_ude,
+            # M1 — o projeto GENÉRICO, onde o próprio `Projeto` é a raiz do agregado.
             "toc.criar_nos": self._acao_criar_no,
             "toc.criar_arestas": self._acao_criar_aresta,
             "toc.atualizar_no": self._acao_atualizar_no,
@@ -184,6 +213,9 @@ class ExecutorDoCatalogo:
             # Não há caminho alternativo: um `action_id` fora da tabela não executa.
             return ("failed", f"ação {action_id!r} sem execução declarada no despacho")
         try:
+            desencontro = self._ferramenta_errada(action_id, args, principal)
+            if desencontro is not None:
+                return ("failed", desencontro)
             return acao(dict(args), principal)
         except ErroDeDominio as erro:
             # A invariante do domínio recusou. É desfecho do alvo, não exceção de sistema:
@@ -191,6 +223,53 @@ class ExecutorDoCatalogo:
             return ("failed", str(erro))
         except (ValueError, TypeError, KeyError) as erro:
             return ("failed", f"argumento inválido para {action_id}: {erro}")
+
+    def _ferramenta_errada(
+        self, action_id: str, args: Mapping[str, Any], principal: Principal
+    ) -> str | None:
+        """A ação é de outra ferramenta? Então recuse AQUI, dizendo onde está a certa.
+
+        **Isto não é o que protege o agregado.** Quem protege é `Projeto._exigir_raiz`,
+        no domínio, e o `scripts/check-raiz-do-agregado.sh` é o portão dele: mesmo que
+        esta função fosse apagada, `toc.criar_nos` continuaria recusado numa ARA. O que
+        ela acrescenta é a **mensagem acionável** — sem ela, a fundação recebia "o grafo
+        de um projeto da ferramenta 'ara' só muda pela raiz" e não tinha como saber que a
+        ação certa era `toc.suggest_udes`. Recusa que não ensina a acertar transforma
+        assistência governada em beco sem saída, que foi exatamente o achado.
+
+        Só age quando há o que comparar: ação com `ferramenta` declarada, `projeto_id`
+        nos argumentos e projeto encontrado para este inquilino. Projeto inexistente
+        segue para o caso de uso, que já sabe recusar (`NaoEncontrado`) — duplicar a
+        recusa aqui só mudaria a mensagem de um erro que já é correto.
+        """
+        try:
+            esperada = self._catalogo.acao(action_id).ferramenta
+        except ErroDeDominio:  # pragma: no cover - o despacho já garantiu que existe
+            return None
+        if esperada is None or "projeto_id" not in args:
+            return None
+        try:
+            projeto = self._projetos.obter(
+                principal.dono().inquilino_id, UUID(str(args["projeto_id"]))
+            )
+        except (ValueError, TypeError):
+            return None
+        if projeto is None or projeto.ferramenta == esperada:
+            return None
+        alternativas = sorted(
+            a.action_id
+            for a in self._catalogo.compor(principal)
+            if a.ferramenta == projeto.ferramenta and a.risk == "confirm"
+        )
+        onde = (
+            f"as ações desta ferramenta são: {', '.join(alternativas)}"
+            if alternativas
+            else "esta ferramenta não tem ação mutadora no catálogo"
+        )
+        return (
+            f"ação {action_id!r} é da ferramenta {esperada!r}; o projeto "
+            f"{args['projeto_id']} é da ferramenta {projeto.ferramenta!r} — {onde}"
+        )
 
     # -- ações de leitura ----------------------------------------------------------
     def _acao_listar_projetos(self, args: dict[str, Any], principal: Principal) -> tuple[str, str]:
@@ -248,7 +327,112 @@ class ExecutorDoCatalogo:
         )
         return ("executed", f"{len(projeto.nos)} nó(s) e {len(projeto.arestas)} aresta(s)")
 
-    # -- ações mutadoras (só chegam aqui depois do gate humano) --------------------
+    # -- M2: as quatro ações da ARA, PELA RAIZ (spec 005, RF-32..RF-34) ------------
+    #
+    # Nenhuma delas toca `AdicionarNo`, `LigarNos`, `EditarNo` ou `ExcluirNo` — os casos
+    # de uso genéricos do M1. Elas chamam `AdicionarEfeito`, `MarcarUde`, `LigarNaARA` e
+    # `ReformularUde`, que entram pelo `ProjetoARA`. É por isso que a ficha do Efeito
+    # Indesejável nasce, a validação formal roda e o exame do elo nasce `nao_examinado`:
+    # as invariantes da ferramenta moram na raiz, e quem passa por fora dela não as tem.
+    #
+    # O `proposta_id` viaja até o caso de uso e entra no span (RF-32): a mutação vinda de
+    # modelo continua distinguível de edição humana um mês depois.
+
+    def _acao_registrar_ude(self, args: dict[str, Any], principal: Principal) -> tuple[str, str]:
+        """RF-32/INT-02: o Efeito Indesejável nasce nó **e** ficha, num ato só."""
+        if self._adicionar_efeito is None or self._marcar_ude is None:
+            return ("failed", "registro indisponível: repositório de ARA não composto")
+        indice = int(args.get("__indice__", 0))
+        item = args["udes"][indice]
+        proposta = self._proposta_de(args)
+        projeto_id = UUID(str(args["projeto_id"]))
+        no = self._adicionar_efeito.rodar(
+            dono=principal.dono(),
+            projeto_id=projeto_id,
+            titulo=str(item["texto"]),
+            descricao=str(item.get("descricao") or ""),
+            posicao=PosicaoNoCanvas(PASSO_DO_CANVAS * indice, PASSO_DO_CANVAS * (indice % 3)),
+            proposta_id=proposta,
+        )
+        # Marcar dispara a validação formal dos critérios — função pura de domínio. É o
+        # ponto do RF-32: o modelo sugere o texto, quem dá o veredito decidível é a regra.
+        self._marcar_ude.rodar(
+            dono=principal.dono(),
+            projeto_id=projeto_id,
+            no_id=no.id,
+            proposta_id=proposta,
+        )
+        return ("executed", str(no.id))
+
+    def _acao_sugerir_causa(self, args: dict[str, Any], principal: Principal) -> tuple[str, str]:
+        """INT-03: a causa nasce nó **e** elo — a sugestão nunca fica solta."""
+        if self._adicionar_efeito is None or self._ligar_na_ara is None:
+            return ("failed", "sugestão indisponível: repositório de ARA não composto")
+        indice = int(args.get("__indice__", 0))
+        item = args["causas"][indice]
+        proposta = self._proposta_de(args)
+        projeto_id = UUID(str(args["projeto_id"]))
+        # O nó alvo é conferido ANTES de criar a causa. Sem isto, um `no_id` inexistente
+        # deixaria a causa gravada e o elo não — meia mutação, com um nó solto na árvore
+        # e um desfecho `failed` que não diz que algo ficou. A conferência é de borda; a
+        # invariante que recusa o elo continua sendo a do domínio.
+        alvo = UUID(str(args["no_id"]))
+        projeto = self._projetos.obter(principal.dono().inquilino_id, projeto_id)
+        if projeto is not None and not projeto.tem_no(alvo):
+            return ("failed", f"nó alvo {alvo} não existe neste projeto — nada foi criado")
+        no = self._adicionar_efeito.rodar(
+            dono=principal.dono(),
+            projeto_id=projeto_id,
+            titulo=str(item["texto"]),
+            posicao=PosicaoNoCanvas(PASSO_DO_CANVAS * indice, -PASSO_DO_CANVAS),
+            proposta_id=proposta,
+        )
+        self._ligar_na_ara.rodar(
+            dono=principal.dono(),
+            projeto_id=projeto_id,
+            origem_id=no.id,
+            destino_id=alvo,
+            rotulo=str(item.get("rotulo") or ""),
+            proposta_id=proposta,
+        )
+        return ("executed", str(no.id))
+
+    def _acao_sugerir_relacao(self, args: dict[str, Any], principal: Principal) -> tuple[str, str]:
+        """INT-04: o elo entre nós que já existem. Nasce `nao_examinado` (RF-22)."""
+        if self._ligar_na_ara is None:
+            return ("failed", "sugestão indisponível: repositório de ARA não composto")
+        indice = int(args.get("__indice__", 0))
+        item = args["relacoes"][indice]
+        aresta = self._ligar_na_ara.rodar(
+            dono=principal.dono(),
+            projeto_id=UUID(str(args["projeto_id"])),
+            origem_id=UUID(str(item["origem_id"])),
+            destino_id=UUID(str(item["destino_id"])),
+            rotulo=str(item.get("rotulo") or ""),
+            proposta_id=self._proposta_de(args),
+        )
+        return ("executed", str(aresta.id))
+
+    def _acao_reformular_ude(self, args: dict[str, Any], principal: Principal) -> tuple[str, str]:
+        """RF-34: aplicar a reformulação REEXECUTA a validação formal (RF-10)."""
+        if self._reformular_ude is None:
+            return ("failed", "reformulação indisponível: repositório de ARA não composto")
+        no = self._reformular_ude.rodar(
+            dono=principal.dono(),
+            projeto_id=UUID(str(args["projeto_id"])),
+            no_id=UUID(str(args["no_id"])),
+            texto=str(args["texto"]),
+            proposta_id=self._proposta_de(args),
+        )
+        return ("executed", str(no.id))
+
+    # -- ações mutadoras do projeto GENÉRICO (M1) ----------------------------------
+    #
+    # Elas servem o `Projeto` sem ferramenta acima, onde ele **é** a raiz do agregado.
+    # Apontá-las para um projeto de ferramenta é o defeito que o ADR 0015 nomeia: antes
+    # da guarda da raiz, mutilava; depois dela, falha para sempre. O `ferramenta` do
+    # catálogo diz `generico` e `_ferramenta_errada` recusa cedo, com a ação certa no
+    # texto — mas quem impede a escrita continua sendo a invariante do domínio.
     def _acao_criar_no(self, args: dict[str, Any], principal: Principal) -> tuple[str, str]:
         indice = int(args.get("__indice__", 0))
         item = args["nos"][indice]

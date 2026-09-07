@@ -46,6 +46,7 @@ BASES=(
   "scripts/check-evidencia-colada.sh" "evidencia-colada"
   "scripts/check-i18n.sh"             "i18n"
   "scripts/check-documentacao.sh"     "documentacao"
+  "scripts/check-acao-de-catalogo.sh" "acao-de-catalogo"
 )
 
 # ── as sabotagens ───────────────────────────────────────────────────────────────
@@ -59,6 +60,13 @@ SABOTAGENS=(
 
   "scripts/check-caminhos.sh" "caminhos" "isencao-nao-declarada"
   "sed -i 's,gestaodeprioridades/docs/produto/rounds.md,repo-desconhecido/docs/rounds.md,' docs/jornada.md"
+  "caminho(s) citado(s) que não existem"
+
+  # A isenção por prefixo `apps/` era um falso verde: `apps/api/` e `apps/web/` são a
+  # aplicação INTEIRA deste repositório, e o portão nunca conferia nenhuma delas. Esta
+  # sabotagem é a prova de que a isenção deixou de existir em bloco.
+  "scripts/check-caminhos.sh" "caminhos" "caminho-da-aplicacao-inexistente"
+  "sed -i 's,apps/api/src/toc_api/http/app.py,apps/api/src/toc_api/http/inexistente.py,' docs/jornada.md"
   "caminho(s) citado(s) que não existem"
 
   # --- check-adrs-sucessao.sh (regra R5) ---
@@ -408,6 +416,37 @@ SABOTAGENS=(
   "scripts/check-documentacao.sh" "documentacao" "verbete-sem-exemplo-sintetico"
   "sed -i '/exemplo:/d' apps/web/src/documentacao/verbetes/ara.ts"
   "verbete sem exemplo sintético"
+
+  # --- check-acao-de-catalogo.sh (ADR 0015) ---
+  # A regressão em pessoa: a ação de uma ferramenta com raiz volta a apontar para o caso
+  # de uso genérico do M1. Antes da guarda da raiz isso mutilava a ferramenta; depois
+  # dela, falha para sempre. Nenhum portão via a LIGAÇÃO — agora vê.
+  "scripts/check-acao-de-catalogo.sh" "acao-de-catalogo" "acao-de-ferramenta-no-caso-de-uso-generico"
+  "sed -i 's/\"toc.suggest_udes\": self._acao_registrar_ude,/\"toc.suggest_udes\": self._acao_criar_no,/' apps/api/src/toc_api/infra/federacao/executor.py"
+  "ferramenta com raiz acionando caso de uso genérico do M1"
+
+  # O inverso, com os papéis trocados: a ação do projeto genérico passa a escrever pela
+  # raiz de uma ferramenta. O desencontro é o mesmo e o portão tem de ver os dois lados.
+  "scripts/check-acao-de-catalogo.sh" "acao-de-catalogo" "acao-generica-no-caso-de-uso-de-ferramenta"
+  "sed -i 's/\"toc.criar_nos\": self._acao_criar_no,/\"toc.criar_nos\": self._acao_registrar_ude,/' apps/api/src/toc_api/infra/federacao/executor.py"
+  "ação genérica acionando caso de uso de ferramenta"
+
+  # Omissão é o sintoma (regra R3): a ação mutadora que não diz de que ferramenta é volta
+  # a poder apontar para qualquer camada sem ninguém notar.
+  "scripts/check-acao-de-catalogo.sh" "acao-de-catalogo" "acao-mutadora-sem-ferramenta-declarada"
+  "sed -i '/ferramenta=FERRAMENTA_ARA,/d' apps/api/src/toc_api/dominio/federacao/catalogo.py"
+  "ação mutadora sem \`ferramenta\` declarada"
+
+  # Declarada e inexecutável: a fundação recebe a ferramenta, propõe, e a proposta morre
+  # no despacho. É dívida silenciosa — o catálogo prometendo o que não entrega.
+  "scripts/check-acao-de-catalogo.sh" "acao-de-catalogo" "acao-mutadora-sem-despacho"
+  "sed -i '/\"toc.suggest_udes\": self._acao_registrar_ude,/d' apps/api/src/toc_api/infra/federacao/executor.py"
+  "sem execução declarada no despacho"
+
+  # Mão que não chama caso de uso nenhum: devolveria \`executed\` sem ter escrito nada.
+  "scripts/check-acao-de-catalogo.sh" "acao-de-catalogo" "mao-mutadora-que-nao-aciona-caso-de-uso"
+  "sed -i 's/no = self._adicionar_efeito.rodar(dono=principal, titulo=args\[\"texto\"\])/no = None/' apps/api/src/toc_api/infra/federacao/executor.py"
+  "não aciona caso de uso nenhum"
 )
 
 falhas=0

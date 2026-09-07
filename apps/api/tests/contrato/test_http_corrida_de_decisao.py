@@ -5,7 +5,7 @@ Siglas, uma vez neste arquivo: **APH** — Aplicação ↔ Harness (o padrão da
 Núcleo de Diagramas Lógicos.
 
 A corrida de verdade (oito fios contra o PostgreSQL) está em
-`tests/integracao/test_corrida_de_confirmacao_no_postgres.py`. **Este arquivo mede outra
+`apps/api/tests/integracao/test_corrida_de_confirmacao_no_postgres.py`. **Este arquivo mede outra
 coisa**, e a diferença é o motivo de ele existir: que a recusa **chega ao cliente** com o
 código estável do §A.7 do Anexo A, e não como erro de sistema. Um conserto que serializasse
 certo no banco e devolvesse `500` teria trocado execução múltipla por falha opaca.

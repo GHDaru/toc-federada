@@ -21,7 +21,7 @@ Camada pura: zero import de SQLAlchemy, FastAPI, Pydantic ou OpenTelemetry — o
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Mapping, Sequence
 from uuid import UUID
 
 from ..dominio.apr import FERRAMENTA_APR
@@ -55,6 +55,73 @@ PORTA_POR_FERRAMENTA: dict[str, tuple[str, str]] = {
     FERRAMENTA_SNT: ("obter_snt", "salvar_snt"),
     FERRAMENTA_FOCALIZACAO: ("obter_focalizacao", "salvar_focalizacao"),
 }
+
+def _projetos_apontados(agregado: Any) -> tuple[UUID, ...]:
+    """Os OUTROS projetos que este agregado guarda dentro de si.
+
+    Hoje há um só caso, e ele é da Nuvem de Conflito: cada injeção escolhida guarda o
+    projeto que ela semeou (`ReferenciaDeSemeadura.projeto_destino_id`, RF-20 da spec 007).
+    A pergunta é feita por `getattr` e não por `isinstance` porque a camada de aplicação
+    não conhece o adaptador: o que ela precisa saber é se o agregado **declara** apontar
+    outro projeto, e a declaração é a propriedade `semeaduras` do domínio.
+    """
+    semeaduras = getattr(agregado, "semeaduras", ())
+    if callable(semeaduras):
+        # `NuvemDeConflito.semeaduras` é MÉTODO, não propriedade. Chamar sem conferir daria
+        # `TypeError` no agregado que não a tem; não conferir se é chamável faria a
+        # ordenação iterar o objeto-método e achar zero apontamentos — verde e errado.
+        semeaduras = semeaduras()
+    return tuple(
+        ref.projeto_destino_id
+        for ref in semeaduras
+        if getattr(ref, "projeto_destino_id", None) is not None
+    )
+
+
+def ordem_de_gravacao(agregados: Sequence[Any]) -> list[Any]:
+    """Ordena os agregados de modo que quem é APONTADO seja gravado antes de quem aponta.
+
+    ## Por que esta função existe
+
+    O arquivo consolidado lista os projetos na ordem da cadeia da Teoria das Restrições
+    (`ara → nc → arf → apr → at`), que é a ordem certa para uma pessoa **ler**. Para
+    **gravar** ela é a ordem errada num caso: a Nuvem guarda o identificador do projeto que
+    a injeção escolhida semeou, e essa coluna tem chave estrangeira para `projeto`. Gravar
+    a Nuvem antes da Árvore da Realidade Futura faz o PostgreSQL recusar a linha inteira —
+    medido, e a saída está colada em
+    `apps/api/tests/aplicacao/test_ordem_de_gravacao_da_importacao.py`.
+
+    A ordenação é **estável**: onde não há restrição, a ordem do arquivo é preservada, para
+    o relato da importação não mudar de forma sem motivo. E um laço (dado torto) não trava:
+    o que sobra entra na ordem do arquivo, pela mesma regra que a vista da cadeia já
+    aplica — "uma leitura que trava é pior do que uma leitura que mostra o laço".
+    """
+    por_id = {}
+    for agregado in agregados:
+        projeto = agregado.projeto if hasattr(agregado, "projeto") else agregado
+        por_id[projeto.id] = agregado
+    dependencias = {
+        chave: [
+            alvo for alvo in _projetos_apontados(agregado) if alvo in por_id and alvo != chave
+        ]
+        for chave, agregado in por_id.items()
+    }
+
+    ordenados: list[Any] = []
+    visitados: set[UUID] = set()
+
+    def visitar(chave: UUID, caminho: frozenset[UUID]) -> None:
+        if chave in visitados or chave in caminho:
+            return
+        for alvo in dependencias[chave]:
+            visitar(alvo, caminho | {chave})
+        visitados.add(chave)
+        ordenados.append(por_id[chave])
+
+    for chave in por_id:
+        visitar(chave, frozenset())
+    return ordenados
+
 
 FORMATO_PROPRIO = "consolidado"
 FORMATO_LEGADO = "legado"
@@ -201,10 +268,15 @@ class ImportarConsolidado(_ComPortas):
         if not resultado.relato.aceito:
             return ResultadoDaImportacaoGravada(resultado.relato, formato)
 
-        criados: list[UUID] = []
-        for agregado in resultado.projetos:
+        # A ordem do ARQUIVO é a da cadeia, que é a ordem certa para LER e a errada para
+        # GRAVAR: a Nuvem aponta o projeto que a injeção semeou, e a chave estrangeira
+        # exige que ele já exista. `ordem_de_gravacao` põe quem é apontado antes.
+        for agregado in ordem_de_gravacao(resultado.projetos):
             self._gravar(agregado)
-            criados.append(ExportarConsolidado._id(agregado))
+        # O RELATO, porém, continua na ordem do arquivo: quem grava é o banco, quem lê a
+        # lista é o cliente, e trocar a ordem dele seria fazer um detalhe de chave
+        # estrangeira vazar para o contrato.
+        criados: list[UUID] = [ExportarConsolidado._id(a) for a in resultado.projetos]
         salvar_referencia = getattr(self._repositorio, "salvar_referencia", None)
         if salvar_referencia is not None:
             for vinculo in resultado.vinculos:

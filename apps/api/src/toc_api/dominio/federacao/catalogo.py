@@ -33,9 +33,16 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
+from ..apr import FERRAMENTA_APR
+from ..ara import FERRAMENTA_ARA
+from ..arf import FERRAMENTA_ARF
+from ..at import FERRAMENTA_AT
 from ..erros import ErroDeDominio
+from ..focalizacao import FERRAMENTA_FOCALIZACAO
 from ..geracao import ESQUEMA_DO_RESULTADO
-from ..nuvem import ChaveDaAresta, SeparacaoTRIZ
+from ..nuvem import FERRAMENTA_NC, ChaveDaAresta, SeparacaoTRIZ
+from ..projeto import RAIZ_POR_FERRAMENTA
+from ..valores import FERRAMENTA_GENERICA
 from .esquema import exigir_esquema_suportado, validar_contra_esquema
 from .principal import Principal
 
@@ -71,6 +78,18 @@ class AcaoDoCatalogo:
     # alvo (APH-5.9(b)) precisa saber o que é um alvo **nesta** ação, e adivinhar por
     # "o primeiro array que eu achar" é a heurística que quebra na ação seguinte.
     campo_de_alvos: str | None = None
+    #: A ferramenta cuja **raiz de agregado** governa o projeto que esta ação toca —
+    #: `"ara"`, `"nc"`, `"arf"`, `"apr"`, `"at"`, `"focalizacao"` ou a genérica
+    #: (`"generico"`). `None` só para ação que serve qualquer projeto (listar, exportar).
+    #:
+    #: **Por que existe.** Enquanto ele não existia, `toc.criar_nos` anunciava
+    #: `ui_route: /toc/ara` e chamava o caso de uso GENÉRICO do M1 (Núcleo de Diagramas
+    #: Lógicos). Antes da guarda da raiz isso MUTILAVA a ferramenta; depois dela, passou a
+    #: falhar para sempre em toda ferramenta com raiz — a assistência da fundação ficou
+    #: sem alcançar ferramenta nenhuma, que é o motivo de a aplicação ser federada. A
+    #: ferramenta declarada é o que liga a ação à raiz certa e o que o portão
+    #: `scripts/check-acao-de-catalogo.sh` confere contra o despacho do executor.
+    ferramenta: str | None = None
 
     def __post_init__(self) -> None:
         if not self.action_id or not self.action_id.startswith(f"{PREFIXO_DO_APP}."):
@@ -97,6 +116,35 @@ class AcaoDoCatalogo:
             raise ValueError(
                 f"{self.action_id}: `campo_de_alvos` sem `batch_atomicity` — ausente "
                 "significa 'não desenhada para lote' (§A.5), nunca per_item por omissão"
+            )
+        self._exigir_ferramenta_declarada()
+
+    def _exigir_ferramenta_declarada(self) -> None:
+        """Toda ação MUTADORA diz de que ferramenta ela é. Sem exceção e sem omissão.
+
+        Ação de leitura pode servir qualquer projeto (`toc.listar_projetos`,
+        `toc.exportar_projeto`) e por isso pode deixar o campo vazio. Ação `confirm`,
+        não: ela escreve num agregado, e todo agregado deste produto tem uma raiz — ou é
+        a genérica, onde o próprio `Projeto` é a raiz. Omissão aqui foi exatamente o
+        buraco por onde as quatro ações do M1 atravessaram sete ferramentas.
+
+        **Fail-closed**: o conjunto aceito é `{genérica} ∪ RAIZ_POR_FERRAMENTA`, e uma
+        ferramenta só entra em `RAIZ_POR_FERRAMENTA` quando a raiz dela se registra
+        (`registrar_raiz_de_ferramenta`). Ferramenta que esqueceu de se registrar não
+        pode ser declarada — nunca o contrário.
+        """
+        if self.ferramenta is None:
+            if self.risk == "confirm":
+                raise ValueError(
+                    f"{self.action_id}: ação mutadora sem `ferramenta` declarada — sem ela "
+                    "não há como saber por qual raiz de agregado ela escreve"
+                )
+            return
+        conhecidas = {FERRAMENTA_GENERICA, *RAIZ_POR_FERRAMENTA}
+        if self.ferramenta not in conhecidas:
+            raise ValueError(
+                f"{self.action_id}: ferramenta {self.ferramenta!r} sem raiz registrada "
+                f"(conhecidas: {sorted(conhecidas)})"
             )
 
     # -- permissão -----------------------------------------------------------------
@@ -134,7 +182,14 @@ class AcaoDoCatalogo:
             elif isinstance(alvo, Mapping):
                 # nome legível quando existe; posição quando não — o alvo precisa de um
                 # identificador para o `outcomes`, e "sem nome" não é opção
-                nomes.append(str(alvo.get("titulo") or alvo.get("origem_id") or f"#{i + 1}"))
+                nomes.append(
+                    str(
+                        alvo.get("titulo")
+                        or alvo.get("texto")
+                        or alvo.get("origem_id")
+                        or f"#{i + 1}"
+                    )
+                )
             else:  # pragma: no cover - o esquema já recusou antes de chegar aqui
                 nomes.append(f"#{i + 1}")
         return tuple(nomes)
@@ -268,6 +323,7 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
     ),
     AcaoDoCatalogo(
         action_id='toc.sugerir_udes',
+        ferramenta=FERRAMENTA_ARA,
         title='Sugerir Efeitos Indesejaveis',
         description='A partir de uma narrativa, sugere candidatos a Efeito Indesejavel (UDE) para a Arvore da Realidade Atual. Nao grava nada: o resultado e rascunho ate a Facilitadora registrar.',
         risk='read',
@@ -281,6 +337,7 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
     ),
     AcaoDoCatalogo(
         action_id='toc.analisar_suficiencia',
+        ferramenta=FERRAMENTA_ARA,
         title='Analisar suficiencia causal',
         description='Analisa a arvore atual e aponta relacoes causais com suficiencia fragil. Somente leitura.',
         risk='read',
@@ -291,10 +348,184 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
         ui_route='/toc/ara',
         intent_keywords=('suficiencia', 'analisar', 'causa'),
     ),
+    # -- M2 · Árvore da Realidade Atual (spec 005, RF-32..RF-35, INT-02..INT-06) -------
+    #
+    # **Por que estas quatro nasceram tarde, e o que custou.** A spec 005 declarou o
+    # contrato delas (`toc.suggest_udes`, `toc.suggest_causes`, `toc.suggest_relations`, e
+    # a reformulação da RF-34) e adiou a execução para o ciclo 006. O ciclo 006 executou
+    # outra coisa: as quatro ações GENÉRICAS do M1 (Núcleo de Diagramas Lógicos)
+    # anunciando `ui_route: /toc/ara`. Enquanto o `Projeto` aceitava mutação crua, elas
+    # *pareciam* servir a ARA — mutilando-a por fora das invariantes. Quando a guarda da
+    # raiz fechou essa porta, elas passaram a falhar para sempre, e a ARA ficou sem
+    # nenhuma ação mutadora: a assistência da fundação não alcançava a ferramenta
+    # principal do produto.
+    #
+    # A superfície certa não era destravar o núcleo — era esta: ação declarada da
+    # ferramenta, despachada para os casos de uso DA RAIZ (`AdicionarEfeito`,
+    # `MarcarUde`, `LigarNaARA`, `ReformularUde`), que é o que o M3, o M4 e o M6 já
+    # faziam. Decisão em `docs/adr/0015-acao-de-catalogo-pela-raiz-da-ferramenta.md`.
+    #
+    # **Lote e granularidade** (R5 — decisão que contradiz decisão tem de se declarar): a
+    # RF-32 da spec 005 pede "uma `action_proposal` individual por sugestão"; a US-07 e o
+    # fluxo 6.4 da spec 006 pedem oito Efeitos Indesejáveis numa proposta só, com desfecho
+    # por alvo. As três de criação nascem de lote com `batch_atomicity: per_item` e
+    # `minItems: 1` — uma proposta por invocação, um desfecho por alvo, e a fundação
+    # continua livre para propor um de cada vez. É a leitura que honra as duas specs; a
+    # 006 é a mais recente e é ela que descreve o fluxo com a tela.
+    AcaoDoCatalogo(
+        action_id="toc.suggest_udes",
+        ferramenta=FERRAMENTA_ARA,
+        title="Registrar Efeitos Indesejaveis na Arvore da Realidade Atual",
+        description=(
+            "Registra um ou N Efeitos Indesejaveis (UDE) na Arvore da Realidade Atual: "
+            "cada um nasce no pela raiz da ferramenta e ja MARCADO como UDE, o que dispara "
+            "a validacao formal dos criterios (funcao pura de dominio — o modelo nunca "
+            "recalcula o veredito decidivel). Mutadora: nasce proposta e espera o gate; "
+            "recusar deixa a arvore intacta."
+        ),
+        risk="confirm",
+        reversible=True,
+        input_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["projeto_id", "udes"],
+            "properties": {
+                "projeto_id": {"type": "string"},
+                "udes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["texto"],
+                        "properties": {
+                            "texto": {"type": "string", "minLength": 1, "maxLength": 300},
+                            "descricao": {"type": "string", "maxLength": 2000},
+                        },
+                    },
+                },
+            },
+        },
+        ui_route="/toc/ara",
+        intent_keywords=("ude", "efeito indesejavel", "registrar ude", "realidade atual"),
+        batch_atomicity="per_item",
+        campo_de_alvos="udes",
+    ),
+    AcaoDoCatalogo(
+        action_id="toc.suggest_causes",
+        ferramenta=FERRAMENTA_ARA,
+        title="Sugerir causas para um no da Arvore da Realidade Atual",
+        description=(
+            "Registra uma ou N causas de um no existente: cada causa nasce no pela raiz "
+            "e JA LIGADA ao no alvo (causa → efeito). A sugestao nunca fica solta, e o "
+            "elo nasce `nao_examinado` — quem julga a suficiencia continua sendo o grupo. "
+            "Mutadora: nasce proposta e espera o gate."
+        ),
+        risk="confirm",
+        reversible=True,
+        input_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["projeto_id", "no_id", "causas"],
+            "properties": {
+                "projeto_id": {"type": "string"},
+                "no_id": {"type": "string"},
+                "causas": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["texto"],
+                        "properties": {
+                            "texto": {"type": "string", "minLength": 1, "maxLength": 300},
+                            "rotulo": {"type": "string", "maxLength": 200},
+                        },
+                    },
+                },
+            },
+        },
+        ui_route="/toc/ara",
+        intent_keywords=("causa", "por que", "sugerir causas", "realidade atual"),
+        batch_atomicity="per_item",
+        campo_de_alvos="causas",
+    ),
+    AcaoDoCatalogo(
+        action_id="toc.suggest_relations",
+        ferramenta=FERRAMENTA_ARA,
+        title="Sugerir relacoes causais entre nos da Arvore da Realidade Atual",
+        description=(
+            "Liga nos que JA existem na Arvore da Realidade Atual, um elo por alvo. Cada "
+            "elo nasce com exame `nao_examinado`: a leitura 'se... entao...' e o julgamento "
+            "de suficiencia continuam humanos. Mutadora: nasce proposta e espera o gate."
+        ),
+        risk="confirm",
+        reversible=True,
+        input_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["projeto_id", "relacoes"],
+            "properties": {
+                "projeto_id": {"type": "string"},
+                "relacoes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["origem_id", "destino_id"],
+                        "properties": {
+                            "origem_id": {"type": "string"},
+                            "destino_id": {"type": "string"},
+                            "rotulo": {"type": "string", "maxLength": 200},
+                        },
+                    },
+                },
+            },
+        },
+        ui_route="/toc/ara",
+        intent_keywords=("relacao causal", "ligar efeitos", "elo", "realidade atual"),
+        batch_atomicity="per_item",
+        campo_de_alvos="relacoes",
+    ),
+    AcaoDoCatalogo(
+        action_id="toc.suggest_reformulation",
+        ferramenta=FERRAMENTA_ARA,
+        title="Sugerir reformulacao do texto de um Efeito Indesejavel",
+        description=(
+            "RF-34 da spec 005: a reformulacao sugerida chega como proposta de edicao do "
+            "no, e aplicar REEXECUTA a validacao formal sobre o texto novo (RF-10). Nao "
+            "existe caminho em que o texto de um Efeito Indesejavel mude e o veredito "
+            "anterior continue pendurado sobre ele. Mutadora: nasce proposta."
+        ),
+        risk="confirm",
+        reversible=True,
+        input_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["projeto_id", "no_id", "texto"],
+            "properties": {
+                "projeto_id": {"type": "string"},
+                "no_id": {"type": "string"},
+                "texto": {"type": "string", "minLength": 1, "maxLength": 300},
+            },
+        },
+        ui_route="/toc/ara",
+        intent_keywords=("reformular", "reescrever ude", "melhorar o enunciado"),
+    ),
     AcaoDoCatalogo(
         action_id='toc.criar_nos',
+        ferramenta=FERRAMENTA_GENERICA,
         title='Criar nos na arvore',
-        description='Cria um ou N nos (lote: uma proposta com N alvos, APH-5.9) no projeto indicado. Mutadora: nasce proposta e atravessa a FSM.',
+        description=(
+            'Cria um ou N nos (lote: uma proposta com N alvos, APH-5.9) num projeto '
+            'GENERICO do nucleo de diagramas — o rascunho livre, sem ferramenta da Teoria '
+            'das Restricoes acima dele. Para a Arvore da Realidade Atual a acao e '
+            'toc.suggest_udes; cada ferramenta tem as suas. Mutadora: nasce proposta.'
+        ),
         risk='confirm',
         reversible=True,
         input_schema={   'type': 'object',
@@ -313,15 +544,20 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
                                                                                     'enum': [   'ude',
                                                                                                 'causa',
                                                                                                 'causa_raiz']}}}}}},
-        ui_route='/toc/ara',
-        intent_keywords=('criar', 'adicionar', 'no', 'ude'),
+        ui_route='/toc/projetos',
+        intent_keywords=('criar no', 'adicionar no', 'diagrama livre', 'projeto generico'),
         batch_atomicity='per_item',
         campo_de_alvos='nos',
     ),
     AcaoDoCatalogo(
         action_id='toc.criar_arestas',
+        ferramenta=FERRAMENTA_GENERICA,
         title='Ligar causas e efeitos',
-        description='Cria uma ou N arestas causais (lote: uma proposta com N alvos) entre nos existentes. Mutadora: nasce proposta.',
+        description=(
+            'Cria uma ou N arestas causais (lote) entre nos de um projeto GENERICO do '
+            'nucleo de diagramas. Na Arvore da Realidade Atual a acao e '
+            'toc.suggest_relations. Mutadora: nasce proposta.'
+        ),
         risk='confirm',
         reversible=True,
         input_schema={   'type': 'object',
@@ -337,15 +573,20 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
                                                                           'destino_id'],
                                                           'properties': {   'origem_id': {   'type': 'string'},
                                                                             'destino_id': {   'type': 'string'}}}}}},
-        ui_route='/toc/ara',
-        intent_keywords=('ligar', 'aresta', 'causa', 'efeito'),
+        ui_route='/toc/projetos',
+        intent_keywords=('ligar nos', 'aresta do diagrama', 'diagrama livre'),
         batch_atomicity='per_item',
         campo_de_alvos='arestas',
     ),
     AcaoDoCatalogo(
         action_id='toc.atualizar_no',
+        ferramenta=FERRAMENTA_GENERICA,
         title='Atualizar um no',
-        description='Altera titulo ou tipo de um no existente. Mutadora: nasce proposta.',
+        description=(
+            'Altera titulo ou tipo de um no de projeto GENERICO. Na Arvore da Realidade '
+            'Atual a acao e toc.suggest_reformulation, que reexecuta a validacao formal. '
+            'Mutadora: nasce proposta.'
+        ),
         risk='confirm',
         reversible=True,
         input_schema={   'type': 'object',
@@ -356,13 +597,19 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
                               'titulo': {'type': 'string', 'maxLength': 300},
                               'tipo': {   'type': 'string',
                                           'enum': ['ude', 'causa', 'causa_raiz']}}},
-        ui_route='/toc/ara',
-        intent_keywords=('atualizar', 'renomear', 'editar'),
+        ui_route='/toc/projetos',
+        intent_keywords=('atualizar no', 'renomear no', 'editar no do diagrama'),
     ),
     AcaoDoCatalogo(
         action_id='toc.excluir_nos',
+        ferramenta=FERRAMENTA_GENERICA,
         title='Excluir nos (exclusao suave)',
-        description='Move um ou N nos (lote) e suas arestas incidentes para a lixeira. Reversivel pela restauracao; a exclusao definitiva nao esta no catalogo.',
+        description=(
+            'Move um ou N nos (lote) de um projeto GENERICO e suas arestas incidentes '
+            'para a lixeira. Reversivel pela restauracao; a exclusao definitiva nao esta '
+            'no catalogo. Nenhuma ferramenta da Teoria das Restricoes tem exclusao '
+            'assistida — apagar continua sendo gesto humano.'
+        ),
         risk='confirm',
         reversible=True,
         input_schema={   'type': 'object',
@@ -373,8 +620,8 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
                                             'minItems': 1,
                                             'maxItems': 50,
                                             'items': {'type': 'string'}}}},
-        ui_route='/toc/ara',
-        intent_keywords=('excluir', 'remover', 'lixeira'),
+        ui_route='/toc/projetos',
+        intent_keywords=('excluir no', 'remover no', 'lixeira'),
         batch_atomicity='per_item',
         campo_de_alvos='no_ids',
     ),
@@ -400,6 +647,7 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
     # veio; a nuvem é preenchida a partir do `resultado`, nunca do texto.
     AcaoDoCatalogo(
         action_id="toc.generate_conflict_cloud",
+        ferramenta=FERRAMENTA_NC,
         title="Preencher a nuvem a partir de uma narrativa",
         description=(
             "Aplica na Nuvem de Conflito um resultado de geracao estruturado e validado "
@@ -424,6 +672,7 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
     ),
     AcaoDoCatalogo(
         action_id="toc.suggest_assumptions",
+        ferramenta=FERRAMENTA_NC,
         title="Sugerir uma premissa para uma aresta",
         description=(
             "Registra UMA premissa sugerida numa das 7 arestas da nuvem. Granular de "
@@ -447,6 +696,7 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
     ),
     AcaoDoCatalogo(
         action_id="toc.suggest_injections",
+        ferramenta=FERRAMENTA_NC,
         title="Sugerir uma injecao para uma premissa",
         description=(
             "Registra UMA injecao ligada a premissa nomeada, com separacao TRIZ quando "
@@ -485,6 +735,7 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
     # e devolve zero — inclusive aqui, e por isso este comentário não os escreve.
     AcaoDoCatalogo(
         action_id="toc.suggest_future_effects",
+        ferramenta=FERRAMENTA_ARF,
         title="Sugerir um efeito futuro para a Arvore da Realidade Futura",
         description=(
             "Registra UM efeito futuro ligado a uma injecao da Arvore da Realidade "
@@ -508,6 +759,7 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
     ),
     AcaoDoCatalogo(
         action_id="toc.suggest_obstacles",
+        ferramenta=FERRAMENTA_APR,
         title="Sugerir um obstaculo para a Arvore de Pre-Requisitos",
         description=(
             "Registra UM obstaculo na Arvore de Pre-Requisitos. Obstaculo e condicao que "
@@ -530,6 +782,7 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
     ),
     AcaoDoCatalogo(
         action_id="toc.suggest_intermediate_objectives",
+        ferramenta=FERRAMENTA_APR,
         title="Sugerir um objetivo intermediario que supera um obstaculo",
         description=(
             "Registra UM objetivo intermediario e o pareia com o obstaculo indicado. O "
@@ -553,6 +806,7 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
     ),
     AcaoDoCatalogo(
         action_id="toc.suggest_transition_steps",
+        ferramenta=FERRAMENTA_AT,
         title="Sugerir um passo para a Arvore de Transicao",
         description=(
             "Registra UM passo com a tripla acao, necessidade e resultado esperado. "
@@ -588,6 +842,7 @@ ACOES_TOC: tuple[AcaoDoCatalogo, ...] = (
     # quando existe.
     AcaoDoCatalogo(
         action_id="toc.suggest_constraint",
+        ferramenta=FERRAMENTA_FOCALIZACAO,
         title="Sugerir a restricao a partir da Arvore da Realidade Atual",
         description=(
             "Registra a restricao do ciclo aberto de uma analise de focalizacao, com a "

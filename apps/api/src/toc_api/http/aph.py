@@ -45,6 +45,7 @@ from ..dominio.federacao.snapshot import ContextoInvalido, sanitizar_snapshot
 from ..dominio.federacao.traco import AcaoSemTraco
 from ..dominio.federacao.wire import ErroDoFio, SessaoDeConversa
 from ..infra.federacao.memoria import RegistroDeSessoesDeAplicacao  # noqa: F401  (reexport)
+from .dependencias import resolver_principal
 
 # Intervalo entre eventos do turno. Não é enfeite: um turno instantâneo não exercitaria o
 # cancelamento cooperativo (APH-1.4), que só existe enquanto há o que cancelar. 180 ms × 6
@@ -115,21 +116,18 @@ def criar_router_aph(composicao: Any) -> APIRouter:
         """Resolve o portador em identidade — **um** mecanismo, duas origens legítimas.
 
         Sem cabeçalho, a sessão é anônima: existe e não alcança nada (§B.7.3). Com
-        portador, o token é procurado primeiro entre as sessões abertas por
-        `POST /toc/embarque` (o grant já trocado por identidade) e, depois, no
-        `ProvedorDeIdentidade` da composição — que é o adaptador que a borda REST usa e
-        que, fora de desenvolvimento, nega tudo. As duas origens desembocam no **mesmo**
-        `Principal`, construído pela **mesma** função (`principal_de_introspeccao`): não há
-        segundo caminho de nascimento de identidade, que é o que o P2 e o RF-07 proíbem.
+        portador, quem resolve é `dependencias.resolver_principal` — **a mesma função** que
+        autentica as rotas de produto. Era aqui que moravam as duas origens (sessão do
+        embarque e `ProvedorDeIdentidade`) enquanto a outra borda só conhecia uma, e a
+        divergência recusava com `401` toda rota `/toc/*` para quem tinha embarcado. Uma
+        regra, uma função: o que muda aqui é só o ENVELOPE do erro, que é de contrato.
         """
         if not autorizacao:
             return principal_anonimo()
         if not autorizacao.lower().startswith("bearer "):
             return erro_http("UNAUTHORIZED", "cabeçalho Authorization fora da forma Bearer", 401)
         token = autorizacao.split(" ", 1)[1].strip()
-        principal = fed.sessoes_de_aplicacao.principal(token)
-        if principal is None:
-            principal = composicao.identidade.identificar(token)
+        principal = resolver_principal(composicao, token)
         if principal is None:
             # §B.6.5: uma recusa só, sem motivo. Distinguir "inexistente" de "vencida" é
             # oráculo para quem testa tokens.
@@ -141,11 +139,6 @@ def criar_router_aph(composicao: Any) -> APIRouter:
                 "SESSAO_EXPIRADA",
                 "sessão não reconhecida; recarregue pelo shell",
                 401,
-            )
-        if principal.expirado_em(composicao.relogio.agora()):
-            fed.sessoes_de_aplicacao.encerrar(token)
-            return erro_http(
-                "SESSAO_EXPIRADA", "a identidade venceu; é preciso novo embarque", 401
             )
         return principal
 

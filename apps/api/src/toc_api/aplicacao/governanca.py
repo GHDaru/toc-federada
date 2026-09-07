@@ -458,7 +458,7 @@ def exigir_capacidade(
 ) -> None:
     """A ÚNICA chamada do núcleo M1/M2 que decide acesso. Não deve haver uma segunda.
 
-    `tests/aplicacao/test_governanca_de_capacidades.py` conta as chamadas por árvore
+    `apps/api/tests/aplicacao/test_governanca_de_capacidades.py` conta as chamadas por árvore
     sintática: uma aqui, ZERO na camada HTTP. Um segundo ponto de decisão é um segundo
     lugar para esquecer de decidir.
     """

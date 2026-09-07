@@ -10,8 +10,8 @@ contrato é onde roda quase tudo. A trava da proposta nasce com este arquivo jun
 repetir isso.
 
 Aqui mede-se o duplo (`RepositorioDePropostasEmMemoria`), sem banco. A mesma bateria contra
-o PostgreSQL real está em `tests/integracao/test_corrida_de_confirmacao_no_postgres.py` e em
-`tests/integracao/test_propostas_no_postgres.py`.
+o PostgreSQL real está em `apps/api/tests/integracao/test_corrida_de_confirmacao_no_postgres.py` e em
+`apps/api/tests/integracao/test_propostas_no_postgres.py`.
 """
 from __future__ import annotations
 

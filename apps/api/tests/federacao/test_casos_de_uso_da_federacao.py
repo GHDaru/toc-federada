@@ -156,10 +156,11 @@ def test_compor_catalogo_devolve_so_o_que_o_principal_pode() -> None:
     leitura = caso.rodar(principal=SO_LEITURA)
     anonimo = caso.rodar(principal=principal_anonimo())
 
-    # 16 com a ação do M6 (`toc.suggest_constraint`, spec 009). O número é escrito à
-    # mão de propósito: derivá-lo do próprio catálogo faria o teste concordar com quem
+    # 20 com as quatro da Árvore da Realidade Atual (ADR 0015: a ARA ficou sem ação
+    # mutadora quando a guarda da raiz fechou a porta das genéricas). O número é escrito
+    # à mão de propósito: derivá-lo do próprio catálogo faria o teste concordar com quem
     # acrescentasse uma ação sem passar pelo manifesto e pelo corpus de paridade.
-    assert len(completo) == 16
+    assert len(completo) == 20
     assert len(leitura) == 4
     assert anonimo == []
 

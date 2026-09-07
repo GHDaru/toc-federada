@@ -48,6 +48,80 @@ CORPUS: list[tuple[str, dict[str, Any], bool]] = [
     ("toc.sugerir_udes", {"projeto_id": UUID_SINTETICO, "narrativa": "x" * 8001}, False),
     ("toc.analisar_suficiencia", {"projeto_id": UUID_SINTETICO}, True),
     ("toc.analisar_suficiencia", {}, False),
+    # -- M2 · as quatro ações da Árvore da Realidade Atual (ADR 0015) ------------------
+    (
+        "toc.suggest_udes",
+        {"projeto_id": UUID_SINTETICO, "udes": [{"texto": "Entregas atrasam"}]},
+        True,
+    ),
+    (
+        "toc.suggest_udes",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "udes": [{"texto": "Entregas atrasam", "descricao": "no ciclo básico"}],
+        },
+        True,
+    ),
+    ("toc.suggest_udes", {"projeto_id": UUID_SINTETICO, "udes": []}, False),
+    ("toc.suggest_udes", {"projeto_id": UUID_SINTETICO, "udes": [{"texto": ""}]}, False),
+    (
+        "toc.suggest_udes",
+        {"projeto_id": UUID_SINTETICO, "udes": [{"titulo": "campo do M1, não deste"}]},
+        False,
+    ),
+    (
+        "toc.suggest_udes",
+        {"projeto_id": UUID_SINTETICO, "nos": [{"titulo": "t", "tipo": "ude"}]},
+        False,
+    ),
+    (
+        "toc.suggest_causes",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "no_id": UUID_SINTETICO,
+            "causas": [{"texto": "A equipe acumula retrabalho", "rotulo": "porque"}],
+        },
+        True,
+    ),
+    (
+        "toc.suggest_causes",
+        {"projeto_id": UUID_SINTETICO, "causas": [{"texto": "sem o nó alvo"}]},
+        False,
+    ),
+    (
+        "toc.suggest_causes",
+        {"projeto_id": UUID_SINTETICO, "no_id": UUID_SINTETICO, "causas": [{}]},
+        False,
+    ),
+    (
+        "toc.suggest_relations",
+        {
+            "projeto_id": UUID_SINTETICO,
+            "relacoes": [{"origem_id": UUID_SINTETICO, "destino_id": UUID_SINTETICO}],
+        },
+        True,
+    ),
+    (
+        "toc.suggest_relations",
+        {"projeto_id": UUID_SINTETICO, "relacoes": [{"origem_id": UUID_SINTETICO}]},
+        False,
+    ),
+    ("toc.suggest_relations", {"projeto_id": UUID_SINTETICO, "relacoes": []}, False),
+    (
+        "toc.suggest_reformulation",
+        {"projeto_id": UUID_SINTETICO, "no_id": UUID_SINTETICO, "texto": "Enunciado novo"},
+        True,
+    ),
+    (
+        "toc.suggest_reformulation",
+        {"projeto_id": UUID_SINTETICO, "no_id": UUID_SINTETICO, "texto": ""},
+        False,
+    ),
+    (
+        "toc.suggest_reformulation",
+        {"projeto_id": UUID_SINTETICO, "no_id": UUID_SINTETICO, "texto": "x" * 301},
+        False,
+    ),
     (
         "toc.criar_nos",
         {"projeto_id": UUID_SINTETICO, "nos": [{"titulo": "Entregas atrasam", "tipo": "ude"}]},

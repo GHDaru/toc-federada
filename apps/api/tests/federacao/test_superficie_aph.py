@@ -242,12 +242,12 @@ def test_tela_sensivel_nao_produz_snapshot(cliente: TestClient) -> None:
 # --------------------------------------------------------------------------------------
 
 
-def test_o_catalogo_anonimo_e_vazio_e_o_identificado_tem_as_dezesseis_acoes(cliente: TestClient) -> None:
+def test_o_catalogo_anonimo_e_vazio_e_o_identificado_tem_as_vinte_acoes(cliente: TestClient) -> None:
     anonimo = cliente.get("/aph/catalog").json()
     identificado = cliente.get("/aph/catalog", headers=CABECALHO).json()
 
     assert anonimo == []
-    assert len(identificado) == 16
+    assert len(identificado) == 20
     assert {a["action_id"] for a in identificado} >= {"toc.criar_nos", "toc.listar_projetos"}
 
 
@@ -261,7 +261,7 @@ def test_o_catalogo_servido_valida_contra_o_schema_de_acao_de_catalogo(cliente: 
         valida.validate(acao)
     medida = f"golden do catálogo: {len(acoes)} ação(ões) validadas contra acao-catalogo.schema.json"
     print(medida)
-    assert len(acoes) == 16, medida
+    assert len(acoes) == 20, medida
 
 
 def test_token_desconhecido_e_recusado_sem_dizer_o_motivo(cliente: TestClient) -> None:
@@ -495,10 +495,13 @@ def _propor_com_snapshot(cliente: TestClient, sessao: str) -> tuple[str, str]:
         cliente,
         sessao,
         {
-            "text": "criar no ude",
+            # A tela do snapshot é a da Árvore da Realidade Atual, então a ação que o
+            # roteamento determinístico tem de achar é a DELA (`toc.suggest_udes`) — não
+            # a genérica do M1, que serve o rascunho livre (ADR 0015).
+            "text": "registrar ude",
             "args": {
                 "projeto_id": UUID_INEXISTENTE,
-                "nos": [{"titulo": "Entregas atrasam", "tipo": "ude"}],
+                "udes": [{"texto": "Entregas atrasam"}],
             },
             "snapshot": SNAPSHOT_DA_ARA,
         },

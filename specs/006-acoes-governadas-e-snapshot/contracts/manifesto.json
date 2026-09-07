@@ -212,9 +212,200 @@
       ]
     },
     {
+      "action_id": "toc.suggest_udes",
+      "title": "Registrar Efeitos Indesejaveis na Arvore da Realidade Atual",
+      "description": "Registra um ou N Efeitos Indesejaveis (UDE) na Arvore da Realidade Atual: cada um nasce no pela raiz da ferramenta e ja MARCADO como UDE, o que dispara a validacao formal dos criterios (funcao pura de dominio — o modelo nunca recalcula o veredito decidivel). Mutadora: nasce proposta e espera o gate; recusar deixa a arvore intacta.",
+      "risk": "confirm",
+      "reversible": true,
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "projeto_id",
+          "udes"
+        ],
+        "properties": {
+          "projeto_id": {
+            "type": "string"
+          },
+          "udes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "texto"
+              ],
+              "properties": {
+                "texto": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "descricao": {
+                  "type": "string",
+                  "maxLength": 2000
+                }
+              }
+            }
+          }
+        }
+      },
+      "ui_route": "/toc/ara",
+      "intent_keywords": [
+        "ude",
+        "efeito indesejavel",
+        "registrar ude",
+        "realidade atual"
+      ]
+    },
+    {
+      "action_id": "toc.suggest_causes",
+      "title": "Sugerir causas para um no da Arvore da Realidade Atual",
+      "description": "Registra uma ou N causas de um no existente: cada causa nasce no pela raiz e JA LIGADA ao no alvo (causa → efeito). A sugestao nunca fica solta, e o elo nasce `nao_examinado` — quem julga a suficiencia continua sendo o grupo. Mutadora: nasce proposta e espera o gate.",
+      "risk": "confirm",
+      "reversible": true,
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "projeto_id",
+          "no_id",
+          "causas"
+        ],
+        "properties": {
+          "projeto_id": {
+            "type": "string"
+          },
+          "no_id": {
+            "type": "string"
+          },
+          "causas": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "texto"
+              ],
+              "properties": {
+                "texto": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "rotulo": {
+                  "type": "string",
+                  "maxLength": 200
+                }
+              }
+            }
+          }
+        }
+      },
+      "ui_route": "/toc/ara",
+      "intent_keywords": [
+        "causa",
+        "por que",
+        "sugerir causas",
+        "realidade atual"
+      ]
+    },
+    {
+      "action_id": "toc.suggest_relations",
+      "title": "Sugerir relacoes causais entre nos da Arvore da Realidade Atual",
+      "description": "Liga nos que JA existem na Arvore da Realidade Atual, um elo por alvo. Cada elo nasce com exame `nao_examinado`: a leitura 'se... entao...' e o julgamento de suficiencia continuam humanos. Mutadora: nasce proposta e espera o gate.",
+      "risk": "confirm",
+      "reversible": true,
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "projeto_id",
+          "relacoes"
+        ],
+        "properties": {
+          "projeto_id": {
+            "type": "string"
+          },
+          "relacoes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "origem_id",
+                "destino_id"
+              ],
+              "properties": {
+                "origem_id": {
+                  "type": "string"
+                },
+                "destino_id": {
+                  "type": "string"
+                },
+                "rotulo": {
+                  "type": "string",
+                  "maxLength": 200
+                }
+              }
+            }
+          }
+        }
+      },
+      "ui_route": "/toc/ara",
+      "intent_keywords": [
+        "relacao causal",
+        "ligar efeitos",
+        "elo",
+        "realidade atual"
+      ]
+    },
+    {
+      "action_id": "toc.suggest_reformulation",
+      "title": "Sugerir reformulacao do texto de um Efeito Indesejavel",
+      "description": "RF-34 da spec 005: a reformulacao sugerida chega como proposta de edicao do no, e aplicar REEXECUTA a validacao formal sobre o texto novo (RF-10). Nao existe caminho em que o texto de um Efeito Indesejavel mude e o veredito anterior continue pendurado sobre ele. Mutadora: nasce proposta.",
+      "risk": "confirm",
+      "reversible": true,
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "projeto_id",
+          "no_id",
+          "texto"
+        ],
+        "properties": {
+          "projeto_id": {
+            "type": "string"
+          },
+          "no_id": {
+            "type": "string"
+          },
+          "texto": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        }
+      },
+      "ui_route": "/toc/ara",
+      "intent_keywords": [
+        "reformular",
+        "reescrever ude",
+        "melhorar o enunciado"
+      ]
+    },
+    {
       "action_id": "toc.criar_nos",
       "title": "Criar nos na arvore",
-      "description": "Cria um ou N nos (lote: uma proposta com N alvos, APH-5.9) no projeto indicado. Mutadora: nasce proposta e atravessa a FSM.",
+      "description": "Cria um ou N nos (lote: uma proposta com N alvos, APH-5.9) num projeto GENERICO do nucleo de diagramas — o rascunho livre, sem ferramenta da Teoria das Restricoes acima dele. Para a Arvore da Realidade Atual a acao e toc.suggest_udes; cada ferramenta tem as suas. Mutadora: nasce proposta.",
       "risk": "confirm",
       "reversible": true,
       "input_schema": {
@@ -257,18 +448,18 @@
           }
         }
       },
-      "ui_route": "/toc/ara",
+      "ui_route": "/toc/projetos",
       "intent_keywords": [
-        "criar",
-        "adicionar",
-        "no",
-        "ude"
+        "criar no",
+        "adicionar no",
+        "diagrama livre",
+        "projeto generico"
       ]
     },
     {
       "action_id": "toc.criar_arestas",
       "title": "Ligar causas e efeitos",
-      "description": "Cria uma ou N arestas causais (lote: uma proposta com N alvos) entre nos existentes. Mutadora: nasce proposta.",
+      "description": "Cria uma ou N arestas causais (lote) entre nos de um projeto GENERICO do nucleo de diagramas. Na Arvore da Realidade Atual a acao e toc.suggest_relations. Mutadora: nasce proposta.",
       "risk": "confirm",
       "reversible": true,
       "input_schema": {
@@ -305,18 +496,17 @@
           }
         }
       },
-      "ui_route": "/toc/ara",
+      "ui_route": "/toc/projetos",
       "intent_keywords": [
-        "ligar",
-        "aresta",
-        "causa",
-        "efeito"
+        "ligar nos",
+        "aresta do diagrama",
+        "diagrama livre"
       ]
     },
     {
       "action_id": "toc.atualizar_no",
       "title": "Atualizar um no",
-      "description": "Altera titulo ou tipo de um no existente. Mutadora: nasce proposta.",
+      "description": "Altera titulo ou tipo de um no de projeto GENERICO. Na Arvore da Realidade Atual a acao e toc.suggest_reformulation, que reexecuta a validacao formal. Mutadora: nasce proposta.",
       "risk": "confirm",
       "reversible": true,
       "input_schema": {
@@ -347,17 +537,17 @@
           }
         }
       },
-      "ui_route": "/toc/ara",
+      "ui_route": "/toc/projetos",
       "intent_keywords": [
-        "atualizar",
-        "renomear",
-        "editar"
+        "atualizar no",
+        "renomear no",
+        "editar no do diagrama"
       ]
     },
     {
       "action_id": "toc.excluir_nos",
       "title": "Excluir nos (exclusao suave)",
-      "description": "Move um ou N nos (lote) e suas arestas incidentes para a lixeira. Reversivel pela restauracao; a exclusao definitiva nao esta no catalogo.",
+      "description": "Move um ou N nos (lote) de um projeto GENERICO e suas arestas incidentes para a lixeira. Reversivel pela restauracao; a exclusao definitiva nao esta no catalogo. Nenhuma ferramenta da Teoria das Restricoes tem exclusao assistida — apagar continua sendo gesto humano.",
       "risk": "confirm",
       "reversible": true,
       "input_schema": {
@@ -381,10 +571,10 @@
           }
         }
       },
-      "ui_route": "/toc/ara",
+      "ui_route": "/toc/projetos",
       "intent_keywords": [
-        "excluir",
-        "remover",
+        "excluir no",
+        "remover no",
         "lixeira"
       ]
     },

@@ -42,12 +42,12 @@ Python 3.11.15
 
 $ python3 tools/product-site/generate.py . --output docs/product-site/data.json
 JSON escrito em docs/product-site/data.json
-  módulos=8 specs=12 adrs=14 RF=359 RI=114 RNF=105 RN=71 INT=61 fontes=176 lacunas=58 ciclos=12
-  código: arquivos=181 linhas=48958 testes=125 casos=1514 rotas=144 migrações=9 tabelas=36 portões=26 sabotagens=76 módulos com código=8/8 não atribuídos=9
+  módulos=8 specs=12 adrs=15 RF=359 RI=114 RNF=105 RN=71 INT=61 fontes=176 lacunas=58 ciclos=12
+  código: arquivos=181 linhas=49526 testes=133 casos=1566 rotas=144 migrações=9 tabelas=36 portões=27 sabotagens=81 módulos com código=8/8 não atribuídos=9
 
 $ python3 tools/product-site/render.py docs/product-site/data.json --output docs/product-site
   docs/product-site/styles.css (6209 bytes)
-  docs/product-site/index.html (97033 bytes)
+  docs/product-site/index.html (98124 bytes)
   docs/product-site/modules.html (95413 bytes)
   docs/product-site/traceability.html (393461 bytes)
   docs/product-site/roadmap.html (41464 bytes)

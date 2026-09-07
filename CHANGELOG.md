@@ -5,6 +5,117 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Corrigido — caminhos que ninguém percorria inteiros: o embarque não alcançava o produto, e a cadeia exportada não voltava (2026-09-07)
+
+Varredura da MESMA classe de problema da regressão anterior: caminho que existe, em que
+todo mundo confia, e que nenhum teste percorre de ponta a ponta. Dois defeitos duros
+saíram dela, os dois achados por teste novo que falhou antes do conserto.
+
+- **A sessão emitida por `POST /toc/embarque` era recusada por toda rota de produto.** A
+  borda tinha DOIS resolvedores de identidade: `http/aph.py::principal_de` consultava as
+  sessões do embarque **e** o `ProvedorDeIdentidade`; `http/dependencias.py::obter_principal`
+  — que autentica `/toc/projetos`, `/toc/ara`, `/toc/nc`, `/toc/arf`, `/toc/apr`, `/toc/at`,
+  `/toc/snt`, `/toc/focalizacao`, `/toc/portabilidade`, `/toc/cadeia` e `/toc/propostas` —
+  consultava só o segundo. Medido: o token do embarque abria `/aph/catalog` com `200` e
+  recebia `401 UNAUTHENTICATED` em `POST /toc/projetos`. Como a interface manda esse mesmo
+  token em toda chamada (`apps/web/src/api/cliente.ts:119`), a aplicação embarcada não
+  alcançava rota nenhuma do produto fora da fronteira conversacional. Conserto na causa e
+  não no sintoma: **um** resolvedor (`dependencias.resolver_principal`), usado pelos dois
+  lados, com a verificação de validade da identidade dentro dele.
+- **Exportar e reimportar uma cadeia de cinco ferramentas quebrava no banco.** A Nuvem
+  guarda, em cada injeção escolhida, o projeto que ela semeou, e a coluna tem chave
+  estrangeira para `projeto`; a importação gravava na ordem do arquivo (`ara → nc → arf …`),
+  logo a Nuvem chegava apontando para uma Árvore da Realidade Futura que ainda não existia.
+  Saída colada: `ForeignKeyViolation … fk_nc_injecao_semeadura_projeto_id_projeto`. Nenhum
+  teste pegava porque a ida e volta só era exercitada sobre uma cadeia de DUAS ferramentas,
+  e o duplo em memória não tem chave estrangeira para violar. `aplicacao.portabilidade.
+  ordem_de_gravacao` põe quem é apontado antes de quem aponta; o **relato** continua na
+  ordem do arquivo, para um detalhe de chave estrangeira não vazar para o contrato.
+
+### Acrescentado — cinco suítes de caminho inteiro, e duas funções de aptidão que impedem o buraco de voltar (2026-09-07)
+
+- `apps/api/tests/integracao/test_catalogo_ponta_a_ponta_no_postgres.py` — **toda** ação do catálogo
+  `toc.*` do pedido ao estado relido por aplicação nova, mais a recusa deixando o estado
+  byte a byte intacto. Carrega a **forcing function**: ação nova sem cenário derruba a
+  suíte.
+- `apps/api/tests/integracao/test_borda_federada_no_postgres.py` — o caminho do hospedeiro até
+  `executed` sobre estado real, pelas duas formas (borda `POST /aph/actions/{id}` e fio
+  conversacional com evento `action_proposal`). Antes, **todas** as propostas do lado
+  federado apontavam para `UUID_INEXISTENTE`: o `executed` nunca acontecia.
+- `apps/api/tests/integracao/test_embarque_com_fundacao_no_postgres.py` — o embarque inteiro contra
+  uma fundação de mentira de pé em `127.0.0.1`, exercitando `IntrospeccaoHttp` de verdade
+  (grant no corpo, credencial no cabeçalho) e as três falhas fechadas do §B.6.
+- `apps/api/tests/integracao/test_cadeia_completa_no_postgres.py` — a travessia das cinco
+  ferramentas pelo HTTP e pelo banco, do Efeito Indesejável ao passo de transição, com
+  aplicação nova a cada elo; simetria a partir dos cinco pontos de partida; e a ida e volta
+  do arquivo sobre a cadeia toda.
+- `apps/api/tests/contrato/test_http_porta_dos_fundos_por_ferramenta.py` — as oito mutações de grafo
+  × as sete ferramentas × as duas portas (rota genérica e catálogo). A lista de ferramentas
+  sai de `RAIZ_POR_FERRAMENTA`: **ferramenta nova entra na varredura no dia em que se
+  registra**.
+
+### Corrigido — a regressão que o nosso próprio conserto criou: o catálogo federado voltou a alcançar as ferramentas (ADR 0015, 2026-09-07)
+
+Fechar a porta dos fundos do agregado foi certo. O que ficou errado foi o outro lado, e
+ninguém voltou para olhar: as quatro ações mutadoras genéricas do catálogo —
+`toc.criar_nos`, `toc.criar_arestas`, `toc.atualizar_no`, `toc.excluir_nos` — continuaram
+anunciando `ui_route: /toc/ara` e ligadas aos casos de uso **genéricos** do M1 (Núcleo de
+Diagramas Lógicos). Como `Projeto._exigir_raiz` recusa comando genérico em toda ferramenta
+com raiz, elas passaram a **falhar para sempre** em `ara`, `nc`, `arf`, `apr`, `at` e
+`focalizacao`. Reproduzido de ponta a ponta contra o PostgreSQL real: criar uma Árvore da
+Realidade Atual (ARA), propor `toc.criar_nos` com dois alvos, aprovar no gate humano, e o
+desfecho voltar `failed`. A assistência de inteligência artificial (IA) da fundação — o
+motivo de a aplicação ser federada — não alcançava **nenhuma** ferramenta do produto.
+
+- **Diagnóstico antes do conserto.** A lacuna era de **uma** ferramenta, não de seis: o M3
+  (Nuvem de Conflito), o M4 (árvores de futuro e implementação) e o M6 (focalização) já
+  despachavam pelas raízes deles. A ARA é que ficou de fora, porque a "ação da ARA" que
+  existia era a genérica com `ui_route: /toc/ara` — e a spec 005 (RF-32..RF-35,
+  INT-02..INT-06) já tinha declarado quais eram as ações certas dela, no ciclo anterior.
+- **Toda ação do catálogo declara a ferramenta cuja raiz a governa** (campo `ferramenta` no
+  `ActionSpec`). Invariante de domínio: ação `risk: confirm` sem ferramenta **não entra** no
+  catálogo, e o valor aceito é a genérica ou uma ferramenta cuja raiz se registrou — quem
+  esquecer de se registrar fica bloqueada, nunca liberada.
+- **A ARA ganhou as quatro ações que a spec 005 lhe prometia**, pelos casos de uso da raiz:
+  `toc.suggest_udes` (`AdicionarEfeito` + `MarcarUde` — o Efeito Indesejável nasce com ficha
+  e a validação formal roda), `toc.suggest_causes` (`AdicionarEfeito` + `LigarNaARA` — a
+  causa nasce ligada), `toc.suggest_relations` (`LigarNaARA` — o elo nasce
+  `nao_examinado`) e `toc.suggest_reformulation` (`ReformularUde` — mudar o texto reexecuta
+  a validação). Catálogo: **16 → 20 ações**; manifesto regerado da mesma fonte e ainda
+  válido contra o schema normativo do Anexo B, com as **7 sabotagens repelidas**.
+- **As quatro genéricas pararam de mentir**: `ui_route: /toc/projetos`, descrição que aponta
+  a ação certa de cada ferramenta, e `intent_keywords` que não capturam mais intenção da
+  ARA.
+- **A guarda da raiz continua fechada, provada sem depender da borda.** O executor recusa o
+  desencontro de ferramenta com uma mensagem que **lista as ações daquela ferramenta** — mas
+  isso é conveniência, não proteção, e há teste que desarma essa guarda de borda (um
+  catálogo que declara `toc.criar_nos` como sendo da nuvem) e mostra a invariante do domínio
+  recusando do mesmo jeito.
+- **Portão novo — `scripts/check-acao-de-catalogo.sh`**, leitura estática (árvore sintática
+  abstrata) do par catálogo × executor, sem importar nem executar nada: ação mutadora sem
+  ferramenta declarada, ferramenta com raiz acionando caso de uso genérico, ação genérica
+  acionando caso de uso de ferramenta, ação sem entrada no despacho, e mão mutadora que não
+  aciona caso de uso nenhum. **5 sabotagens novas** (13 portões, 81 sabotagens no total).
+- **A sonda sem asserção virou teste.** `apps/api/tests/integracao/` (o arquivo `test_zz_probe.py`) imprimia e não
+  reprovava nada; foi substituída por
+  `apps/api/tests/integracao/test_catalogo_por_ferramenta_no_postgres.py`, que percorre proposta →
+  gate humano → desfecho contra o PostgreSQL real, ferramenta por ferramenta, e checa a
+  recusa da rota genérica nas sete.
+- **Ausência declarada, não esquecimento**: a Estratégia & Táticas (S&T) continua sem ação
+  `toc.*` (spec 010, INT-04), e um teste afirma isso para não virar dívida silenciosa.
+- **De quebra, a suíte de integração deixou de ser aleatória.** Ao acrescentar cinco testes
+  de integração, a suíte inteira começou a cair com `FATAL: sorry, too many clients
+  already` — **111 ocorrências, 5 falhas e 51 erros numa execução**, e a execução
+  imediatamente anterior, sobre o mesmo código, verde com **1593 testes**. A causa não era
+  o conserto: cada `criar_app` monta um motor com *pool* próprio, e só **5 dos 20** arquivos
+  de integração devolviam esse *pool* ao cluster (`liberar_conexoes`, à mão); os outros 15
+  seguravam as conexões até a coleta de lixo. Com `max_connections = 100`, a ordem de
+  execução decidia o resultado — e suíte que falha em ordem aleatória não é evidência de
+  nada. Agora uma fixture `autouse` do `apps/api/tests/integracao/conftest.py` registra todo motor
+  criado durante o teste e o libera no fim: **174 testes de integração verdes e 7 conexões
+  residuais** no cluster ao fim da execução, contra as 100 de antes.
+
+
 ### Documentação — o corpo documental alcançou a aplicação: site regerado, matriz do APH preenchida, relatórios de ciclo fechados (lote de fechamento documental, 2026-09-06)
 
 Este lote não escreveu código de produção. Ele fechou a distância entre o que o repositório

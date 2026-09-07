@@ -48,6 +48,7 @@ temporário criado com `mktemp -d` e sabota a cópia.
 | `evidencia-colada/` | `scripts/check-evidencia-colada.sh` | um registro de duas afirmações com comando reproduzível e um documento que cola os dois valores — a base mínima do portão que confere se a saída colada ainda é a que o comando devolve |
 | `i18n/` | `scripts/check-i18n.sh` | dois dicionários em paridade, um componente com todo texto vindo de `t(...)`, um literal legítimo declarado com motivo e o mecanismo que lança em chave ausente (base do ciclo 011) |
 | `documentacao/` | `scripts/check-documentacao.sh` | um domínio sintético com **duas ferramentas registradas**, dois verbetes que as cobrem, duas procedências que resolvem e um componente que declara uma âncora existente — o denominador vem do registro do serviço, nunca do próprio acervo (base do ciclo 011) |
+| `acao-de-catalogo/` | `scripts/check-acao-de-catalogo.sh` | um catálogo sintético com três ações (uma da Árvore da Realidade Atual, uma do projeto genérico, uma sem ferramenta) e um executor com a tabela de despacho, o construtor e as mãos — a forma que o portão lê por árvore sintática abstrata, sem importar nem executar nada (base do ADR 0015) |
 
 Base 100% sintética, por regra do ADR 0006: personas fictícias (**Facilitadora TOC**,
 "Instituição Horizonte"), nenhum nome, enunciado ou data de pessoa real. A regra vale aqui
@@ -57,19 +58,19 @@ como vale em spec e em captura — fixture é exatamente onde a dívida da irmã
 ## As sabotagens
 
 A tabela viva está em `scripts/tests/run-sabotagem.sh` (a mutação e o trecho exigido moram
-juntos, para não divergirem). São **67** mutações na forma de uma
-linha só, sobre **12** bases — número medido, não lembrado, e conferido pelo `scripts/check-evidencia-colada.sh`
+juntos, para não divergirem). São **73** mutações na forma de uma
+linha só, sobre **13** bases — número medido, não lembrado, e conferido pelo `scripts/check-evidencia-colada.sh`
 para não envelhecer como a redação anterior desta linha, que dizia 27 depois que a suíte já
 tinha crescido:
 
 ```text
 $ grep -cE '^  "scripts/check-[a-z-]+\.sh" +"[a-z-]+" "[a-z0-9-]+"$' scripts/tests/run-sabotagem.sh
-67
+73
 $ ls -d scripts/tests/sabotagem/*/ | wc -l
-12
+13
 ```
 
-A própria suíte declara **76**, e a diferença de nove tem uma causa exata — corrigida aqui
+A própria suíte declara **82**, e a diferença de nove tem uma causa exata — corrigida aqui
 em 2026-09-06, porque a redação anterior a explicava errado ("as sabotagens do
 `check-i18n.sh` e do `check-documentacao.sh` são escritas em forma de várias linhas", o que
 não é verdade: são de uma linha só, como as demais). **As nove que o `grep` não casa são
@@ -79,19 +80,19 @@ que lê o array `SABOTAGENS` do script:
 
 ```text
 $ python3 -c 'import re; t=open("scripts/tests/run-sabotagem.sh",encoding="utf-8").read(); b=re.search(r"^SABOTAGENS=\((.*?)^\)$",t,re.M|re.S).group(1); c=[l for l in b.splitlines() if l.strip().startswith(chr(34)+"scripts/check-")]; f=[l for l in c if not re.match(r"^\s*\"scripts/check-[a-z-]+\.sh\" +\"[^\"]+\" \"[^\"]+\"\s*$",l)]; print("cabecas de tupla:",len(c),"- fora do padrao do registro:",len(f)); print("portoes das que ficam de fora:",sorted({l.split(chr(34))[1] for l in f}))'
-cabecas de tupla: 76 - fora do padrao do registro: 9
+cabecas de tupla: 82 - fora do padrao do registro: 9
 portoes das que ficam de fora: ['scripts/check-i18n.sh']
 ```
 
-O número colado acima (**67**) continua sendo o que aquele `grep` devolve, e é isso que o
+O número colado acima (**73**) continua sendo o que aquele `grep` devolve, e é isso que o
 portão `check-evidencia-colada.sh` confere — ele garante que o número bate com o comando,
 **não** que a prosa ao lado esteja certa, e este parágrafo é a demonstração desse limite.
 Quem manda sobre **quantas sabotagens existem** é a saída da suíte:
 
 ```text
 $ scripts/tests/run-sabotagem.sh
-  portões cobertos: 12  ·  bases válidas aceitas: 12/12
-  sabotagens declaradas: 76  ·  reprovadas pelo motivo certo: 76/76
+  portões cobertos: 13  ·  bases válidas aceitas: 13/13
+  sabotagens declaradas: 82  ·  reprovadas pelo motivo certo: 82/82
   sabotagens de ambiente: 2  ·  recusadas pelo motivo certo: 2/2
 ```
 
@@ -149,6 +150,21 @@ estreita nas duas pontas: vale só dentro de `scripts/tests/` e só na linha que
 Fora dali não isenta nada; dentro dali, uma linha sem ele é achado como qualquer outra —
 foi assim que o portão pegou uma das próprias linhas de mutação enquanto esta suíte era
 escrita.
+
+### `check-acao-de-catalogo.sh` — a ligação entre a ação e o caso de uso (ADR 0015)
+
+Cinco mutações, e as duas primeiras são a regressão nos dois sentidos: a ação de uma
+ferramenta com raiz voltando a apontar para o caso de uso **genérico** do M1 (Núcleo de
+Diagramas Lógicos), e a ação do projeto genérico passando a escrever pela raiz de uma
+ferramenta. As outras três fecham as fugas: ação mutadora **sem `ferramenta` declarada**
+(omissão é o sintoma — regra R3), ação do catálogo **sem entrada no despacho** (declarada e
+inexecutável é dívida silenciosa) e mão mutadora que **não aciona caso de uso nenhum**
+(devolveria `executed` sem ter escrito nada).
+
+Este portão nasceu de um defeito que **um conserto anterior criou**: fechada a porta dos
+fundos do agregado, as quatro ações genéricas do catálogo continuaram apontadas para os
+casos de uso genéricos e passaram a falhar para sempre em todas as ferramentas. Nenhum
+portão olhava para a ligação entre a ação e o caso de uso — só para cada lado dela.
 
 ## Um achado que este diretório já pagou
 

@@ -8,7 +8,7 @@ Lógicos · **ARA** — Árvore da Realidade Atual · **NC** — Nuvem de Confli
 O que esta suíte prova, e o que ela deliberadamente não prova: aqui está a **orquestração**
 — carregar pela porta, agir na raiz, gravar pela mesma porta, e o span de nascença (P5).
 Persistência é `tests/integracao/`, contra o PostgreSQL real; autorização é
-`tests/aplicacao/test_governanca_de_capacidades.py` mais os testes de contrato.
+`apps/api/tests/aplicacao/test_governanca_de_capacidades.py` mais os testes de contrato.
 """
 from __future__ import annotations
 

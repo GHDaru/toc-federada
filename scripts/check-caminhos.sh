@@ -56,7 +56,14 @@ PADRAO_DIR = re.compile(r"`([^`\s]*/[^`\s]*/)`|`([^`\s]+/)`")
 ISENTOS = (
     ("gestaodeprioridades/", "arquivo da irmã GHDaru/gestaodeprioridades, leitura apenas (P1)"),
     ("ghdaru/",              "arquivo da fundação GHDaru/ghdaru, leitura apenas (P1)"),
-    ("apps/",                "caminho curto dentro do GHDaru/ghdaru, leitura apenas (P1)"),
+    # `apps/` NÃO é isento em bloco, e a diferença é a razão desta linha existir. Neste
+    # repositório `apps/api/` e `apps/web/` são a APLICAÇÃO INTEIRA: uma isenção por prefixo
+    # `apps/` fazia o portão responder verde sobre 156 citações que ele nunca conferia —
+    # medido, e é a mesma classe de falso verde que a regra R2 nomeia. O que é de fora é
+    # citado por prefixo próprio, e cada um está declarado abaixo com o motivo.
+    ("apps/api/src/ghdaru_api/", "código do GHDaru/ghdaru (a fundação), leitura apenas (P1)"),
+    ("apps/api/contracts/",      "contratos do GHDaru/ghdaru, leitura apenas (P1)"),
+    ("apps/web/src/features/",   "interface do GHDaru/ghdaru, leitura apenas (P1)"),
     ("protocolos/",          "arquivo do GHDaru/protocolos (Padrão APH), leitura apenas (P1)"),
     ("padrao/",              "norma do GHDaru/protocolos citada por caminho curto (P1)"),
     ("conformidade/",        "suíte do GHDaru/protocolos, leitura apenas (P1)"),

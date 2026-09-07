@@ -90,7 +90,21 @@ class CriarProjetoARA(_ComRepositorioDeARA):
 
 
 class _SobreARA(_ComRepositorioDeARA):
-    def executar(self, *, dono: DonoDoProjeto, projeto_id: UUID, **kw):
+    #: O identificador da proposta que autorizou esta escrita, quando ela veio do
+    #: catálogo governado. Fica no span (RF-32 da spec 005: "aceitar cria o nó/aresta com
+    #: traço correlacionado à proposta") e é o que torna a mutação vinda de modelo
+    #: distinguível de edição humana um mês depois. Vazio quando quem editou foi gente.
+    _proposta_id: str | None = None
+
+    def executar(
+        self,
+        *,
+        dono: DonoDoProjeto,
+        projeto_id: UUID,
+        proposta_id: str | None = None,
+        **kw,
+    ):
+        self._proposta_id = proposta_id
         ara = self._carregar(dono, projeto_id)
         resultado = self.agir(ara, em=self._agora(), **kw)
         self._repositorio.salvar_ara(ara)
@@ -100,6 +114,10 @@ class _SobreARA(_ComRepositorioDeARA):
     def agir(self, ara: ProjetoARA, *, em, **kw):  # pragma: no cover - contrato
         raise NotImplementedError
 
+    def anotar_resultado(self, span: SpanDeTraco, resultado) -> None:
+        if self._proposta_id:
+            span.atributo("toc.proposta_id", self._proposta_id)
+
 
 class _ComStatusNoTraco(_SobreARA):
     """Anota no span o estado a que o UDE chegou — grandeza e enum, nunca texto."""
@@ -107,6 +125,7 @@ class _ComStatusNoTraco(_SobreARA):
     _no_id: UUID | None = None
 
     def anotar_resultado(self, span: SpanDeTraco, resultado) -> None:
+        super().anotar_resultado(span, resultado)
         if self._no_id is None:
             return
         span.atributo("toc.status_do_ude", self._ara.status(self._no_id).value)
@@ -178,6 +197,7 @@ class ExcluirNoDaARA(_SobreARA):
         return ara.excluir_no(no_id, em=em)
 
     def anotar_resultado(self, span: SpanDeTraco, resultado) -> None:
+        super().anotar_resultado(span, resultado)
         span.atributo("toc.arestas_removidas", len(resultado))
 
 
@@ -262,6 +282,7 @@ class MudarStatusDeUde(_SobreARA):
         return ara.mudar_status(no_id, status, justificativa=justificativa, em=em)
 
     def anotar_resultado(self, span: SpanDeTraco, resultado) -> None:
+        super().anotar_resultado(span, resultado)
         span.atributo("toc.status_do_ude", resultado.value)
 
 
@@ -274,6 +295,7 @@ class ExaminarElo(_SobreARA):
         return ara.examinar_elo(aresta_id, estado, reserva=reserva, em=em)
 
     def anotar_resultado(self, span: SpanDeTraco, resultado: Exame) -> None:
+        super().anotar_resultado(span, resultado)
         span.atributo("toc.exame_do_elo", resultado.estado.value)
 
 
@@ -301,6 +323,7 @@ class AnalisarArvore(_SobreARA):
         return ara.analisar(em=em)
 
     def anotar_resultado(self, span: SpanDeTraco, resultado: RelatorioEstrutural) -> None:
+        super().anotar_resultado(span, resultado)
         for chave, valor in resultado.resumo().items():
             span.atributo(f"toc.{chave}", valor)
 

@@ -258,7 +258,13 @@ anônimo, o snapshot é sanitizado no servidor com esquema fechado, e **uma apro
 executa exatamente uma vez** contra o PostgreSQL real — o que só é verdade porque um crítico
 hostil provou o contrário primeiro (ADR 0011, migração `0007`). O fio passa nos 11/11 checks
 da suíte do `GHDaru/protocolos`. O portão humano deste ciclo — aprovar o catálogo `toc.*`
-ação a ação — **continua aberto**, e agora são 16 ações.
+ação a ação — **continua aberto**, e agora são 20 ações: as 16 do fechamento de 2026-09-06
+mais as quatro da Árvore da Realidade Atual que o ADR 0015 acrescentou em 2026-09-07,
+quando um crítico hostil mostrou que fechar a porta dos fundos do agregado tinha deixado a
+ferramenta principal do produto **sem nenhuma ação mutadora** — a assistência da fundação
+não alcançava ferramenta nenhuma, e nenhum portão via, porque nenhum portão olhava para a
+ligação entre a ação e o caso de uso. Agora olha:
+[`../scripts/check-acao-de-catalogo.sh`](../scripts/check-acao-de-catalogo.sh).
 - Portão executável: sem capability de escrita, as ações mutadoras **somem do catálogo**
   (teste, com a contagem antes/depois na saída).
 - Portão executável: nenhuma mutação proposta por modelo aplica fora da FSM; snapshot
