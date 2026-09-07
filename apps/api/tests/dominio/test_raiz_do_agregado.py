@@ -167,14 +167,16 @@ def test_ferramenta_nova_nasce_FECHADA_mesmo_sem_se_registrar():
     fundos aberta e ninguém perceberia até a próxima revisão independente.
     """
     # A ferramenta usada aqui tem de ser uma que AINDA não existe no repositório: era
-    # `arf` até o ciclo 008 entregar a Árvore da Realidade Futura, e passa a ser `snt` —
-    # Estratégia & Táticas, o M5 do ciclo 010. O que o teste prova não mudou: ferramenta
-    # não registrada nasce **fechada**.
-    futura = "snt"  # Estratégia & Táticas — ainda não existe neste repositório
+    # `arf` até o ciclo 008 entregar a Árvore da Realidade Futura, foi `snt` até o ciclo
+    # 010 entregar a Estratégia & Táticas, e passa a ser `dbr` — Tambor-Pulmão-Corda
+    # (*Drum-Buffer-Rope*), que o ADR 0005 deixou **fora** da v1. O que o teste prova não
+    # mudou, e é essa a graça de trocar o nome a cada ferramenta que nasce: ferramenta não
+    # registrada nasce **fechada**.
+    futura = "dbr"  # Tambor-Pulmão-Corda — fora da v1 pelo ADR 0005
     assert futura not in RAIZ_POR_FERRAMENTA
     assert tem_raiz_propria(futura) is True
     projeto = Projeto(
-        id=uuid4(), dono=DONA, nome="ARF do futuro", ferramenta=futura,
+        id=uuid4(), dono=DONA, nome="Ferramenta do futuro", ferramenta=futura,
         criado_em=T0, alterado_em=T0,
     )
 

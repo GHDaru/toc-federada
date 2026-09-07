@@ -1,9 +1,9 @@
 {
-  "gerado_em": "2026-09-06T05:51:50.686Z",
+  "gerado_em": "2026-09-06T21:51:33.630Z",
   "script": "docs/jornadas/scripts/capturar-telas.mjs",
   "base_sintetica": "docs/produto/dados/analise-horizonte.json v1.0.0",
-  "capturas": 52,
-  "bytes": 8481359,
+  "capturas": 81,
+  "bytes": 13311234,
   "medidas": {
     "pedidosAoHospedeiro": 5,
     "saude": {
@@ -31,9 +31,9 @@
     "cascaEmbarcada": 0,
     "canvas": {
       "altura_da_janela": 900,
-      "altura_da_area_do_canvas": 2761,
-      "transformacao_do_plano": "translate(14.561px, 1143.08px) scale(0.557317)",
-      "topo_do_primeiro_no": 1670
+      "altura_da_area_do_canvas": 2762,
+      "transformacao_do_plano": "translate(14.561px, 1143.33px) scale(0.557317)",
+      "topo_do_primeiro_no": 1414
     },
     "resumo_por_status": {
       "pendente": 3,
@@ -76,6 +76,151 @@
           "decisoes": 0
         }
       ]
+    },
+    "arf": {
+      "nos": 4,
+      "injecoes": 2,
+      "efeitos_futuros": 2,
+      "elos": 2,
+      "espelhos": 1,
+      "ramos": [
+        "tratado"
+      ],
+      "verificacao": {
+        "eds_sem_caminho": [],
+        "injecoes_sem_efeito": 1,
+        "injecoes_sem_efeito_ids": [
+          "e7581ea8-690e-49de-a14a-d7314ca7b525"
+        ],
+        "ramos_abertos": [],
+        "cobertura": [
+          {
+            "ude_id": "dd30c4cd-66a4-4379-acd0-7a3332ff37b1",
+            "espelhado_por": "ebc261c4-20aa-40da-949d-d982d63f18f7",
+            "alcancado": true
+          }
+        ],
+        "sem_origem_vinculada": false,
+        "pronta": false
+      }
+    },
+    "apr": {
+      "nos": 3,
+      "pares": 1,
+      "julgamentos": 1,
+      "sequenciamento": {
+        "camadas": [
+          [
+            "35e96381-f4ae-4bad-b842-9833bf3d0f24"
+          ]
+        ],
+        "ramos_paralelos": [
+          [
+            "35e96381-f4ae-4bad-b842-9833bf3d0f24"
+          ]
+        ],
+        "elipses": [],
+        "ciclos": [],
+        "obstaculos_sem_oi": [],
+        "objetivos_sem_obstaculo": [],
+        "bloqueado": false,
+        "completo": true
+      }
+    },
+    "at": {
+      "passos": 2,
+      "resumo": {
+        "pendente": 1,
+        "em_execucao": 0,
+        "concluido": 0,
+        "bloqueado": 1,
+        "passos": 2,
+        "inalcancaveis": 0
+      },
+      "ordem_de_leitura": 2
+    },
+    "cadeia": {
+      "elos": [
+        "ara→nc (ativa)",
+        "nc→arf (ativa)",
+        "arf→apr (ativa)",
+        "apr→at (ativa)"
+      ],
+      "ferramentas": [
+        "ara",
+        "nc",
+        "arf",
+        "apr",
+        "at"
+      ],
+      "resumo": {
+        "elos": 4,
+        "elos_pendentes": 0,
+        "ferramentas": 5,
+        "projetos": 5
+      }
+    },
+    "snt": {
+      "passos": 7,
+      "niveis": 3,
+      "numeracao": [
+        "1",
+        "1.1",
+        "1.1.1",
+        "1.1.2",
+        "1.2",
+        "1.2.1",
+        "1.3"
+      ],
+      "mover": {
+        "antes": [
+          "1",
+          "1.1",
+          "1.1.1",
+          "1.1.2",
+          "1.2",
+          "1.2.1",
+          "1.3"
+        ],
+        "depois": [
+          "1",
+          "1.1",
+          "1.1.1",
+          "1.2",
+          "2",
+          "2.1",
+          "2.2"
+        ]
+      },
+      "acompanhamento": {
+        "passos": 7,
+        "por_status": {
+          "nenhum": 6,
+          "validado": 1,
+          "nao_validado": 0,
+          "em_execucao": 0
+        },
+        "pendencias": 7
+      },
+      "exclusao": {
+        "passos_antes": 7,
+        "passos_depois": 4,
+        "numeracao_depois": [
+          "1",
+          "1.1",
+          "1.1.1",
+          "1.2"
+        ]
+      },
+      "desempenho": {
+        "passos": 100,
+        "niveis": 5,
+        "abrir_amostras": 20,
+        "abrir_p95_ms": 10.7,
+        "abrir_mediana_ms": 9.8,
+        "mover_subarvore_de": 20,
+        "mover_ms": 176
+      }
     }
   },
   "falhas": [],
@@ -89,8 +234,8 @@
     {
       "jornada": "001-chegada-e-embarque",
       "captura": "001-chegada-e-embarque/02-hospedeiro-com-a-aplicacao.png",
-      "bytes": 78731,
-      "sha256": "6f095db1f69a86bcac2d362b575d6e08a49845ec4e505ad0d2a35bcda620171a"
+      "bytes": 78726,
+      "sha256": "49beb9d5660aa1de267d2ef8c92180d77d93a601bc4657794a48ac84231789d0"
     },
     {
       "jornada": "001-chegada-e-embarque",
@@ -107,20 +252,20 @@
     {
       "jornada": "001-chegada-e-embarque",
       "captura": "001-chegada-e-embarque/05-autonoma-com-casca.png",
-      "bytes": 55164,
-      "sha256": "e311b64b5f601ed835baa30afd37127946f27fa861f40ae156936f85dd507da4"
+      "bytes": 55162,
+      "sha256": "affe10234e4b63d448c298c5ddb4946ad643eec35b5dc50332c15a5a0bebcba9"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/01-lista-vazia.png",
-      "bytes": 55164,
-      "sha256": "e311b64b5f601ed835baa30afd37127946f27fa861f40ae156936f85dd507da4"
+      "bytes": 55162,
+      "sha256": "affe10234e4b63d448c298c5ddb4946ad643eec35b5dc50332c15a5a0bebcba9"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/02-projeto-criado.png",
-      "bytes": 63451,
-      "sha256": "3e01481cc5210ee6c1f8ceb35a6dc171e240298217041becf02919cd3085a622"
+      "bytes": 63477,
+      "sha256": "89d7bbc3b0a11bb02a707b4627f364e1fb194358f74a78f2cbfc141c0c8d1d2e"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
@@ -131,74 +276,74 @@
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/04-arvore-da-horizonte.png",
-      "bytes": 478672,
-      "sha256": "5bfd4f6fc1988010aa3222aa182ae2655e2ebe4709397851561d17d27cc0417a"
+      "bytes": 481284,
+      "sha256": "46726ae27dcabf225e5a9f90e41c1ccd5d573536e042db5a246417169400d00f"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/05-canvas-abaixo-da-dobra.png",
-      "bytes": 135593,
-      "sha256": "e3ca5fcbe9e5ef1c1a7821377d0ddb8321678ccddaef612f9d49af2283ff7316"
+      "bytes": 126698,
+      "sha256": "b28e7c750aedf8fce13ea7013b281ee455dbe0a40e4c21543734bd0d29193b49"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/06-painel-de-arestas.png",
-      "bytes": 210940,
-      "sha256": "d8da696b35611774c144dbb62073e745062444c43511e9b2c981ea455347f910"
+      "bytes": 210962,
+      "sha256": "cddac075fc1e70a70f8190dd584d4329ad120efc6f7bd957b83e8d69ebe1e2b0"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/07-ficha-de-ude-reprovado.png",
-      "bytes": 149301,
-      "sha256": "6876c86464dada555ee063af9b323d1398522fa7f85344d4df5c4e8d2cc42f07"
+      "bytes": 149305,
+      "sha256": "a4283ee9b849bd8fcd8b11177d046f67909ee119adc2ec26e36ff06342cf1764"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/08-ficha-logo-apos-reformular.png",
-      "bytes": 151207,
-      "sha256": "f5e5444784ed1bdbe930fb9b702b9db7221ca78a20f068059e768de0c12525cf"
+      "bytes": 151210,
+      "sha256": "702c50bea2745d2bc3af0022ae250295b059f9911fafaf2220b19d093a60aedc"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/09-ficha-reaberta-com-veredito-novo.png",
-      "bytes": 148989,
-      "sha256": "ec7ee0a01e6fef6ab44b7fe78cd970afcd879c87d677ec3a2180dcc677613716"
+      "bytes": 148993,
+      "sha256": "6d1c00d4e4a51a036694216f6deeef99cec2ee358b60bdbb36064b9d0360457d"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/10-ficha-de-ude-aprovado.png",
-      "bytes": 145319,
-      "sha256": "dbe946385352e12213254d8b4aa14aa8b0a043aeca2e387e9802c36c5b9c3386"
+      "bytes": 145323,
+      "sha256": "3313665ba65edfa002d9126453e738af24b45d96120661b4470cd3c440758387"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/11-parecer-e-status-validado.png",
-      "bytes": 152849,
-      "sha256": "5d75994b730cd69880f880217122daa3485507e90e129d6c6d8e730beff7fce0"
+      "bytes": 152852,
+      "sha256": "60cf54f5f604cf59e87090900a8601d3b5d5f6b7e4d590bf873ba4f5702ad7f6"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/12-resumo-por-status-filtrado.png",
-      "bytes": 101686,
-      "sha256": "380fc76d7c51951c6024f36d32b0c0e168b5fb68d91313108cb5754958778fd5"
+      "bytes": 101444,
+      "sha256": "3fbad672e83b826152efa31722fb5abbcbe39c6274f311c81da34f15cac36d95"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/13-exame-de-elo.png",
-      "bytes": 36228,
-      "sha256": "9eaea4a95e9283011df17e89308fa7fa850c336d45e55f8d459ca866238567c0"
+      "bytes": 39025,
+      "sha256": "589ccc30d87146d4f60f84300cb2bde29efd6e85fb584b8e7374b3aeab4e31a9"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/14-relatorio-estrutural.png",
-      "bytes": 216719,
-      "sha256": "f719497bdc6148ef54e8c2271915abd324cafcef0f2077c556eca16523d09565"
+      "bytes": 218382,
+      "sha256": "7122ce8a5f81dab121859ce44718e4c23549b79cd50929b4ce51eba9fc657cdf"
     },
     {
       "jornada": "007-a-travessia",
       "captura": "007-a-travessia/01-udes-escolhidos-na-ara.png",
-      "bytes": 608526,
-      "sha256": "d6962e72dd9b12607f1c9e69644926d527d3508db2f50a19d038d67048be59d0"
+      "bytes": 609120,
+      "sha256": "0a0e5cec08473c219911c5dcc950385bbdaf48b163fbdf566bc7ddf903cd8f54"
     },
     {
       "jornada": "007-a-travessia",
@@ -209,80 +354,80 @@
     {
       "jornada": "007-a-travessia",
       "captura": "007-a-travessia/03-nuvem-derivada.png",
-      "bytes": 113057,
-      "sha256": "730bce5f98342ca826c050acfa813e79aa33f90af2ff77c937f07dbff36582d0"
+      "bytes": 113226,
+      "sha256": "02e720db39957a0b255b123bff681258419e468fea776481c12d8f3e4b3b0fb8"
     },
     {
       "jornada": "007-a-travessia",
       "captura": "007-a-travessia/04-linha-de-origem.png",
-      "bytes": 12156,
-      "sha256": "aee9b59c2a129b89bacf1658dbbd54b10533564d701397b8bffb55536a5ce3a6"
+      "bytes": 12308,
+      "sha256": "a837212c9c836da1f3dc9d2f89deb066c070f335167f1c31175fa1bb9855fee6"
     },
     {
       "jornada": "007-a-travessia",
       "captura": "007-a-travessia/05-ara-intacta-depois-da-derivacao.png",
-      "bytes": 512766,
-      "sha256": "3901bad889a0bdd4db1df8d131c02286f9fe239c6a26987ef307653c21c1c70d"
+      "bytes": 514742,
+      "sha256": "33df8d562a05d5bc697136a182db2164a173bab306500ffec0d44cae80e159d9"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/01-diagrama-do-conflito.png",
-      "bytes": 125676,
-      "sha256": "ba3cc2083826e06db3acc94538dab1da16da573af5081e21dcd1ac988126ee98"
+      "bytes": 125837,
+      "sha256": "4904be299c9d834ad647f41093d633b9b9358495e589b420772d5943f95e2297"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/02-ficha-da-aresta-com-premissa.png",
-      "bytes": 65121,
-      "sha256": "afd4ed624903f9a18b5eda1414ccf400a0c43016ea0c95b43b3413aaed5959cc"
+      "bytes": 64745,
+      "sha256": "61c602d8f9fb9e6cabed84ab9fbdedf5ec79e858799674a8cdbed38a902cdc88"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/03-injecao-ligada-a-premissa.png",
-      "bytes": 75641,
-      "sha256": "7667a485eb814b767e41d9f83ec5a2769b2dea397c9323cc0b433e2a41005a81"
+      "bytes": 75490,
+      "sha256": "621e0d66000871f26abdf37b2a4f9d1fea7b6ebe66fce519640cfec7a5fb0c11"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/04-visao-de-solucao.png",
-      "bytes": 190047,
-      "sha256": "24b76a1128e07d13737401078593467a1c6c4b694b14b8a606172c52d129d2dd"
+      "bytes": 190222,
+      "sha256": "6589fb3c471905b2fc94c520135dfab91227b8a9191f4de1b0bdb61af574b6ba"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/05-lado-a-lado.png",
-      "bytes": 258718,
-      "sha256": "dae11fafae0fdd19a1df09cfd5ed2b7fd82c045d482ce5ba2b71cadd430d518a"
+      "bytes": 258889,
+      "sha256": "deefa23330ea7cde211057705f00a138d1202c290924634445418704563a4afd"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/06-vista-tabular.png",
-      "bytes": 283911,
-      "sha256": "969dd477be441ed43e5dbe65e345d5dbcbbf39c1fe6f27b5b8853224ea47293a"
+      "bytes": 284085,
+      "sha256": "9c4dfe2f14b945f46d10cfea443a9b89393960a5907de0816fce2639131a168e"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/07-previa-da-geracao.png",
-      "bytes": 348703,
-      "sha256": "3c092edd073ce6c866551fcb93f57eaee40d3869645b7ca32c1cd841e823123e"
+      "bytes": 348867,
+      "sha256": "712c8a90b0f864e8e8b3b15861495665dea6a5d05f78ec07974c969d0286d9cf"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/08-gate-da-proposta.png",
-      "bytes": 381256,
-      "sha256": "df3740b1099b82f58f049e7ce170d2086d19e68698941e36f41df351a3568d90"
+      "bytes": 381297,
+      "sha256": "0558acd6b9bdfc183d389bad95282f6947e1e900105c312837dcf75166d16261"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/09-nuvem-depois-da-confirmacao.png",
-      "bytes": 163209,
-      "sha256": "6018a47cc17d7d655132a678fa5800be36bcf021839bf310f8282825b67ef802"
+      "bytes": 163260,
+      "sha256": "181934aa6ef1186fc01592c3aa62f15726da7fd83da38084f100ae6a513fb49d"
     },
     {
       "jornada": "003-nuvem-de-conflito",
       "captura": "003-nuvem-de-conflito/10-sobrevive-a-recarga.png",
-      "bytes": 132171,
-      "sha256": "512e3971546bee1d9589bb661492d470640d5492fcd5583f0fb3d42bfd85442d"
+      "bytes": 132334,
+      "sha256": "60bad33341dd6d72cfd0d3ea40966a8feb8eddab6ea996b66990aa907302b114"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
@@ -293,20 +438,20 @@
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/01-identificar-com-a-restricao.png",
-      "bytes": 183910,
-      "sha256": "a070c12a61ea7e4e98ca06369c5d060e96940c9d4ca9abf2b15ba9c616c90e31"
+      "bytes": 183909,
+      "sha256": "f05f53c8b6b40eb8ca9e45b21728f0f669caa4c84d524f2152fec09e85ce2273"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/02-identificar-a-decisao-que-encerra.png",
-      "bytes": 184867,
-      "sha256": "8084e97a827bcbf946299e6cf684a9560ae02f17efdc6ca6fdab390b36f0bee3"
+      "bytes": 184863,
+      "sha256": "6276feca8c32000208219d3706331b3bc0ad7b7dfd4f2be12d9a6ce1ce18a25f"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/03-explorar-herda-a-restricao.png",
-      "bytes": 198933,
-      "sha256": "44413022f71918ab9e9dcd7ccfb079c38bd97b52d240cd14397b93de03a78b6f"
+      "bytes": 202379,
+      "sha256": "88aed3597b644b80890d8225c76b17706e985bedaf8d59f858fcc436ce6e9ee0"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
@@ -317,80 +462,254 @@
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/05-explorar-a-decisao.png",
-      "bytes": 199472,
-      "sha256": "7f19042c5b77f745d3893b086dfd73d2045eeda902e06388d26cacbc383234ad"
+      "bytes": 202894,
+      "sha256": "2a616eed9b6114d516adc22a7653c51e42264596545949bdde0bf1eb55e9401a"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/06-subordinar-com-a-nuvem-do-conflito.png",
-      "bytes": 218751,
-      "sha256": "5eed7af083402940630b3f23ccf098b9ca4f4eee36788a4999217cd6e8558937"
+      "bytes": 218746,
+      "sha256": "0a8c28cc6b0599f888cc04b5260c5769092e18dbd209545f45560d0c0d46ce1d"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/07-subordinar-a-decisao.png",
-      "bytes": 218773,
-      "sha256": "bd0706eab20e4bfcd17360bb042c2dc5c88e58edfe14378ae35e0fd151b48e89"
+      "bytes": 218779,
+      "sha256": "0f118424f0da30defe1aedcda4c3d9429d14fccaeccf61ef6710b0789a244999"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/08-elevar-com-o-plano.png",
-      "bytes": 212637,
-      "sha256": "e15f060fb2876283cf8190509e13184991fc79d39933382e10e749f4b5b1a52d"
+      "bytes": 218343,
+      "sha256": "f9da8bc9f1e9426229dc69f0b9f4f328eca3613e4b291bb9a06b46d08e9994a5"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/09-elevar-a-decisao.png",
-      "bytes": 213225,
-      "sha256": "7605ce839172315031542efd6a7589e6a57462e6d9c5e06a4109860841ab2ecd"
+      "bytes": 218891,
+      "sha256": "5f71e2de7e1ca18ac63ba217018727c6d555cf34f3dcc379de4f44f1e0f2e8ff"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/10-recomecar-o-quinto-passo.png",
-      "bytes": 220169,
-      "sha256": "f89a224dcd764c94d7e32b597721e6cfe4b052b9af92e530524f8b926a7b8b25"
+      "bytes": 220168,
+      "sha256": "8f32e35b88b5169e1658f1c4553778f7697a547216174ffcaf5cefa7268e3b81"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/11-ciclo-2-com-a-heranca-pendente.png",
-      "bytes": 225161,
-      "sha256": "665a5d5d1a9b4ba0feb552a2bb273c43929ae3e68a02f5b0380459dfddab1238"
+      "bytes": 225335,
+      "sha256": "ccb86a9923458551d32e672347ad71c53a6e4aa63b2c52b4b1a52582469f2e1e"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/12-julgamento-de-heranca.png",
-      "bytes": 45366,
-      "sha256": "7f9333518eb39f1c70faa2de8a2487a8fa15acc06f9ae2756c74a13f4c4be401"
+      "bytes": 45550,
+      "sha256": "448746e17128e24665afdac239943763cea3e8c143ffcb66747dd087879ddf10"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/13-veredito-revogado.png",
-      "bytes": 228553,
-      "sha256": "8a684991a7fdc246ac53d0ff06e4278efb42f7172f6627767406ea6e2934cfdd"
+      "bytes": 228688,
+      "sha256": "eed56dee7305f22cb5a0ec564324d5616ac62527fd7f7c26c9555672e34a42e9"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/14-linha-do-tempo-com-os-dois-ciclos.png",
-      "bytes": 31806,
-      "sha256": "942225937145902dd955647c87138ff3d2c4d01bb3bcb997a2579c3378dde135"
+      "bytes": 31804,
+      "sha256": "22efbcfdfea03b9e4d26127292bd41e4f0c3920d90eed51edbf8fccd4bd94ab9"
     },
     {
       "jornada": "009-cinco-passos-de-focalizacao",
       "captura": "009-cinco-passos-de-focalizacao/15-ciclo-fechado-somente-leitura.png",
-      "bytes": 228693,
-      "sha256": "29dff46a9ba19f57c90b826f019ab0026c19940648b8fe2619143820473e2c50"
+      "bytes": 228829,
+      "sha256": "6a84d72c74f42458f475edebdf9cd51ac573cbff1c175f998cf7032d88bf90b4"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/01-arf-semeada-pela-injecao.png",
+      "bytes": 185531,
+      "sha256": "de60bd8dec69e55b53528833dc768b447936eeda50b4650f1e3ad47d7a0a6729"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/02-injecao-e-efeitos-no-formulario.png",
+      "bytes": 210264,
+      "sha256": "01d33951cad2c12392ab95b7b5c807b988c0189f641e546e3a62bbc0839aaf1f"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/03-injecao-encadeia-os-efeitos.png",
+      "bytes": 241719,
+      "sha256": "b534b8c0bc838b91adcdf1be77f657bff555c32297109fd1ce66e22983822d18"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/04-efeito-desejavel-espelha-o-ude.png",
+      "bytes": 39763,
+      "sha256": "0e1f6e187e807a20246b0918ba412d637d052c0527632c37d337564d87c85eb7"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/05-ramo-negativo-aberto.png",
+      "bytes": 327533,
+      "sha256": "481180f1b8efcca35de20f8f7fe04cab243806557f5f6bddf6d4de38121d8b69"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/06-a-poda-espera-a-injecao.png",
+      "bytes": 45012,
+      "sha256": "c40431584d86e357e631b23083b37a62504dbdb3c73d095025dc2291c5d99837"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/07-ramo-podado-pela-injecao.png",
+      "bytes": 38855,
+      "sha256": "734494d1a2508f2fc506bc7c35aac6b7623b46f785aa9df172c2fef6bcf2227b"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/08-verificacao-estrutural-da-arf.png",
+      "bytes": 40169,
+      "sha256": "3e0ae8f8941fcefd6bd801041ed80a82bf1980c2901f327f81ba1e7b0f0d6ec3"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/09-apr-derivada-com-o-objetivo.png",
+      "bytes": 164835,
+      "sha256": "1f97e649135e646a61bb67cd5b4d5271325c17214e5cffcb4c7ba561d9065eeb"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/10-obstaculo-pareado-com-o-objetivo-intermediario.png",
+      "bytes": 56181,
+      "sha256": "0ee44903ff96850fe36c79fa41b01a8707942fe7a9862a1a62fa5cdfa535ec14"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/11-teste-de-validade-julgado.png",
+      "bytes": 71847,
+      "sha256": "3c79e1b7c409d4fe3bdb26442d684f1b136c231dc64dbb8741ec66a46a00cc31"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/12-sequenciamento-por-dependencia.png",
+      "bytes": 40842,
+      "sha256": "18b0e4b88d8a04ba23a239ffed7c03d51910bfab6dab6f92000c71bbc51f0b0a"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/13-at-derivada-sem-passos.png",
+      "bytes": 73395,
+      "sha256": "0a2ef46de7c6db0d10717e5b00292975426f3e267273c125a594216545ee664a"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/14-passos-com-a-tripla.png",
+      "bytes": 157428,
+      "sha256": "d63945942cf3b3963256a2ae10b31aebc6c26a8fd8cf2f38e1e63e2acf65fc96"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/15-passo-bloqueado-com-motivo.png",
+      "bytes": 175580,
+      "sha256": "e119ed2f449f1139f60299a708d4ce8350c132a6f01401dbb34606139985a6a1"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/16-a-cadeia-inteira.png",
+      "bytes": 129652,
+      "sha256": "876dbbed044556bda37499f6d182336788b52b2ba55d72979b82e90c8caeff80"
+    },
+    {
+      "jornada": "010-as-tres-arvores-e-a-cadeia",
+      "captura": "010-as-tres-arvores-e-a-cadeia/17-percurso-elo-a-elo.png",
+      "bytes": 72088,
+      "sha256": "1280f31ba8776442b224e318911e5cef628c0a8a366524a35721442917925030"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/15-exclusao-nomeia-o-projeto.png",
-      "bytes": 115297,
-      "sha256": "f0436faa725f1c5f60549f3e27dcd2409908e4277b9f9f8e6391112a2e88fb6b"
+      "bytes": 160476,
+      "sha256": "06c2818308806673076d51d6732cad455131ff15c28047b11c12a3510f036a1b"
     },
     {
       "jornada": "002-primeiro-projeto-e-ara",
       "captura": "002-primeiro-projeto-e-ara/16-lixeira-com-restaurar.png",
-      "bytes": 42188,
-      "sha256": "903816f56d1453347f5d22420de4a89eddc83a5677a9610af55a11e5401ba00d"
+      "bytes": 42180,
+      "sha256": "a012933a25c1b9c46bbff5b83adf3f3832f6722af3509d84004b57da6873ca64"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/00-criar-com-meta-global.png",
+      "bytes": 138259,
+      "sha256": "a31d13410f14532abec4545e60793ba59c334f7b3da8960e2a655ac741de6be2"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/01-arvore-vazia-com-a-meta-no-topo.png",
+      "bytes": 59494,
+      "sha256": "dda65e8a57adfc33fd651e1c17c43c709dd388e69797f2c6819bf0deb9c83f5d"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/02-formulario-sem-campo-de-numero.png",
+      "bytes": 68792,
+      "sha256": "74d839ce92fa1b53912f83eb688cdc599196e05cde76822c5a605ae7cfc4f384"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/03-arvore-de-tres-niveis.png",
+      "bytes": 130622,
+      "sha256": "3939e60179713b4b13045ae1f7b87c7f5a403b11af98d7a48c396ed543798a08"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/04-ficha-com-premissas-vazias.png",
+      "bytes": 248083,
+      "sha256": "527035f42bbaed54eca6d424bf35a9a2c39330851ff2d660ab85526f3adccf93"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/05-leitura-dirigida-das-tres-premissas.png",
+      "bytes": 331867,
+      "sha256": "c4caecfb89d681177c560ce7bc1b8fa5058705dc7642e0172dea3e04e4bcf105"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/06-previa-da-renumeracao.png",
+      "bytes": 362247,
+      "sha256": "8654a902cc8f76b81b251bbdda6c772aa25909b87858b6638676df96ff3c51c6"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/07-arvore-renumerada.png",
+      "bytes": 310789,
+      "sha256": "be093d3e32eb41e7262d9705094cc17586364d6ae4e67084b56072f74f70d9c8"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/08-painel-de-acompanhamento.png",
+      "bytes": 289040,
+      "sha256": "6e57c682affbf13c9df1b07e83d6975f8f6f74940483b1dbabe7ff04a4d85f49"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/09-vista-tabular-indentada.png",
+      "bytes": 271043,
+      "sha256": "d79769071b4e0b22883fd81bec5d077ad7a01461d009e365b7022902f103bb4c"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/10-exclusao-avisa-a-contagem.png",
+      "bytes": 337217,
+      "sha256": "39c0d495d9d82d405b7e1c422b914dd078b4f01111e54ed5cac5de0a203ff5a2"
+    },
+    {
+      "jornada": "011-estrategia-e-taticas",
+      "captura": "011-estrategia-e-taticas/11-demais-passos-intactos-e-renumerados.png",
+      "bytes": 146239,
+      "sha256": "9b249394a9d848cf30d6ceb486c40f5a12c6780fcb1f5cbc91ddde1160811a8b"
     }
   ]
 }

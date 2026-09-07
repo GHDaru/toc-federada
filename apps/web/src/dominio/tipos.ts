@@ -546,3 +546,416 @@ export interface SugestaoDeRestricao {
   aviso: string;
   candidatas: CandidataARestricao[];
 }
+
+// =========================================================================================
+// M4 · Árvores de Futuro e Implementação (spec 008) — ARF, APR, AT e a cadeia
+//
+// Siglas, uma vez nesta seção: **ARF** — Árvore da Realidade Futura · **APR** — Árvore de
+// Pré-Requisitos · **AT** — Árvore de Transição · **UDE** — Efeito Indesejável · **ED** —
+// Efeito Desejável · **OI** — Objetivo Intermediário.
+//
+// Estes tipos são **espelho da projeção do servidor**, e não uma segunda modelagem: cada
+// campo aqui existe porque `apps/api/src/toc_api/http/esquemas.py` o devolve. A leitura de
+// suficiência, a leitura de dependência, o teste de validade, o sequenciamento em camadas
+// e a verificação estrutural chegam **prontos**; nenhuma delas é recalculada na interface,
+// porque uma segunda conta seria uma segunda verdade e as duas divergiriam no primeiro
+// requisito novo.
+// =========================================================================================
+
+/** A extremidade tipada de uma costura entre ferramentas (`PontaOut`). */
+export interface Ponta {
+  ferramenta: string;
+  projeto_id: string;
+  elementos: string[];
+  papel: string;
+}
+
+/** Um nó com o PAPEL na ferramenta — a diferença semântica do M4 (RI-01 da spec 008). */
+export interface NoDaArvore {
+  id: string;
+  papel: string;
+  titulo: string;
+  descricao: string;
+  posicao: Posicao;
+  recolhido: boolean;
+}
+
+// -- E4.1 · Árvore da Realidade Futura ----------------------------------------------------
+
+export type PapelNaArf = "injecao" | "efeito_futuro";
+/** RN-04: `aberto → tratado | aceito`, e os dois voltam por ação explícita. */
+export type EstadoDoRamo = "aberto" | "tratado" | "aceito";
+
+export interface EloDaArf {
+  id: string;
+  origem_id: string;
+  destino_id: string;
+  rotulo: string;
+  /** "Se <origem>, então <destino>" — montada dos textos ATUAIS, no servidor. */
+  leitura: string;
+  exame: { estado: EstadoDoExame; reserva: string };
+}
+
+export interface ConectorDaArf {
+  id: string;
+  destino_id: string;
+  arestas: string[];
+  leitura: string;
+}
+
+/** RN-03: qual UDE este efeito futuro converte. No máximo um ED por UDE, por ARF. */
+export interface EspelhoDeUde {
+  no_id: string;
+  ude_id: string;
+  projeto_de_origem_id: string | null;
+}
+
+/**
+ * O efeito indevido que a própria injeção traz.
+ *
+ * É ele que separa uma árvore de futuro séria de uma lista de desejos, e por isso a
+ * transição é estreita: `tratado` exige a injeção que corta (a **poda**), `aceito` exige
+ * justificativa e autor — e o autor vem do principal no servidor, nunca do corpo.
+ */
+export interface RamoNegativo {
+  id: string;
+  raiz_id: string;
+  estado: EstadoDoRamo;
+  injecao_de_corte_id: string | null;
+  justificativa: string;
+  autor: string;
+}
+
+export interface CoberturaDeUde {
+  ude_id: string;
+  espelhado_por: string | null;
+  alcancado: boolean;
+}
+
+/** RF-11: leitura, nunca veto — a ARF continua editável com pendência. */
+export interface VerificacaoDaArf {
+  eds_sem_caminho: string[];
+  injecoes_sem_efeito: number;
+  injecoes_sem_efeito_ids: string[];
+  ramos_abertos: string[];
+  cobertura: CoberturaDeUde[];
+  sem_origem_vinculada: boolean;
+  pronta: boolean;
+}
+
+export interface Arf {
+  id: string;
+  nome: string;
+  ferramenta: string;
+  descricao_do_problema: string;
+  versao: number;
+  origem: Ponta | null;
+  udes_da_cadeia: string[];
+  nos: NoDaArvore[];
+  elos: EloDaArf[];
+  conectores: ConectorDaArf[];
+  espelhos: EspelhoDeUde[];
+  ramos: RamoNegativo[];
+  verificacao: VerificacaoDaArf;
+}
+
+// -- E4.2 · Árvore de Pré-Requisitos ------------------------------------------------------
+
+export type PapelNaApr = "objetivo" | "obstaculo" | "objetivo_intermediario";
+export type CodigoDeVerbalizacao = "verbo_de_acao" | "previsao_futura" | "ausencia_generica";
+export type VereditoDeVerbalizacao = "atende" | "aviso" | "indeterminado";
+
+/** RF-16: "A precisa existir antes de B" — NECESSIDADE, e não suficiência (RN-05). */
+export interface Dependencia {
+  id: string;
+  antes_id: string;
+  depois_id: string;
+  leitura: string;
+}
+
+export interface JulgamentoDeValidade {
+  autor: string;
+  valido: boolean;
+  justificativa: string;
+  instante: string;
+}
+
+export interface ParObstaculoOi {
+  id: string;
+  obstaculo_id: string;
+  objetivo_intermediario_id: string;
+  teste_de_validade: string;
+  julgamentos: JulgamentoDeValidade[];
+}
+
+export interface ElipseDeSimultaneidade {
+  id: string;
+  destino_id: string;
+  dependencias: string[];
+  leitura: string;
+}
+
+/** RF-23: camadas, ramos paralelos, elipses — e o ciclo que BLOQUEIA (RN-06). */
+export interface Sequenciamento {
+  camadas: string[][];
+  ramos_paralelos: string[][];
+  elipses: string[];
+  ciclos: string[][];
+  obstaculos_sem_oi: string[];
+  objetivos_sem_obstaculo: string[];
+  bloqueado: boolean;
+  completo: boolean;
+}
+
+export interface LinhaDoResumoDaApr {
+  camada: number | null;
+  objetivo_intermediario: string | null;
+  objetivo_intermediario_id: string | null;
+  obstaculo: string | null;
+  obstaculo_id: string | null;
+  depende_de: string[];
+  julgamento: string;
+}
+
+export interface ResumoDaApr {
+  linhas: LinhaDoResumoDaApr[];
+}
+
+export interface AvisoDeVerbalizacao {
+  codigo: CodigoDeVerbalizacao;
+  trecho: string;
+  explicacao: string;
+  exemplo: string;
+}
+
+/** RF-20/RN-08: orientação com o trecho apontado — nunca veto. */
+export interface Verbalizacao {
+  papel: PapelNaApr;
+  veredito: VereditoDeVerbalizacao;
+  avisos: AvisoDeVerbalizacao[];
+  versao_do_lexico: string;
+}
+
+export interface Apr {
+  id: string;
+  nome: string;
+  ferramenta: string;
+  descricao_do_problema: string;
+  versao: number;
+  origem: Ponta | null;
+  objetivo: NoDaArvore;
+  nos: NoDaArvore[];
+  dependencias: Dependencia[];
+  pares: ParObstaculoOi[];
+  elipses: ElipseDeSimultaneidade[];
+  sequenciamento: Sequenciamento;
+}
+
+// -- E4.3 · Árvore de Transição -----------------------------------------------------------
+
+export type StatusDoPasso = "pendente" | "em_execucao" | "concluido" | "bloqueado";
+
+/** RN-10: a tripla é obrigatória — necessidade, ação e resultado esperado, sempre. */
+export interface PassoDaAt {
+  id: string;
+  acao: string;
+  necessidade: string;
+  resultado_esperado: string;
+  status: StatusDoPasso;
+  motivo_do_bloqueio: string;
+  resultado_real: string;
+  divergente: boolean;
+  /** "Para <necessidade>, <ação>; espero <resultado>" — montada no servidor (RF-29). */
+  leitura: string;
+}
+
+export interface Precedencia {
+  id: string;
+  antes_id: string;
+  depois_id: string;
+}
+
+export interface At {
+  id: string;
+  nome: string;
+  ferramenta: string;
+  descricao_do_problema: string;
+  versao: number;
+  alvo: Ponta | null;
+  passos: PassoDaAt[];
+  precedencias: Precedencia[];
+  ordem_de_leitura: string[];
+  inalcancaveis: string[];
+  resumo: Record<string, number>;
+}
+
+// -- E4.4 · o encadeamento ----------------------------------------------------------------
+
+export type TipoDeReferencia =
+  | "promocao_ude_nc"
+  | "semeadura_injecao_arf"
+  | "derivacao_arf_apr"
+  | "derivacao_oi_at";
+export type EstadoDaReferencia = "ativa" | "pendente";
+
+export interface EloDaCadeia {
+  referencia_id: string;
+  tipo: TipoDeReferencia;
+  origem: Ponta;
+  destino: Ponta;
+  estado: EstadoDaReferencia;
+  motivo: string;
+}
+
+/** RF-41: a travessia inteira — e o elo pendente NUNCA some da vista (US-18). */
+export interface Cadeia {
+  elos: EloDaCadeia[];
+  ferramentas: string[];
+  resumo: Record<string, number>;
+}
+
+export interface ReferenciaCruzada {
+  id: string;
+  tipo: TipoDeReferencia;
+  origem: Ponta;
+  destino: Ponta;
+  estado: EstadoDaReferencia;
+  motivo: string;
+}
+
+// -- M5: Estratégia & Táticas (S&T, spec 010) ----------------------------------------
+//
+// **Não existe campo de número nos tipos de ENTRADA.** O número do passo é calculado pelo
+// servidor a partir da posição na árvore (RN-01) e chega pronto nos tipos de saída. Na
+// quarta geração da linhagem ele era digitado à mão (`tocbuilderv3/types.ts:288`), e o
+// formulário o exigia sem validar formato nem unicidade
+// (`tocbuilderv3/components/SnTStepEditorModal.tsx:56-57`) — é esse defeito que a ausência
+// do campo aqui aposenta.
+
+export type StatusDoPassoSnT = "nenhum" | "validado" | "nao_validado" | "em_execucao";
+
+export const STATUS_DA_SNT: readonly StatusDoPassoSnT[] = [
+  "nenhum",
+  "validado",
+  "nao_validado",
+  "em_execucao",
+] as const;
+
+/** Os seis valores da linhagem (`tocbuilderv3/types.ts:277-284`), portados pelo ADR 0014. */
+export type CategoriaDoPasso =
+  | "nenhuma"
+  | "estrategia"
+  | "tatica"
+  | "vcd"
+  | "build"
+  | "leverage";
+
+export const CATEGORIAS_DA_SNT: readonly CategoriaDoPasso[] = [
+  "nenhuma",
+  "estrategia",
+  "tatica",
+  "vcd",
+  "build",
+  "leverage",
+] as const;
+
+export type PapelDaPremissa =
+  | "paralela"
+  | "necessidade_ao_pai"
+  | "suficiencia_dos_filhos";
+
+export interface PremissasDoPasso {
+  paralela: string;
+  necessidade_ao_pai: string;
+  suficiencia_dos_filhos: string;
+}
+
+/** RF-13: a premissa lida no papel dela, com pai e filhos nomeados — montada no servidor. */
+export interface LeituraDaPremissa {
+  papel: PapelDaPremissa;
+  texto: string;
+  aplicavel: boolean;
+  completa: boolean;
+}
+
+export interface PassoDaSnT {
+  id: string;
+  numero: string;
+  nivel: number;
+  pai_id: string | null;
+  estrategia: string;
+  tatica: string;
+  categoria: CategoriaDoPasso;
+  status: StatusDoPassoSnT;
+  premissas: PremissasDoPasso;
+  filhos: string[];
+}
+
+export interface FichaDoPassoSnT extends PassoDaSnT {
+  leituras: LeituraDaPremissa[];
+}
+
+export interface SnT {
+  id: string;
+  nome: string;
+  ferramenta: Ferramenta;
+  descricao_do_problema: string;
+  versao: number;
+  meta_global: string;
+  passos: PassoDaSnT[];
+  raizes: string[];
+}
+
+export interface MudancaDeNumero {
+  no_id: string;
+  numero_atual: string;
+  numero_novo: string;
+}
+
+export interface PreviaDeMover {
+  mudancas: MudancaDeNumero[];
+}
+
+export interface PreviaDeExclusao {
+  no_id: string;
+  numero: string;
+  passos: number;
+  primeiro_nivel: PassoDaSnT[];
+}
+
+export type TipoDePendencia =
+  | "sem_premissa_de_necessidade"
+  | "sem_premissa_de_suficiencia"
+  | "sem_tatica";
+
+export interface PendenciaDaSnT {
+  no_id: string;
+  numero: string;
+  tipo: TipoDePendencia;
+}
+
+export interface AcompanhamentoDaSnT {
+  passos: number;
+  por_status: Record<StatusDoPassoSnT, number>;
+  progresso: number;
+  pendencias: PendenciaDaSnT[];
+}
+
+export interface LinhaDaSnT {
+  no_id: string;
+  numero: string;
+  nivel: number;
+  pai_id: string | null;
+  estrategia: string;
+  tatica: string;
+  categoria: CategoriaDoPasso;
+  status: StatusDoPassoSnT;
+  filhos: number;
+  tem_premissa_paralela: boolean;
+  tem_premissa_de_necessidade: boolean;
+  tem_premissa_de_suficiencia: boolean;
+}
+
+export interface TabelaDaSnT {
+  linhas: LinhaDaSnT[];
+}

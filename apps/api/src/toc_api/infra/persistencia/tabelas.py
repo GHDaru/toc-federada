@@ -1047,3 +1047,90 @@ foco_heranca = Table(
         "justificativa tanto quanto revogar."
     ),
 )
+
+
+# ---------------------------------------------------------------------------------------
+# M5 · Estratégia & Táticas (S&T, spec 010). Duas tabelas, e a forma delas é a decisão
+# central do módulo:
+#
+# 1. **Não existe coluna de número.** O `stepNumber` da linhagem
+#    (`tocbuilderv3/types.ts:288`) era texto digitado à mão, obrigatório e sem validação de
+#    formato ou unicidade. Aqui o que se grava é `(pai_id, ordem)`, e o número
+#    1/1.1/1.1.2 é calculado da estrutura na leitura (RN-01). Duas fontes de verdade não
+#    podem divergir quando só existe uma — e um teste de integração confere que nenhuma
+#    coluna destas duas tabelas contém "numero".
+# 2. **Não existe tabela de aresta.** A quarta geração reusava `AraEdge` "por
+#    simplicidade" (`tocbuilderv3/types.ts:310`), o que permitia topologias que não são
+#    árvore. Aqui `pai_id` é uma coluna do próprio passo: multi-pai é irrepresentável, e
+#    ciclo também.
+#
+# Duas invariantes do domínio entram como restrição de banco, além do código:
+#
+# - **ordem única entre irmãos**: `uq_snt_passo_projeto_id_pai_id_ordem` para os filhos e
+#   o índice parcial `uq_snt_passo_raiz_ordem` para as raízes — parcial porque, em SQL,
+#   `NULL` não é igual a `NULL` e a restrição única normal deixaria as raízes de fora,
+#   que é exatamente onde a numeração 1..n começa;
+# - **um passo não é pai de si mesmo**: `ck_snt_passo_pai_diferente_do_passo`.
+# ---------------------------------------------------------------------------------------
+
+snt_arvore = Table(
+    "snt_arvore",
+    metadados,
+    Column(
+        "projeto_id", PgUUID(as_uuid=True), ForeignKey("projeto.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column("meta_global", Text, nullable=False),
+    CheckConstraint("length(btrim(meta_global)) > 0", name="meta_global_obrigatoria"),
+    comment=(
+        "Cabeçalho da árvore de Estratégia & Táticas: a meta global que os passos "
+        "decompõem (RF-01). Uma linha por projeto do tipo snt."
+    ),
+)
+
+snt_passo = Table(
+    "snt_passo",
+    metadados,
+    Column(
+        "no_id", PgUUID(as_uuid=True), ForeignKey("no.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "projeto_id", PgUUID(as_uuid=True), ForeignKey("projeto.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("pai_id", PgUUID(as_uuid=True), ForeignKey("no.id", ondelete="CASCADE"), nullable=True),
+    Column("ordem", Integer, nullable=False),
+    Column("estrategia", Text, nullable=False),
+    Column("tatica", Text, nullable=False, server_default=""),
+    Column("categoria", Text, nullable=False, server_default="nenhuma"),
+    Column("status", Text, nullable=False, server_default="nenhum"),
+    Column("premissa_paralela", Text, nullable=False, server_default=""),
+    Column("premissa_necessidade_ao_pai", Text, nullable=False, server_default=""),
+    Column("premissa_suficiencia_dos_filhos", Text, nullable=False, server_default=""),
+    CheckConstraint("length(btrim(estrategia)) > 0", name="estrategia_obrigatoria"),
+    CheckConstraint("ordem >= 0", name="ordem_nao_negativa"),
+    CheckConstraint("pai_id is null or pai_id <> no_id", name="pai_diferente_do_passo"),
+    CheckConstraint(
+        "status in ('nenhum', 'validado', 'nao_validado', 'em_execucao')",
+        name="status_do_passo_snt",
+    ),
+    CheckConstraint(
+        "categoria in ('nenhuma', 'estrategia', 'tatica', 'vcd', 'build', 'leverage')",
+        name="categoria_do_passo_snt",
+    ),
+    UniqueConstraint("projeto_id", "pai_id", "ordem", name="uq_snt_passo_ordem_entre_irmaos"),
+    Index("ix_snt_passo_projeto_id", "projeto_id"),
+    Index("ix_snt_passo_pai_id", "pai_id"),
+    Index(
+        "uq_snt_passo_raiz_ordem",
+        "projeto_id",
+        "ordem",
+        unique=True,
+        postgresql_where=text("pai_id is null"),
+    ),
+    comment=(
+        "Passo da S&T: estratégia, tática, as três premissas, status e a POSIÇÃO "
+        "(pai + ordem). Sem coluna de número — a numeração deriva da estrutura (RN-01)."
+    ),
+)

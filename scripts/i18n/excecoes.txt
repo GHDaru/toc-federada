@@ -1,0 +1,15 @@
+# Exceções do portão de literal órfão (spec 011, RF-07 e lacuna L-05).
+#
+# Formato, uma por linha:   <caminho relativo>::<texto exato> # <motivo>
+#
+# O motivo é OBRIGATÓRIO e tem de ter ao menos 15 caracteres — a lacuna L-05 da spec diz
+# por quê: "uma lista de exceções sem motivo é exatamente como um portão passa a mentir".
+# Exceção que não corresponde a nenhum literal também derruba o portão: lista que não é
+# limpa vira licença permanente.
+#
+# A correspondência é por ARQUIVO + TEXTO, e não por número de linha, de propósito: linha
+# se move a cada edição, e uma exceção que caduca sozinha convidaria a reescrevê-la sem
+# ninguém reler o motivo.
+
+apps/web/src/App.tsx::Português # endônimo: o nome de um idioma aparece NO PRÓPRIO idioma em todo seletor de idioma do mundo — traduzi-lo esconderia a opção de quem só lê o outro
+apps/web/src/App.tsx::English # endônimo, mesma razão: quem lê só inglês precisa reconhecer "English" numa tela em português

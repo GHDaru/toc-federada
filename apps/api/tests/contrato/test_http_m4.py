@@ -619,3 +619,83 @@ def test_projeto_de_outro_inquilino_e_indistinguivel_de_inexistente(plena, outro
     print(f"outro inquilino: {r.status_code} {r.json()['error']['code']}")
     assert r.status_code == 404
     assert r.json()["error"]["code"] == "NOT_FOUND"
+
+
+# --------------------------------------------------------------------------------------
+# A posição do nó — o que a interface do M4 precisa e a borda não oferecia
+#
+# Os casos de uso `MoverNoDaARF` e `MoverNoDaAPR` existiam desde o ciclo 008
+# (`src/toc_api/aplicacao/arvores.py:187` e `:456`), estavam **importados** pelo roteador
+# (`src/toc_api/http/roteadores/arvores.py:59-60`) e não tinham rota nenhuma que os
+# chamasse. Enquanto não tinham, arrastar um nó no canvas das árvores de futuro era um
+# gesto sem persistência: a pessoa organiza a árvore, recarrega, e o desenho volta ao que
+# era. A ARA já resolvia isso pelo mesmo `PATCH` (`roteadores/ara.py:154-160`); estas duas
+# rotas fecham a diferença, pela RAIZ do agregado e não pela rota genérica do M1.
+# --------------------------------------------------------------------------------------
+
+
+def test_mover_um_no_da_arf_pelo_patch_da_raiz_persiste_a_posicao(plena, app):
+    arf = plena.post("/toc/arf/projetos", json={"nome": "Futuro"}).json()
+    no = plena.post(
+        f"/toc/arf/projetos/{arf['id']}/nos",
+        json={"papel": "injecao", "titulo": INJECAO},
+    ).json()
+
+    r = plena.patch(
+        f"/toc/arf/projetos/{arf['id']}/nos/{no['id']}",
+        json={"posicao": {"x": 320.0, "y": 180.0}},
+    )
+    assert r.status_code == 200, r.text
+    movido = valida_contra_o_contrato(
+        app, r, "PATCH", "/toc/arf/projetos/{projeto_id}/nos/{no_id}"
+    )
+    print(f"posição devolvida: {movido['posicao']} · papel: {movido['papel']}")
+    assert movido["posicao"] == {"x": 320.0, "y": 180.0}
+    assert movido["papel"] == "injecao"
+
+    relido = plena.get(f"/toc/arf/projetos/{arf['id']}").json()["nos"][0]
+    assert relido["posicao"] == {"x": 320.0, "y": 180.0}
+
+
+def test_mover_um_no_da_apr_pelo_patch_da_raiz_persiste_a_posicao(plena, app):
+    apr = plena.post(
+        "/toc/apr/projetos", json={"nome": "Pré-requisitos", "objetivo": EFEITO}
+    ).json()
+    no = plena.post(
+        f"/toc/apr/projetos/{apr['id']}/nos",
+        json={"papel": "obstaculo", "titulo": OBSTACULO},
+    ).json()
+
+    r = plena.patch(
+        f"/toc/apr/projetos/{apr['id']}/nos/{no['id']}",
+        json={"posicao": {"x": 40.0, "y": 900.0}},
+    )
+    assert r.status_code == 200, r.text
+    movido = valida_contra_o_contrato(
+        app, r, "PATCH", "/toc/apr/projetos/{projeto_id}/nos/{no_id}"
+    )
+    print(f"posição devolvida: {movido['posicao']} · papel: {movido['papel']}")
+    assert movido["posicao"] == {"x": 40.0, "y": 900.0}
+
+    posicoes = {n["id"]: n["posicao"] for n in plena.get(f"/toc/apr/projetos/{apr['id']}").json()["nos"]}
+    assert posicoes[no["id"]] == {"x": 40.0, "y": 900.0}
+
+
+def test_patch_de_no_da_arf_sem_campo_algum_e_recusado_e_nao_e_sucesso_vazio(plena, app):
+    """Nenhum campo informado é **recusa**, e não um 200 que não fez nada.
+
+    A mesma decisão do `PATCH` da ARA (`roteadores/ara.py:165-168`): um sucesso vazio
+    ensina o cliente a mandar pedido sem efeito e a acreditar que gravou.
+    """
+    arf = plena.post("/toc/arf/projetos", json={"nome": "Futuro"}).json()
+    no = plena.post(
+        f"/toc/arf/projetos/{arf['id']}/nos",
+        json={"papel": "efeito_futuro", "titulo": EFEITO},
+    ).json()
+
+    r = plena.patch(f"/toc/arf/projetos/{arf['id']}/nos/{no['id']}", json={})
+    # 422 é o que o manipulador de `DadoInvalido` publica (`http/erros.py:386`), e é o
+    # mesmo código que a Árvore da Realidade Atual devolve para pedido malformado.
+    print(f"PATCH vazio → HTTP {r.status_code} · {r.text[:160]}")
+    assert r.status_code == 422
+    assert valida_envelope_de_erro(r)["code"] == "INVALID_ARGUMENT"

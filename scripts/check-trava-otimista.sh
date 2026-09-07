@@ -50,14 +50,15 @@ WIRE="$FONTE/dominio/federacao/wire.py"
 BORDA="$FONTE/http/erros.py"
 
 #: As portas de escrita do agregado, em DOIS grupos porque há dois agregados com versão
-#: própria: os projetos (M1, M2, M3, as três árvores do M4 e a jornada do M6) e a
+#: própria: os projetos (M1, M2, M3, as três árvores do M4, a jornada do M6 e a árvore de
+#: Estratégia & Táticas do M5) e a
 #: **referência cruzada** do
 #: encadeamento (spec 008, RF-33), que é agregado próprio e por isso tem trava própria.
 #:
 #: Escritas à mão de propósito, como as oito mutações do `check-raiz-do-agregado.sh`:
 #: derivar a lista do próprio arquivo faria o portão concordar com quem esquecesse a trava
 #: numa delas. Caminho de escrita novo entra AQUI no mesmo commit em que nasce.
-ESCRITAS_DE_PROJETO=(salvar salvar_ara salvar_nuvem salvar_arf salvar_apr salvar_at salvar_focalizacao)
+ESCRITAS_DE_PROJETO=(salvar salvar_ara salvar_nuvem salvar_arf salvar_apr salvar_at salvar_focalizacao salvar_snt)
 ESCRITAS_DE_REFERENCIA=(salvar_referencia)
 ESCRITAS=("${ESCRITAS_DE_PROJETO[@]}" "${ESCRITAS_DE_REFERENCIA[@]}")
 

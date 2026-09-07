@@ -1,0 +1,2 @@
+# Base válida: uma exceção declarada, com motivo, e ela corresponde a um literal real.
+apps/web/src/componentes/Rodape.tsx::Português # endônimo: o nome do idioma aparece no próprio idioma em todo seletor

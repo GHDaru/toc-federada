@@ -8,15 +8,19 @@
 > internacionalização · **REST** — Representational State Transfer (estilo de
 > interface de programação sobre HTTP).
 >
-> Ciclo **planejado** — nenhuma caixa marcada antes do fato (as marcações abaixo são
-> todas vazias de propósito). Ordem TDD: em toda tarefa de código, o teste vermelho
-> vem antes da implementação — e neste ciclo os testes vermelhos centrais são a
-> numeração derivada com renumeração (T-03/T-04) e a reprodução do defeito de exclusão
-> da linhagem (F-07 da spec), que nascem antes do agregado.
+> Ciclo **executado em 2026-09-06**. Cada caixa abaixo foi marcada **depois** do fato,
+> e a evidência de cada uma — comando, saída colada e denominador — está no
+> [`qa-report.md`](qa-report.md). `TAIL:gate` continua **em branco de propósito**: o
+> portão humano é do Product Steward, e marcá-lo aqui seria o agente assinando no lugar
+> dele. Ordem TDD respeitada: os testes vermelhos centrais — numeração derivada com
+> renumeração (T-03/T-04) e a reprodução do defeito de exclusão da linhagem (F-07) —
+> nasceram antes do agregado, e a primeira execução da suíte de numeração falhou por
+> `ModuleNotFoundError: No module named 'toc_api.dominio.snt'`, que é o vermelho pelo
+> motivo certo.
 
 ## Verificação primeiro
 
-- [ ] T-01 — Fixar a DoD executável do ciclo (as 16 linhas da spec, com comando e
+- [x] T-01 — Fixar a DoD executável do ciclo (as 16 linhas da spec, com comando e
   valor esperado) e conferir a pré-condição do roadmap: **ciclo 004 promovido**;
   conferir as respostas do Clarify que mudam modelo ([DÚVIDA] 1 — categoria) e
   artefatos ([DÚVIDA] 5 — ux). · Dep: — · Ref: `spec.md` § Critérios de aceite;
@@ -24,7 +28,7 @@
   tem comando; nenhum critério subjetivo; pré-condição e respostas coladas no
   `qa-report.md`.
 
-- [ ] T-02 — Consolidar `data-model.md` (extensão do modelo do M1: ArvoreSnT, PassoSnT
+- [x] T-02 — Consolidar `data-model.md` (extensão do modelo do M1: ArvoreSnT, PassoSnT
   com **pai + ordem** — sem campo de número —, PremissasDoPasso, StatusDoPasso,
   eventos) e `contracts/rest-api.md` estendendo os recursos do M1, com a ausência de
   número em rota de escrita como cláusula explícita. · Dep: T-01 · Ref: spec §
@@ -34,7 +38,7 @@
 
 ## Domínio da árvore (E5.1 — o coração do resgate)
 
-- [ ] T-03 — Fixture sintética da S&T "Dobrar a capacidade de atendimento" da
+- [x] T-03 — Fixture sintética da S&T "Dobrar a capacidade de atendimento" da
   Instituição Horizonte (3 níveis) + testes vermelhos: numeração 1/1.1/1.1.2 pela
   posição, renumeração ao inserir/mover/excluir, árvore estrita (mover para a própria
   subárvore recusado), **a reprodução do defeito de exclusão da linhagem** (excluir um
@@ -44,14 +48,14 @@
   RN-05; DoD 2, 3, 5, 6, 7 · Aceite: DoD 2–7 vermelhos pelo motivo certo (agregado
   inexistente); zero dado real de pessoa (ADR 0006).
 
-- [ ] T-04 — Função pura de numeração + renumeração local: raízes 1..n, filhos X.1..
+- [x] T-04 — Função pura de numeração + renumeração local: raízes 1..n, filhos X.1..
   X.m, determinística e sem lacuna; renumeração da subárvore afetada e dos irmãos
   seguintes, com propriedade de equivalência contra o recálculo total. TDD sobre a
   fixture. · Dep: T-03 · Ref: RF-04, RF-05, RF-07; RN-01; RNF-05; plan § Decisões 1 e
   6 · Aceite: DoD 2 e 3 verdes; propriedade de determinismo e de equivalência na
   suíte.
 
-- [ ] T-05 — Domínio da árvore: agregado ArvoreSnT com meta global, PassoSnT
+- [x] T-05 — Domínio da árvore: agregado ArvoreSnT com meta global, PassoSnT
   (estratégia obrigatória, tática como pendência), adicionar filho/irmão em posição,
   mover subárvore preservando conteúdo, excluir subárvore com contagem, as três
   premissas com regras de pendência, status com evento, PendenciasDaArvore. TDD. ·
@@ -59,7 +63,7 @@
   Aceite: DoD 5, 6, 7 e 8 verdes; DoD 9 — a saída das pendências diz quantos passos
   examinou (R2).
 
-- [ ] T-06 — Migrações Alembic (árvore, passo com pai+ordem, premissas, status) com
+- [x] T-06 — Migrações Alembic (árvore, passo com pai+ordem, premissas, status) com
   `upgrade` **e** `downgrade` testados; repositórios mantendo o isolamento por
   inquilino do M1. · Dep: T-02 · Ref: spec § Entidades; RNF-01 · Aceite: ciclo
   upgrade→downgrade sem resíduo, saída colada; teste de isolamento do 004 verde sobre
@@ -67,7 +71,7 @@
 
 ## Borda e interface
 
-- [ ] T-07 — Casos de uso + adaptadores REST (criar/editar, adicionar, mover, excluir
+- [x] T-07 — Casos de uso + adaptadores REST (criar/editar, adicionar, mover, excluir
   subárvore, premissas, status) com traço OTel por mutação, autorização fail-closed e
   o desfazer de sessão do M1 estendido à exclusão de subárvore inteira. · Dep: T-04..
   T-06 · Ref: RF-15, RF-20, RF-21; RNF-03; contratos do T-02 · Aceite: DoD 4 (nenhum
@@ -75,7 +79,7 @@
   `PassoAdicionado`, `PassoMovido`, `SubarvoreExcluida` ou `StatusMudou` não emitirem
   traço.
 
-- [ ] T-08 — UI da árvore + ficha do passo: árvore com layout calculado de cima para
+- [x] T-08 — UI da árvore + ficha do passo: árvore com layout calculado de cima para
   baixo (meta no topo), nó com número + estratégia + status (forma e rótulo, nunca só
   cor), ações contextuais de adicionar (sem campo de número em formulário nenhum),
   ficha com estratégia/tática e as três premissas **nas posições de leitura** com
@@ -83,7 +87,7 @@
   5 o criar) · Ref: RI-01..RI-04; RF-13; F-06 · Aceite: teste de fluxo de edição
   direta; leitura dirigida coberta por teste de UI; i18n sem literal solto.
 
-- [ ] T-09 — UI da vista tabular + painel de acompanhamento: tabela indentada com
+- [x] T-09 — UI da vista tabular + painel de acompanhamento: tabela indentada com
   paridade de edição, contagens por status como filtros acionáveis, pendências lógicas
   com salto direto, filtro mantendo ancestrais visíveis. · Dep: T-07 · Ref: RI-07,
   RI-08; RF-17..RF-19 · Aceite: paridade tabela × ficha coberta; filtro por status
@@ -91,7 +95,7 @@
   `toc.snt_passo`, `toc.snt_tabela`, `toc.snt_acompanhamento`) registrados com
   `ai_visible` campo a campo (INT-02).
 
-- [ ] T-10 — Mover por arrastar com pré-visualização de renumeração + exclusão com
+- [x] T-10 — Mover por arrastar com pré-visualização de renumeração + exclusão com
   contagem e primeiro nível visível — os dois fluxos de mutação estrutural com a
   reversibilidade anunciada na própria confirmação. **Nota de apetite: se o E5.2 sair
   pelo corte, esta tarefa absorve o painel mínimo (contagem por status na árvore).** ·
@@ -99,7 +103,7 @@
   os números novos antes de confirmar; contagem da exclusão bate com o evento
   `SubarvoreExcluida`.
 
-- [ ] T-11 — Jornada viva: a S&T sintética da Instituição Horizonte com **três
+- [x] T-11 — Jornada viva: a S&T sintética da Instituição Horizonte com **três
   níveis** — criar meta, decompor em passos numerados, preencher as três premissas nos
   três papéis, mover uma subárvore (renumeração à vista), conduzir a reunião por
   status e pendências — captura gerada por script versionado do build real +
@@ -107,7 +111,7 @@
   Entregáveis (P6); F-12; ADR 0006 · Aceite: DoD 14 — script em
   `docs/jornadas/scripts/`, grep negativo de nome real de pessoa.
 
-- [ ] T-12 — Rodar as aptidões e preencher o `qa-report.md`: as 16 linhas da DoD com
+- [x] T-12 — Rodar as aptidões e preencher o `qa-report.md`: as 16 linhas da DoD com
   saída colada (R1) e quanto cada portão examinou (R2); medições de desempenho da
   jornada coladas (DoD 13); atualizar CHANGELOG; ADR da categoria não portada se o
   gate a confirmar ([DÚVIDA] 1). · Dep: T-11 · Ref: DoD 15 e 16 · Aceite:
@@ -115,6 +119,13 @@
   sem comando executado.
 
 ## Cauda (fechamento — nenhuma marcada antes da evidência no qa-report)
+
+> **`TAIL:review` e `TAIL:security` continuam em branco, e é o correto.** As duas exigem
+> **contexto fresco de quem não construiu** (Princípio II do Maestro: "quem executa não
+> verifica"). Quem escreveu este módulo não pode marcá-las sem tornar a caixa uma
+> testemunha de si mesma. `TAIL:mutation` está marcada porque é **executável e
+> reprodutível** — `scripts/tests/mutacao-m5.sh`, com a saída colada no `qa-report.md`, e
+> a primeira execução encontrou uma sobrevivente real.
 
 - [ ] TAIL:review — Revisão independente em contexto fresco (quem executou não
   revisa): spec × código × DoD, com os portões nomeados do roadmap — **teste de
@@ -126,7 +137,7 @@
   rotas novas, isolamento por inquilino nas tabelas novas, textos de usuário marcados
   camada não-confiável no registro de telas (INT-02). · Dep: T-07, T-09
 
-- [ ] TAIL:mutation — Testes de mutação sobre a função de numeração, a renumeração
+- [x] TAIL:mutation — Testes de mutação sobre a função de numeração, a renumeração
   local, a invariante de árvore estrita e o recorte da exclusão de subárvore — as
   funções cuja falha silenciosa reintroduz os defeitos F-05 e F-07 da linhagem; taxa e
   sobreviventes no `qa-report.md`. · Dep: T-04, T-05

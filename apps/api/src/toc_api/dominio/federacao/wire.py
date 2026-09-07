@@ -223,6 +223,35 @@ CODIGOS_PROPRIOS: dict[str, str] = {
         "justificativa, e um veredito não volta a `pendente`; `details.regra` diz qual "
         "(409, RN-05)"
     ),
+    # -- M5 · Estratégia & Táticas (spec 010) -------------------------------------------
+    #
+    # Dois códigos, e não `MUTATION_REFUSED` para os dois: o cliente discrimina por código,
+    # e a correção de cada um é diferente — recarregar a árvore num caso, escolher outro
+    # destino no outro.
+    "INVALID_SNT_STEP": (
+        "o passo da árvore de Estratégia & Táticas não existe nesta árvore, ou o pai "
+        "indicado não é um passo dela; `details.regra` diz qual (409, RN-04). Separado de "
+        "INVALID_STEP porque aquele é o passo da Árvore de Transição, e a correção do "
+        "cliente é outra"
+    ),
+    "INVALID_MOVE": (
+        "mover o passo foi recusado porque o destino tornaria a árvore inválida — mover "
+        "para dentro da própria subárvore, ou para um destino que não existe; "
+        "`details.motivo` diz qual (409, RN-04). A árvore de Estratégia & Táticas é "
+        "estrita: pai único, ordem explícita, e ciclo impossível por construção"
+    ),
+    # -- M8 · Fundações da Aplicação (spec 011), E1.4 -----------------------------------
+    "IMPORT_REFUSED": (
+        "o arquivo enviado para importação foi recusado INTEIRO, antes de qualquer "
+        "efeito: nada foi criado nem alterado (422, RF-27). `details.problemas` traz uma "
+        "entrada por defeito, com `campo` (o caminho do campo dentro do arquivo) e "
+        "`motivo` — é o requisito literal da US-15, e o contraste medido é a caixa de "
+        "alerta genérica de `tocbuilderv3/components/NodeZoneView.tsx:315`. Também é o "
+        "código do arquivo acima do teto de tamanho (RF-30), com o motivo dizendo o "
+        "tamanho e o teto. **Acréscimo declarado**: INVALID_ARGUMENT nomeia um valor que "
+        "nunca poderia entrar, e diria ao cliente para corrigir UM argumento, quando o "
+        "que ele tem é uma lista de defeitos num arquivo"
+    ),
     "DOMAIN_REFUSED": "recusa de domínio sem tradução mais específica (409)",
     "METHOD_NOT_ALLOWED": "verbo fora dos declarados para a rota (405)",
 }

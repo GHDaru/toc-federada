@@ -992,18 +992,24 @@ class CriarNoDaArvoreIn(Pedido):
 
 
 class EditarNoDaArvoreIn(Pedido):
+    """PATCH parcial do nó de uma árvore do M4. Nenhum campo informado é RECUSA.
+
+    `posicao` está aqui pelo mesmo motivo que está no `EditarNoIn` da Árvore da Realidade
+    Atual: o canvas arrasta o nó, e um gesto que não persiste é uma promessa quebrada — a
+    pessoa organiza a árvore, recarrega, e o desenho volta ao que era.
+    """
+
     titulo: str | None = None
     descricao: str | None = None
+    posicao: PosicaoIO | None = None
 
 
 class MudarPapelIn(Pedido):
     papel: str
 
 
-class LigarIn(Pedido):
-    origem_id: UUID
-    destino_id: UUID
-    rotulo: str = ""
+# A aresta das árvores do M4 usa o `LigarIn` do M1 (origem, destino, rótulo): a forma é a
+# mesma, e uma segunda classe com o mesmo NOME neste módulo apagava a primeira em silêncio.
 
 
 # -- E4.1 · Árvore da Realidade Futura ---------------------------------------------------
@@ -1971,3 +1977,292 @@ class SugestaoDeRestricaoOut(Resposta):
     action_id: str
     aviso: str
     candidatas: list[CandidataARestricaoOut] = Field(default_factory=list)
+
+
+# =======================================================================================
+# M5 · Árvore de Estratégia & Táticas (S&T, spec 010)
+#
+# **Nenhum esquema de ENTRADA tem campo de número** — e isso é medido, não prometido: o
+# teste `test_nenhuma_rota_de_escrita_do_m5_declara_campo_de_numero` lê o OpenAPI
+# publicado e conta. O contraexemplo é o formulário da quarta geração da linhagem
+# (`tocbuilderv3/components/SnTStepEditorModal.tsx:56-57`), onde o número era campo
+# obrigatório digitado à mão, sem validação de formato nem de unicidade.
+#
+# Nos esquemas de SAÍDA o número aparece sempre, porque ele é o que a pessoa lê — e é
+# calculado da estrutura a cada leitura (RN-01).
+# =======================================================================================
+
+
+class LeituraOut(Resposta):
+    """RF-13: a premissa lida no papel dela, com pai e filhos NOMEADOS."""
+
+    papel: str
+    texto: str
+    aplicavel: bool
+    completa: bool
+
+
+class PremissasOut(Resposta):
+    paralela: str = ""
+    necessidade_ao_pai: str = ""
+    suficiencia_dos_filhos: str = ""
+
+
+class PassoDaSnTOut(Resposta):
+    id: UUID
+    numero: str
+    nivel: int
+    pai_id: UUID | None = None
+    estrategia: str
+    tatica: str = ""
+    categoria: str
+    status: str
+    premissas: PremissasOut
+    filhos: list[UUID] = Field(default_factory=list)
+
+    @classmethod
+    def de(cls, arvore, no_id: UUID) -> "PassoDaSnTOut":
+        ficha = arvore.ficha(no_id)
+        return cls(
+            id=no_id,
+            numero=arvore.numero(no_id),
+            nivel=arvore.nivel(no_id),
+            pai_id=arvore.pai(no_id),
+            estrategia=ficha.estrategia,
+            tatica=ficha.tatica,
+            categoria=ficha.categoria.value,
+            status=ficha.status.value,
+            premissas=PremissasOut(
+                paralela=ficha.premissas.paralela,
+                necessidade_ao_pai=ficha.premissas.necessidade_ao_pai,
+                suficiencia_dos_filhos=ficha.premissas.suficiencia_dos_filhos,
+            ),
+            filhos=list(arvore.filhos(no_id)),
+        )
+
+
+class FichaDoPassoOut(PassoDaSnTOut):
+    """A ficha do passo (tela 6.2): o passo mais as três leituras dirigidas."""
+
+    leituras: list[LeituraOut] = Field(default_factory=list)
+
+    @classmethod
+    def de(cls, arvore, no_id: UUID) -> "FichaDoPassoOut":
+        base = PassoDaSnTOut.de(arvore, no_id)
+        return cls(
+            **base.model_dump(),
+            leituras=[
+                LeituraOut(
+                    papel=leitura.papel,
+                    texto=leitura.texto,
+                    aplicavel=leitura.aplicavel,
+                    completa=leitura.completa,
+                )
+                for leitura in arvore.leituras(no_id)
+            ],
+        )
+
+
+class SnTOut(Resposta):
+    id: UUID
+    nome: str
+    ferramenta: str
+    descricao_do_problema: str = ""
+    versao: int
+    meta_global: str
+    passos: list[PassoDaSnTOut] = Field(default_factory=list)
+    raizes: list[UUID] = Field(default_factory=list)
+
+    @classmethod
+    def de(cls, arvore) -> "SnTOut":
+        projeto = arvore.projeto
+        return cls(
+            id=projeto.id,
+            nome=projeto.nome,
+            ferramenta=projeto.ferramenta,
+            descricao_do_problema=projeto.descricao_do_problema,
+            versao=projeto.versao,
+            meta_global=arvore.meta_global,
+            passos=[PassoDaSnTOut.de(arvore, no_id) for no_id in arvore.ordem()],
+            raizes=list(arvore.filhos(None)),
+        )
+
+
+class CriarSnTIn(Pedido):
+    nome: str
+    meta_global: str
+    descricao_do_problema: str = ""
+
+
+class MetaGlobalIn(Pedido):
+    meta_global: str
+
+
+class AdicionarPassoIn(Pedido):
+    """RF-04/RF-06: pai e posição — e **nenhum campo de número**."""
+
+    estrategia: str
+    tatica: str = ""
+    pai_id: UUID | None = None
+    posicao: int | None = None
+    categoria: str | None = None
+    paralela: str = ""
+    necessidade_ao_pai: str = ""
+    suficiencia_dos_filhos: str = ""
+
+
+class EditarPassoDaSnTIn(Pedido):
+    estrategia: str | None = None
+    tatica: str | None = None
+    categoria: str | None = None
+
+
+class PremissasDoPassoIn(Pedido):
+    paralela: str | None = None
+    necessidade_ao_pai: str | None = None
+    suficiencia_dos_filhos: str | None = None
+
+
+class StatusDoPassoSnTIn(Pedido):
+    """RN-03: **sem `autor`** — quem mudou vem do token, nunca do corpo."""
+
+    status: str
+
+
+class MoverPassoIn(Pedido):
+    novo_pai_id: UUID | None = None
+    posicao: int | None = None
+
+
+class PreviaDeMoverIn(Pedido):
+    no_id: UUID
+    novo_pai_id: UUID | None = None
+    posicao: int | None = None
+
+
+class MudancaDeNumeroOut(Resposta):
+    no_id: UUID
+    numero_atual: str
+    numero_novo: str
+
+
+class PreviaDeMoverOut(Resposta):
+    """RI-05: a renumeração ANTES de confirmar — consulta, nada muta."""
+
+    mudancas: list[MudancaDeNumeroOut] = Field(default_factory=list)
+
+
+class PreviaDeExclusaoOut(Resposta):
+    """RF-09: "N passos serão excluídos", com o primeiro nível do que cai."""
+
+    no_id: UUID
+    numero: str
+    passos: int
+    primeiro_nivel: list[PassoDaSnTOut] = Field(default_factory=list)
+
+
+class LinhaDaSnTOut(Resposta):
+    no_id: UUID
+    numero: str
+    nivel: int
+    pai_id: UUID | None = None
+    estrategia: str
+    tatica: str = ""
+    categoria: str
+    status: str
+    filhos: int = 0
+    tem_premissa_paralela: bool = False
+    tem_premissa_de_necessidade: bool = False
+    tem_premissa_de_suficiencia: bool = False
+
+
+class TabelaDaSnTOut(Resposta):
+    linhas: list[LinhaDaSnTOut] = Field(default_factory=list)
+
+
+class PendenciaDoPlanoOut(Resposta):
+    """A pendência de um passo do plano de Estratégia & Táticas (M5).
+
+    O nome tem sufixo porque `PendenciaOut` já é a pendência de um passo da jornada de
+    focalização (M6), definida acima neste mesmo módulo — e a segunda definição apagava a
+    primeira, quebrando a jornada inteira em tempo de resposta.
+    """
+
+    no_id: UUID
+    numero: str
+    tipo: str
+
+
+class AcompanhamentoOut(Resposta):
+    """RF-17: contagens, pendências e progresso — todos da MESMA função pura."""
+
+    passos: int
+    por_status: dict[str, int]
+    progresso: float
+    pendencias: list[PendenciaDoPlanoOut] = Field(default_factory=list)
+
+    @classmethod
+    def de(cls, resultado) -> "AcompanhamentoOut":
+        return cls(
+            passos=resultado.passos_examinados,
+            por_status=dict(resultado.por_status),
+            progresso=resultado.progresso,
+            pendencias=[
+                PendenciaDoPlanoOut(no_id=p.no_id, numero=p.numero, tipo=p.tipo)
+                for p in resultado.pendencias
+            ],
+        )
+
+
+# -- M8 · Fundações da Aplicação (spec 011), E1.4 — portabilidade ---------------------
+#
+# A exportação **não** tem modelo de saída: o que ela devolve é o documento canônico do
+# domínio (`toc.consolidado/1`), e um modelo Pydantic por cima dele criaria uma segunda
+# declaração do mesmo formato — que envelheceria em silêncio na primeira seção nova de
+# ferramenta. O contrato do arquivo é do domínio, e a borda o entrega tal como saiu.
+
+
+class ImportacaoIn(Pedido):
+    """O arquivo enviado. `documento` é opaco de propósito: pode ser o formato próprio
+    OU o da quarta geração, e quem decide qual é a **assinatura de conteúdo** (RF-25),
+    nunca o nome do arquivo nem um campo que o cliente preencha."""
+
+    documento: Any
+    #: RF-30 — teto de tamanho. Opcional: ausente, vale o padrão do domínio.
+    teto_de_bytes: int | None = Field(default=None, ge=1)
+
+
+class ProblemaDeImportacaoOut(Resposta):
+    """Um defeito do arquivo: o CAMINHO do campo e o motivo (RF-27, US-15)."""
+
+    campo: str
+    motivo: str
+
+
+class DescarteDeclaradoOut(Resposta):
+    """RN-06: o que ficou de fora, dito por escrito e contado."""
+
+    campo: str
+    motivo: str
+    quantidade: int
+
+
+class RelatoDeImportacaoOut(Resposta):
+    """O relato da importação aceita — contagens, descartes e o que nasceu."""
+
+    formato: str
+    contagens: dict[str, int]
+    descartes: list[DescarteDeclaradoOut] = Field(default_factory=list)
+    projetos_criados: list[UUID] = Field(default_factory=list)
+
+    @classmethod
+    def de(cls, resultado) -> "RelatoDeImportacaoOut":
+        return cls(
+            formato=resultado.formato,
+            contagens=dict(resultado.relato.contagens),
+            descartes=[
+                DescarteDeclaradoOut(campo=d.campo, motivo=d.motivo, quantidade=d.quantidade)
+                for d in resultado.relato.descartes
+            ],
+            projetos_criados=list(resultado.projetos_criados),
+        )

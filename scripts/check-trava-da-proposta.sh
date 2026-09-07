@@ -82,6 +82,7 @@ ESCRITAS=(
   "infra/persistencia/repositorio_projetos.py|salvar_apr|retrato"
   "infra/persistencia/repositorio_projetos.py|salvar_at|retrato"
   "infra/persistencia/repositorio_projetos.py|salvar_focalizacao|retrato"
+  "infra/persistencia/repositorio_projetos.py|salvar_snt|retrato"
   "infra/persistencia/repositorio_projetos.py|salvar_referencia|retrato"
   "infra/persistencia/repositorio_projetos.py|excluir_definitivamente|identidade"
   "infra/federacao/repositorio_sql.py|salvar|retrato"
@@ -299,7 +300,7 @@ done
 # O complemento: um método `salvar*` novo em qualquer dos dois adaptadores tem de entrar
 # na lista acima. Contar é o que impede o portão de concordar com quem esquecer.
 ENCONTRADOS="$(grep -hc '^    def salvar' "$REPO_SQL" "$REPO_PROJETOS" | paste -sd+ | bc)"
-ESPERADOS=9  # salvar (proposta) + os oito `salvar*` do núcleo (M1 a M4, M6 e a referência)
+ESPERADOS=10  # salvar (proposta) + os nove `salvar*` do núcleo (M1 a M6 e a referência)
 if [[ "$ENCONTRADOS" == "$ESPERADOS" ]]; then
   ok "os dois adaptadores têm $ENCONTRADOS método(s) \`salvar*\`, todos na lista"
 else

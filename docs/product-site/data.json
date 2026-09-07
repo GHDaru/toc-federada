@@ -2,7 +2,7 @@
   "project": {
     "name": "TOC Federada",
     "mark": "TF",
-    "subtitle": "Ciclo 001 · planejamento",
+    "subtitle": "8 de 8 módulos com código · 48958 linhas",
     "lang": "pt-BR",
     "theme_key": "tocfed-theme",
     "generated_from": "docs/roadmap.md · docs/produto/modulos.md · specs/ · docs/adr/"
@@ -18,15 +18,19 @@
       },
       {
         "title": "📐 Corpus de planejamento",
-        "content": "12 specs · 8 módulos (M1–M8) · 13 ADRs · 359 RF · 114 RI · 105 RNF · 71 regras de negócio · 61 integrações. Números contados pelo gerador, não declarados."
+        "content": "12 specs · 8 módulos (M1–M8) · 14 ADRs · 359 RF · 114 RI · 105 RNF · 71 regras de negócio · 61 integrações. Números contados pelo gerador, não declarados."
       },
       {
         "title": "🤝 Federação",
         "content": "Padrão APH (Aplicação ↔ Harness) Nível 2 (Operador), <code>mode: embedded</code>, <code>app_id: toc</code>, identidade por <code>POST /auth/introspect</code>, servida de eTLD+1 distinto do hospedeiro (ADR 0003). Assistência de inteligência artificial exclusivamente pela fundação, por catálogo de ações governadas (ADR 0007)."
       },
       {
+        "title": "🧱 O que já existe em código",
+        "content": "48958 linhas de produção em 181 arquivos (<code>apps/api</code> + <code>apps/web</code>), com 1514 casos de teste escritos em 125 arquivos, 144 rotas HTTP publicadas, 9 migrações Alembic sobre 36 tabelas e 8 dos 8 módulos com código. Contado pelo gerador nos arquivos; que a suíte passe é afirmação do <code>qa-report.md</code> do ciclo, com a saída colada."
+      },
+      {
         "title": "⚖️ Estado honesto",
-        "content": "Ciclo 001 (fundação e planejamento) <b>em curso</b>, ainda sem gate humano. <b>Zero linha de código de produção</b> — nenhuma nasce antes do ciclo 003. Nenhuma jornada: jornada sem captura de build real é ficção (P6). Todo requisito nasce com selo 🟡 PLANEJADO; 🟢 só com <code>arquivo:linha</code>."
+        "content": "Nenhum ciclo foi <b>promovido</b>: o gate humano é indelegável e continua aberto em todos eles. O que existe é construção fechada do lado do agente, com 26 portões executáveis e 76 sabotagens que provam que os portões sabem reprovar, e 7 jornadas vivas com captura do build real (P6). O selo 🟡 PLANEJADO continua no requisito que ninguém mediu; 🟢 só com <code>arquivo:linha</code>."
       }
     ],
     "callout": "<b>Barra:</b> honestidade de estado medida contra o corpus da irmã <b>gestaodeprioridades</b> (nenhuma contagem sem a saída colada — regra R1); clareza e densidade pela <b>régua Linear</b>."
@@ -454,6 +458,14 @@
       "description": "### 1. `TipoDeRestricao` é um `enum` fechado de três valores",
       "principios": "P3 (as duas decisões são regra de domínio puro, testáveis",
       "path": "docs/adr/0013-taxonomia-fechada-da-restricao-e-heranca-que-volta-a-mesa.md"
+    },
+    {
+      "n": "0014",
+      "title": "A categoria da linhagem é **portada como rótulo opcional**, e a transição de status da S&T é **livre entre os quatro valores**",
+      "status": "Aceita",
+      "description": "### 1. `CategoriaDoPasso` é portada, como rótulo opcional de seis valores",
+      "principios": "P3 (as duas decisões são regra de domínio puro —",
+      "path": "docs/adr/0014-categoria-portada-e-transicao-de-status-livre-na-snt.md"
     }
   ],
   "principles": [
@@ -511,7 +523,7 @@
     ],
     [
       "ADRs",
-      "13"
+      "14"
     ],
     [
       "Princípios do projeto (P1–P7)",
@@ -559,21 +571,57 @@
     ],
     [
       "Scripts de aptidão",
-      "29"
+      "33"
     ],
     [
       "Jornadas vivas",
-      "5"
+      "7"
+    ],
+    [
+      "Módulos com código (M1–M8)",
+      "8 de 8"
+    ],
+    [
+      "Arquivos de produção (apps/api + apps/web)",
+      "181"
     ],
     [
       "Linhas de código de produção",
-      "0"
+      "48958"
+    ],
+    [
+      "Arquivos de teste",
+      "125"
+    ],
+    [
+      "Casos de teste escritos",
+      "1514"
+    ],
+    [
+      "Rotas HTTP publicadas",
+      "144"
+    ],
+    [
+      "Migrações Alembic",
+      "9"
+    ],
+    [
+      "Tabelas do esquema",
+      "36"
+    ],
+    [
+      "Portões executáveis (scripts/check-*.sh)",
+      "26"
+    ],
+    [
+      "Sabotagens declaradas",
+      "76"
     ]
   ],
   "counts": {
     "specs": 12,
     "modules": 8,
-    "adrs": 13,
+    "adrs": 14,
     "rf": 359,
     "ri": 114,
     "rnf": 105,
@@ -583,10 +631,20 @@
     "lacunas": 58,
     "clarify": 55,
     "skills": 6,
-    "scripts": 29,
-    "journeys": 5,
+    "scripts": 33,
+    "journeys": 7,
     "cycles": 12,
     "principles": 7,
+    "linhas_producao": 48958,
+    "arquivos_producao": 181,
+    "casos_de_teste": 1514,
+    "arquivos_de_teste": 125,
+    "rotas": 144,
+    "migracoes": 9,
+    "tabelas": 36,
+    "portoes": 26,
+    "sabotagens": 76,
+    "modulos_com_codigo": 8,
     "requisitos": 578
   },
   "modules": [
@@ -636,7 +694,44 @@
           "name": "Núcleo de diagramas (M1 — Núcleo de Diagramas Lógicos)"
         }
       ],
-      "shared": []
+      "shared": [],
+      "code": {
+        "arquivos": 29,
+        "linhas": 6962,
+        "api": 16,
+        "web": 13,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/casos_de_uso.py",
+          "apps/api/src/toc_api/aplicacao/grafo.py",
+          "apps/api/src/toc_api/aplicacao/portabilidade.py",
+          "apps/api/src/toc_api/aplicacao/projetos.py",
+          "apps/api/src/toc_api/dominio/erros.py",
+          "apps/api/src/toc_api/dominio/eventos.py",
+          "apps/api/src/toc_api/dominio/exportacao.py",
+          "apps/api/src/toc_api/dominio/grafo.py",
+          "apps/api/src/toc_api/dominio/identidade.py",
+          "apps/api/src/toc_api/dominio/legado.py",
+          "apps/api/src/toc_api/dominio/portas.py",
+          "apps/api/src/toc_api/dominio/projeto.py",
+          "apps/api/src/toc_api/dominio/serializacao.py",
+          "apps/api/src/toc_api/dominio/valores.py",
+          "apps/api/src/toc_api/http/roteadores/portabilidade.py",
+          "apps/api/src/toc_api/http/roteadores/projetos.py",
+          "apps/web/src/componentes/Estados.tsx",
+          "apps/web/src/componentes/PainelDeEntidades.tsx",
+          "apps/web/src/componentes/canvas/ArestaDoCanvas.tsx",
+          "apps/web/src/componentes/canvas/Canvas.tsx",
+          "apps/web/src/componentes/canvas/NoDoCanvas.tsx",
+          "apps/web/src/componentes/canvas/PainelDoNo.tsx",
+          "apps/web/src/componentes/canvas/useViewport.ts",
+          "apps/web/src/componentes/mensagemDeErro.ts",
+          "apps/web/src/dominio/tipos.ts",
+          "apps/web/src/estado/useDesfazer.ts",
+          "apps/web/src/estado/useRecurso.ts",
+          "apps/web/src/telas/TelaDaLixeira.tsx",
+          "apps/web/src/telas/TelaDeProjetos.tsx"
+        ]
+      }
     },
     {
       "id": "M2",
@@ -679,7 +774,29 @@
           "name": "Árvore da Realidade Atual (M2 — Árvore da Realidade Atual)"
         }
       ],
-      "shared": []
+      "shared": [],
+      "code": {
+        "arquivos": 14,
+        "linhas": 3447,
+        "api": 8,
+        "web": 6,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/ara.py",
+          "apps/api/src/toc_api/dominio/analise.py",
+          "apps/api/src/toc_api/dominio/ara.py",
+          "apps/api/src/toc_api/dominio/criterios_ude.py",
+          "apps/api/src/toc_api/dominio/formulacao.py",
+          "apps/api/src/toc_api/dominio/lexico.py",
+          "apps/api/src/toc_api/dominio/suficiencia.py",
+          "apps/api/src/toc_api/http/roteadores/ara.py",
+          "apps/web/src/componentes/ude/ExameDeElo.tsx",
+          "apps/web/src/componentes/ude/FichaDeUde.tsx",
+          "apps/web/src/componentes/ude/RelatorioEstrutural.tsx",
+          "apps/web/src/componentes/ude/SeloDeUde.tsx",
+          "apps/web/src/componentes/ude/TextoComTrecho.tsx",
+          "apps/web/src/telas/TelaDaAra.tsx"
+        ]
+      }
     },
     {
       "id": "M3",
@@ -727,7 +844,27 @@
           "name": "Nuvem de Conflito (M3 — Nuvem de Conflito)"
         }
       ],
-      "shared": []
+      "shared": [],
+      "code": {
+        "arquivos": 12,
+        "linhas": 4002,
+        "api": 6,
+        "web": 6,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/nuvem.py",
+          "apps/api/src/toc_api/dominio/geracao.py",
+          "apps/api/src/toc_api/dominio/nuvem.py",
+          "apps/api/src/toc_api/http/roteadores/nuvem.py",
+          "apps/api/src/toc_api/infra/geracao/__init__.py",
+          "apps/api/src/toc_api/infra/geracao/motor_local.py",
+          "apps/web/src/componentes/nuvem/DiagramaDaNuvem.tsx",
+          "apps/web/src/componentes/nuvem/FichaDaAresta.tsx",
+          "apps/web/src/componentes/nuvem/MatrizDaNuvem.tsx",
+          "apps/web/src/componentes/nuvem/PreviaDaGeracao.tsx",
+          "apps/web/src/componentes/nuvem/VisaoDeSolucao.tsx",
+          "apps/web/src/telas/TelaDaNuvem.tsx"
+        ]
+      }
     },
     {
       "id": "M4",
@@ -775,7 +912,36 @@
           "name": "Árvores de Futuro e Implementação (M4 — Árvores de Futuro e Implementação)"
         }
       ],
-      "shared": []
+      "shared": [],
+      "code": {
+        "arquivos": 21,
+        "linhas": 7173,
+        "api": 10,
+        "web": 11,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/arvores.py",
+          "apps/api/src/toc_api/aplicacao/cadeia.py",
+          "apps/api/src/toc_api/dominio/apr.py",
+          "apps/api/src/toc_api/dominio/arf.py",
+          "apps/api/src/toc_api/dominio/at.py",
+          "apps/api/src/toc_api/dominio/encadeamento.py",
+          "apps/api/src/toc_api/dominio/referencia.py",
+          "apps/api/src/toc_api/dominio/verbalizacao.py",
+          "apps/api/src/toc_api/http/roteadores/arvores.py",
+          "apps/api/src/toc_api/http/roteadores/cadeia.py",
+          "apps/web/src/componentes/apr/ParesDaApr.tsx",
+          "apps/web/src/componentes/apr/SequenciaDaApr.tsx",
+          "apps/web/src/componentes/arf/CadeiaDeEfeitos.tsx",
+          "apps/web/src/componentes/arf/RamosNegativos.tsx",
+          "apps/web/src/componentes/arf/VerificacaoDaArf.tsx",
+          "apps/web/src/componentes/at/PassosDaAt.tsx",
+          "apps/web/src/componentes/cadeia/PercursoDaCadeia.tsx",
+          "apps/web/src/telas/TelaDaApr.tsx",
+          "apps/web/src/telas/TelaDaArf.tsx",
+          "apps/web/src/telas/TelaDaAt.tsx",
+          "apps/web/src/telas/TelaDaCadeia.tsx"
+        ]
+      }
     },
     {
       "id": "M5",
@@ -813,7 +979,23 @@
           "name": "Estratégia & Táticas (M5 — Estratégia & Táticas)"
         }
       ],
-      "shared": []
+      "shared": [],
+      "code": {
+        "arquivos": 8,
+        "linhas": 2759,
+        "api": 3,
+        "web": 5,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/snt.py",
+          "apps/api/src/toc_api/dominio/snt.py",
+          "apps/api/src/toc_api/http/roteadores/snt.py",
+          "apps/web/src/componentes/snt/ArvoreDeSnT.tsx",
+          "apps/web/src/componentes/snt/FichaDoPasso.tsx",
+          "apps/web/src/componentes/snt/PainelDeAcompanhamento.tsx",
+          "apps/web/src/componentes/snt/TabelaDaSnT.tsx",
+          "apps/web/src/telas/TelaDaSnT.tsx"
+        ]
+      }
     },
     {
       "id": "M6",
@@ -851,7 +1033,24 @@
           "name": "Focalização (M6 — Focalização)"
         }
       ],
-      "shared": []
+      "shared": [],
+      "code": {
+        "arquivos": 9,
+        "linhas": 4180,
+        "api": 3,
+        "web": 6,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/focalizacao.py",
+          "apps/api/src/toc_api/dominio/focalizacao.py",
+          "apps/api/src/toc_api/http/roteadores/focalizacao.py",
+          "apps/web/src/componentes/focalizacao/JulgamentoDeHeranca.tsx",
+          "apps/web/src/componentes/focalizacao/LinhaDoTempo.tsx",
+          "apps/web/src/componentes/focalizacao/PainelDoPasso.tsx",
+          "apps/web/src/componentes/focalizacao/TrilhaDosPassos.tsx",
+          "apps/web/src/telas/TelaDaFocalizacao.tsx",
+          "apps/web/src/telas/TelaDeAnalisesDeFocalizacao.tsx"
+        ]
+      }
     },
     {
       "id": "M7",
@@ -917,7 +1116,53 @@
       ],
       "shared": [
         "003-esqueleto-federado"
-      ]
+      ],
+      "code": {
+        "arquivos": 38,
+        "linhas": 8244,
+        "api": 29,
+        "web": 9,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/federacao/__init__.py",
+          "apps/api/src/toc_api/aplicacao/federacao/acoes.py",
+          "apps/api/src/toc_api/aplicacao/federacao/catalogo.py",
+          "apps/api/src/toc_api/aplicacao/federacao/identidade.py",
+          "apps/api/src/toc_api/aplicacao/governanca.py",
+          "apps/api/src/toc_api/aplicacao/politica.py",
+          "apps/api/src/toc_api/dominio/federacao/__init__.py",
+          "apps/api/src/toc_api/dominio/federacao/admissao.py",
+          "apps/api/src/toc_api/dominio/federacao/catalogo.py",
+          "apps/api/src/toc_api/dominio/federacao/esquema.py",
+          "apps/api/src/toc_api/dominio/federacao/portas.py",
+          "apps/api/src/toc_api/dominio/federacao/principal.py",
+          "apps/api/src/toc_api/dominio/federacao/proposta.py",
+          "apps/api/src/toc_api/dominio/federacao/snapshot.py",
+          "apps/api/src/toc_api/dominio/federacao/telas.py",
+          "apps/api/src/toc_api/dominio/federacao/traco.py",
+          "apps/api/src/toc_api/dominio/federacao/wire.py",
+          "apps/api/src/toc_api/http/aph.py",
+          "apps/api/src/toc_api/http/roteadores/propostas.py",
+          "apps/api/src/toc_api/infra/federacao/__init__.py",
+          "apps/api/src/toc_api/infra/federacao/composicao.py",
+          "apps/api/src/toc_api/infra/federacao/executor.py",
+          "apps/api/src/toc_api/infra/federacao/introspeccao.py",
+          "apps/api/src/toc_api/infra/federacao/limitador.py",
+          "apps/api/src/toc_api/infra/federacao/memoria.py",
+          "apps/api/src/toc_api/infra/federacao/motor_local.py",
+          "apps/api/src/toc_api/infra/federacao/repositorio_sql.py",
+          "apps/api/src/toc_api/infra/identidade/__init__.py",
+          "apps/api/src/toc_api/infra/identidade/falso.py",
+          "apps/web/src/App.tsx",
+          "apps/web/src/componentes/federacao/SuperficieDeConfirmacao.tsx",
+          "apps/web/src/federacao/admissao.ts",
+          "apps/web/src/federacao/canal.d.mts",
+          "apps/web/src/federacao/canal.mjs",
+          "apps/web/src/federacao/embarque.ts",
+          "apps/web/src/federacao/tema.ts",
+          "apps/web/src/main.tsx",
+          "apps/web/src/telas/registro.ts"
+        ]
+      }
     },
     {
       "id": "M8",
@@ -978,7 +1223,56 @@
       ],
       "shared": [
         "003-esqueleto-federado"
-      ]
+      ],
+      "code": {
+        "arquivos": 41,
+        "linhas": 12110,
+        "api": 25,
+        "web": 16,
+        "caminhos": [
+          "apps/api/src/toc_api/alembic/env.py",
+          "apps/api/src/toc_api/alembic/versions/0001_esqueleto_tenant_e_projeto.py",
+          "apps/api/src/toc_api/alembic/versions/0002_nucleo_m1_no_e_aresta.py",
+          "apps/api/src/toc_api/alembic/versions/0003_m2_ude_exame_e_conector.py",
+          "apps/api/src/toc_api/alembic/versions/0004_federacao_proposta_e_traco.py",
+          "apps/api/src/toc_api/alembic/versions/0005_m3_nuvem_de_conflito.py",
+          "apps/api/src/toc_api/alembic/versions/0006_m4_arvores_de_futuro_e_implementacao.py",
+          "apps/api/src/toc_api/alembic/versions/0007_dedup_real_da_chave_de_idempotencia.py",
+          "apps/api/src/toc_api/alembic/versions/0008_m6_focalizacao.py",
+          "apps/api/src/toc_api/alembic/versions/0009_m5_estrategia_e_taticas.py",
+          "apps/api/src/toc_api/http/app.py",
+          "apps/api/src/toc_api/http/arranque.py",
+          "apps/api/src/toc_api/http/dependencias.py",
+          "apps/api/src/toc_api/http/erros.py",
+          "apps/api/src/toc_api/http/esquemas.py",
+          "apps/api/src/toc_api/infra/configuracao.py",
+          "apps/api/src/toc_api/infra/observabilidade/__init__.py",
+          "apps/api/src/toc_api/infra/observabilidade/otel.py",
+          "apps/api/src/toc_api/infra/persistencia/__init__.py",
+          "apps/api/src/toc_api/infra/persistencia/fabrica.py",
+          "apps/api/src/toc_api/infra/persistencia/memoria.py",
+          "apps/api/src/toc_api/infra/persistencia/motor.py",
+          "apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py",
+          "apps/api/src/toc_api/infra/persistencia/tabelas.py",
+          "apps/api/src/toc_api/infra/relogio.py",
+          "apps/web/src/api/cliente.ts",
+          "apps/web/src/api/erros.ts",
+          "apps/web/src/componentes/documentacao/BotaoDeAjuda.tsx",
+          "apps/web/src/componentes/documentacao/PainelDeDocumentacao.tsx",
+          "apps/web/src/documentacao/acervo.ts",
+          "apps/web/src/documentacao/tipos.ts",
+          "apps/web/src/documentacao/verbetes/apr.ts",
+          "apps/web/src/documentacao/verbetes/ara.ts",
+          "apps/web/src/documentacao/verbetes/arf.ts",
+          "apps/web/src/documentacao/verbetes/at.ts",
+          "apps/web/src/documentacao/verbetes/focalizacao.ts",
+          "apps/web/src/documentacao/verbetes/nc.ts",
+          "apps/web/src/documentacao/verbetes/snt.ts",
+          "apps/web/src/i18n/en.ts",
+          "apps/web/src/i18n/index.tsx",
+          "apps/web/src/i18n/pt.ts"
+        ]
+      }
     }
   ],
   "specs": [
@@ -2512,9 +2806,9 @@
           "state": "pending"
         },
         {
-          "label": "código do ciclo 003",
+          "label": "código: M7 (38 arq.), M8 (41 arq.)",
           "href": "",
-          "state": "todo"
+          "state": "ok"
         }
       ],
       "modules": [
@@ -3320,9 +3614,9 @@
           "state": "pending"
         },
         {
-          "label": "código do ciclo 004",
+          "label": "código: M1 (29 arq.)",
           "href": "",
-          "state": "todo"
+          "state": "ok"
         }
       ],
       "modules": [
@@ -4175,9 +4469,9 @@
           "state": "pending"
         },
         {
-          "label": "código do ciclo 005",
+          "label": "código: M2 (14 arq.)",
           "href": "",
-          "state": "todo"
+          "state": "ok"
         }
       ],
       "modules": [
@@ -5201,9 +5495,9 @@
           "state": "pending"
         },
         {
-          "label": "código do ciclo 006",
+          "label": "código: M7 (38 arq.)",
           "href": "",
-          "state": "todo"
+          "state": "ok"
         }
       ],
       "modules": [
@@ -5978,9 +6272,9 @@
           "state": "pending"
         },
         {
-          "label": "código do ciclo 007",
+          "label": "código: M3 (12 arq.)",
           "href": "",
-          "state": "todo"
+          "state": "ok"
         }
       ],
       "modules": [
@@ -6953,9 +7247,9 @@
           "state": "pending"
         },
         {
-          "label": "código do ciclo 008",
+          "label": "código: M4 (21 arq.)",
           "href": "",
-          "state": "todo"
+          "state": "ok"
         }
       ],
       "modules": [
@@ -7562,9 +7856,9 @@
           "state": "pending"
         },
         {
-          "label": "código do ciclo 009",
+          "label": "código: M6 (9 arq.)",
           "href": "",
-          "state": "todo"
+          "state": "ok"
         }
       ],
       "modules": [
@@ -7582,6 +7876,10 @@
       "data": "2026-09-03",
       "artifacts": [
         {
+          "name": "data-model.md",
+          "path": "specs/010-estrategia-e-taticas/data-model.md"
+        },
+        {
           "name": "plan.md",
           "path": "specs/010-estrategia-e-taticas/plan.md"
         },
@@ -7592,6 +7890,10 @@
         {
           "name": "tasks.md",
           "path": "specs/010-estrategia-e-taticas/tasks.md"
+        },
+        {
+          "name": "contracts/rest-api.md",
+          "path": "specs/010-estrategia-e-taticas/contracts/rest-api.md"
         }
       ],
       "rfs": [
@@ -8164,14 +8466,24 @@
           "state": "ok"
         },
         {
+          "label": "data-model.md",
+          "href": "specs/010-estrategia-e-taticas/data-model.md",
+          "state": "ok"
+        },
+        {
+          "label": "contracts/rest-api.md",
+          "href": "specs/010-estrategia-e-taticas/contracts/rest-api.md",
+          "state": "ok"
+        },
+        {
           "label": "qa-report.md",
           "href": "specs/010-estrategia-e-taticas/qa-report.md",
           "state": "pending"
         },
         {
-          "label": "código do ciclo 010",
+          "label": "código: M5 (8 arq.)",
           "href": "",
-          "state": "todo"
+          "state": "ok"
         }
       ],
       "modules": [
@@ -8953,9 +9265,9 @@
           "state": "pending"
         },
         {
-          "label": "código do ciclo 011",
+          "label": "código: M8 (41 arq.)",
           "href": "",
-          "state": "todo"
+          "state": "ok"
         }
       ],
       "modules": [
@@ -9657,6 +9969,12 @@
       "path": "scripts/check-conformidade-aph.sh"
     },
     {
+      "name": "check-documentacao.sh",
+      "description": "cobertura ferramenta × verbete (spec 011, E8.4: RF-18, RF-22, RF-23).",
+      "type": "Bash",
+      "path": "scripts/check-documentacao.sh"
+    },
+    {
       "name": "check-ecosystem.sh",
       "description": "the ecosystem catalogue says what we decided about other people's",
       "type": "Bash",
@@ -9673,6 +9991,12 @@
       "description": "a regra R1 virada portão executável.",
       "type": "Bash",
       "path": "scripts/check-evidencia-colada.sh"
+    },
+    {
+      "name": "check-i18n.sh",
+      "description": "o portão de internacionalização (spec 011, E8.3: RF-07, RF-08, RF-09).",
+      "type": "Bash",
+      "path": "scripts/check-i18n.sh"
     },
     {
       "name": "check-install.sh",
@@ -9753,6 +10077,18 @@
       "path": "scripts/check-vazamento.sh"
     },
     {
+      "name": "contar-aderencia-aph.py",
+      "description": "",
+      "type": "Python",
+      "path": "scripts/contar-aderencia-aph.py"
+    },
+    {
+      "name": "ensaio-de-restauracao.sh",
+      "description": "a unidade de restauração, ENSAIADA (spec 011, F8.1.3).",
+      "type": "Bash",
+      "path": "scripts/ensaio-de-restauracao.sh"
+    },
+    {
       "name": "evidencia.sh",
       "description": "runs every gate of this project and prints the evidence block, ready to",
       "type": "Bash",
@@ -9788,36 +10124,50 @@
       "id": "001-chegada-e-embarque",
       "name": "J-01 · Chegada e embarque",
       "description": "",
-      "steps": 0,
+      "steps": 5,
       "path": "docs/jornadas/001-chegada-e-embarque.md"
     },
     {
       "id": "002-primeiro-projeto-e-ara",
       "name": "J-02 · Primeiro projeto e a Árvore da Realidade Atual",
       "description": "",
-      "steps": 0,
+      "steps": 13,
       "path": "docs/jornadas/002-primeiro-projeto-e-ara.md"
     },
     {
       "id": "003-nuvem-de-conflito",
       "name": "J-03 · A Nuvem de Conflito",
       "description": "",
-      "steps": 0,
+      "steps": 10,
       "path": "docs/jornadas/003-nuvem-de-conflito.md"
     },
     {
       "id": "007-a-travessia",
       "name": "J-07 · A travessia — da Árvore da Realidade Atual à Nuvem de Conflito",
       "description": "",
-      "steps": 0,
+      "steps": 4,
       "path": "docs/jornadas/007-a-travessia.md"
     },
     {
       "id": "009-cinco-passos-de-focalizacao",
       "name": "J-09 · Os cinco passos de focalização",
       "description": "",
-      "steps": 0,
+      "steps": 6,
       "path": "docs/jornadas/009-cinco-passos-de-focalizacao.md"
+    },
+    {
+      "id": "010-as-tres-arvores-e-a-cadeia",
+      "name": "J-10 · As três árvores de futuro e a cadeia",
+      "description": "",
+      "steps": 7,
+      "path": "docs/jornadas/010-as-tres-arvores-e-a-cadeia.md"
+    },
+    {
+      "id": "011-estrategia-e-taticas",
+      "name": "J-011 · A árvore de Estratégia & Táticas — a ferramenta que voltou",
+      "description": "",
+      "steps": 7,
+      "path": "docs/jornadas/011-estrategia-e-taticas.md"
     }
   ],
   "journeys_note": "",
@@ -11086,9 +11436,9 @@
             "state": "pending"
           },
           {
-            "label": "código do ciclo 003",
+            "label": "código: M7 (38 arq.), M8 (41 arq.)",
             "href": "",
-            "state": "todo"
+            "state": "ok"
           }
         ],
         "lacunas": [
@@ -11792,9 +12142,9 @@
             "state": "pending"
           },
           {
-            "label": "código do ciclo 004",
+            "label": "código: M1 (29 arq.)",
             "href": "",
-            "state": "todo"
+            "state": "ok"
           }
         ],
         "lacunas": [
@@ -12541,9 +12891,9 @@
             "state": "pending"
           },
           {
-            "label": "código do ciclo 005",
+            "label": "código: M2 (14 arq.)",
             "href": "",
-            "state": "todo"
+            "state": "ok"
           }
         ],
         "lacunas": [
@@ -13435,9 +13785,9 @@
             "state": "pending"
           },
           {
-            "label": "código do ciclo 006",
+            "label": "código: M7 (38 arq.)",
             "href": "",
-            "state": "todo"
+            "state": "ok"
           }
         ],
         "lacunas": [
@@ -14118,9 +14468,9 @@
             "state": "pending"
           },
           {
-            "label": "código do ciclo 007",
+            "label": "código: M3 (12 arq.)",
             "href": "",
-            "state": "todo"
+            "state": "ok"
           }
         ],
         "lacunas": [
@@ -14967,9 +15317,9 @@
             "state": "pending"
           },
           {
-            "label": "código do ciclo 008",
+            "label": "código: M4 (21 arq.)",
             "href": "",
-            "state": "todo"
+            "state": "ok"
           }
         ],
         "lacunas": [
@@ -15470,9 +15820,9 @@
             "state": "pending"
           },
           {
-            "label": "código do ciclo 009",
+            "label": "código: M6 (9 arq.)",
             "href": "",
-            "state": "todo"
+            "state": "ok"
           }
         ],
         "lacunas": [
@@ -15988,14 +16338,24 @@
             "state": "ok"
           },
           {
+            "label": "data-model.md",
+            "href": "specs/010-estrategia-e-taticas/data-model.md",
+            "state": "ok"
+          },
+          {
+            "label": "contracts/rest-api.md",
+            "href": "specs/010-estrategia-e-taticas/contracts/rest-api.md",
+            "state": "ok"
+          },
+          {
             "label": "qa-report.md",
             "href": "specs/010-estrategia-e-taticas/qa-report.md",
             "state": "pending"
           },
           {
-            "label": "código do ciclo 010",
+            "label": "código: M5 (8 arq.)",
             "href": "",
-            "state": "todo"
+            "state": "ok"
           }
         ],
         "lacunas": [
@@ -16687,9 +17047,9 @@
             "state": "pending"
           },
           {
-            "label": "código do ciclo 011",
+            "label": "código: M8 (41 arq.)",
             "href": "",
-            "state": "todo"
+            "state": "ok"
           }
         ],
         "lacunas": [
@@ -17260,7 +17620,7 @@
   "roadmap": {
     "eyebrow": "Roadmap",
     "title": "Sequência de ciclos",
-    "lede": "Doze ciclos propostos ao Product Steward em 2026-09-03, lidos de <code>docs/roadmap.md</code>. Nenhuma linha de código de produção nasce antes do ciclo 003, e o protótipo do ciclo 002 é descartável por decisão, não por promessa. Apetite: um ciclo por linha — estourou, perde escopo, não ganha ciclo.",
+    "lede": "Doze ciclos propostos ao Product Steward em 2026-09-03 e lidos de <code>docs/roadmap.md</code> como estão escritos — inclusive o estado que cada cabeçalho declara. O protótipo do ciclo 002 é descartável por decisão, não por promessa; apetite de um ciclo por linha — estourou, perde escopo, não ganha ciclo. Promoção é gate humano, e nenhuma foi assinada.",
     "callout": "<b>Barra:</b> roadmap julgado contra o <b>GitLab Product Handbook</b> (fonte única, portões explícitos, responsável nomeado) — cada ciclo mostra os seus portões reais e o que não pode começar sem; clareza pela <b>régua Linear</b>.",
     "cycles": [
       {
@@ -17280,7 +17640,7 @@
           "O método Maestro instalado pelo instalador oficial e verificado (`scripts/check-install.sh`) — feito, é a condição em que este repositório nasceu.",
           "A linhagem inteira legível na sessão (as quatro gerações e os cinco natimortos) — feito, contagem colada na `docs/produto/visao.md` §3."
         ],
-        "state": "planejado",
+        "state": "construído",
         "specDir": "001-fundacao-e-planejamento",
         "specPath": "specs/001-fundacao-e-planejamento/spec.md",
         "rf": 12,
@@ -17363,7 +17723,7 @@
           "A re-medição dos três bloqueios externos declarados no round 003 de `docs/produto/rounds.md`: o alinhamento dos schemas de manifesto (quando a irmã mediu, 4 erros — mutuamente exclusivos), a fatia de federação ligada no hospedeiro, e o estado dos grants em memória. Se o primeiro persistir, o ciclo entra mesmo assim e entrega tudo menos o registro do manifesto — com mensagem nossa referenciando a da irmã.",
           "ADR 0002 (stack) e ADR 0003 (federação) ratificados — o ciclo é a execução deles."
         ],
-        "state": "planejado",
+        "state": "construído",
         "specDir": "003-esqueleto-federado",
         "specPath": "specs/003-esqueleto-federado/spec.md",
         "rf": 39,
@@ -17415,7 +17775,7 @@
           "O ciclo 003 promovido — sem junta, o M1 seria a 5ª geração standalone.",
           "A spec do M1 (`specs/004-nucleo-de-diagramas/`) com o `## Clarify` respondido."
         ],
-        "state": "planejado",
+        "state": "construído",
         "specDir": "004-nucleo-de-diagramas",
         "specPath": "specs/004-nucleo-de-diagramas/spec.md",
         "rf": 36,
@@ -17466,7 +17826,7 @@
           "O ciclo 004 promovido (a ARA é feita de nós e arestas do M1).",
           "Os critérios formais de UDE transcritos do prompt do v3 (`tocbuilderv3/constants.ts:109-137`) para a spec do M2, com a separação decidível × julgamento marcada requisito a requisito."
         ],
-        "state": "planejado",
+        "state": "construído",
         "specDir": "005-arvore-da-realidade-atual",
         "specPath": "specs/005-arvore-da-realidade-atual/spec.md",
         "rf": 38,
@@ -17509,7 +17869,7 @@
           "O ciclo 005 promovido (as primeiras ações operam sobre a ARA).",
           "Os dois bloqueios externos do round 006 re-medidos e aceitos como limite de alcance (`docs/produto/rounds.md`): ação federada sem credencial do lado do host (F7 pendente — `ghdaru/docs/adr/0023-acoes-federadas-por-adapter-remoto.md`) e grant sem interseção com o usuário. A nossa borda nasce recusando chamada não autenticada; o que fica limitado é a execução disparada do harness, não a FSM."
         ],
-        "state": "planejado",
+        "state": "construído",
         "specDir": "006-acoes-governadas-e-snapshot",
         "specPath": "specs/006-acoes-governadas-e-snapshot/spec.md",
         "rf": 48,
@@ -17556,7 +17916,7 @@
           "Os ciclos 004 e 006 promovidos.",
           "A spec do M3 com as 7 premissas modeladas (a skill `toc-evaporating-cloud` é a fonte técnica; a spec é a norma)."
         ],
-        "state": "planejado",
+        "state": "construído",
         "specDir": "007-nuvem-de-conflito",
         "specPath": "specs/007-nuvem-de-conflito/spec.md",
         "rf": 34,
@@ -17593,13 +17953,13 @@
         "portoes": [
           "Portão executável: teste de domínio percorre a cadeia inteira e prova a referência de origem em cada elo.",
           "Portão executável: as três árvores exportáveis/importáveis pelo E1.4.",
-          "Portão de jornada: da injeção à APR sequenciada, com captura."
+          "Portão de jornada: da injeção à APR sequenciada, com captura. Cumprido — jornada `docs/jornadas/010-as-tres-arvores-e-a-cadeia.md`, com as quatro telas do módulo (`TelaDaArf`, `TelaDaApr`, `TelaDaAt`, `TelaDaCadeia`) e capturas do build real. A interface do M4 veio num lote posterior ao domínio: o ciclo 008 entregou as regras e as rotas, e as telas ficaram para o lote que fecha o módulo — porque árvore sem tela é metade do trabalho."
         ],
         "entrada": [
           "Os ciclos 005 e 007 promovidos (o encadeamento parte do que eles produzem).",
           "Decisão registrada sobre o corte de ramos negativos da ARF (fica manual nesta v1 — proposta no round 008)."
         ],
-        "state": "planejado",
+        "state": "construído",
         "specDir": "008-arvores-de-futuro-e-implementacao",
         "specPath": "specs/008-arvores-de-futuro-e-implementacao/spec.md",
         "rf": 45,
@@ -17641,7 +18001,7 @@
           "O ciclo 008 promovido (a jornada aponta para ferramentas que precisam existir).",
           "ADR 0005 (escopo v1) inalterado — se DBR entrar, é decisão nova antes, não durante."
         ],
-        "state": "planejado",
+        "state": "construído",
         "specDir": "009-focalizacao",
         "specPath": "specs/009-focalizacao/spec.md",
         "rf": 21,
@@ -17698,7 +18058,7 @@
         "entrada": [
           "O ciclo 004 promovido (é a única dependência técnica; a posição tardia é escolha de valor registrada em `docs/produto/rounds.md`)."
         ],
-        "state": "planejado",
+        "state": "construído",
         "specDir": "010-estrategia-e-taticas",
         "specPath": "specs/010-estrategia-e-taticas/spec.md",
         "rf": 21,
@@ -17708,6 +18068,10 @@
           {
             "text": "spec.md",
             "href": "specs/010-estrategia-e-taticas/spec.md"
+          },
+          {
+            "text": "data-model.md",
+            "href": "specs/010-estrategia-e-taticas/data-model.md"
           },
           {
             "text": "plan.md",
@@ -17720,6 +18084,10 @@
           {
             "text": "tasks.md",
             "href": "specs/010-estrategia-e-taticas/tasks.md"
+          },
+          {
+            "text": "contracts/rest-api.md",
+            "href": "specs/010-estrategia-e-taticas/contracts/rest-api.md"
           }
         ],
         "modules": [
@@ -17740,7 +18108,7 @@
         "entrada": [
           "O ciclo 008 promovido (a documentação embutida cobre as ferramentas existentes)."
         ],
-        "state": "planejado",
+        "state": "parcial",
         "specDir": "011-fundacoes-da-aplicacao",
         "specPath": "specs/011-fundacoes-da-aplicacao/spec.md",
         "rf": 32,
@@ -17782,7 +18150,7 @@
         "entrada": [
           "Os ciclos 009, 010 e 011 promovidos — autodeclarar antes seria declarar sem provar, que é o anti-padrão que este projeto existe para não repetir."
         ],
-        "state": "planejado",
+        "state": "parcial",
         "specDir": "012-jornadas-e-autodeclaracao",
         "specPath": "specs/012-jornadas-e-autodeclaracao/spec.md",
         "rf": 24,
@@ -17907,9 +18275,1237 @@
       },
       {
         "cls": "fix",
-        "label": "Ciclo em curso"
+        "label": "Construção concluída — aguardando o gate humano"
       }
     ],
     "source": "docs/roadmap.md"
+  },
+  "codebase": {
+    "producao": {
+      "arquivos": 181,
+      "linhas": 48958,
+      "api_arquivos": 106,
+      "api_linhas": 34221,
+      "web_arquivos": 75,
+      "web_linhas": 14737
+    },
+    "testes": {
+      "arquivos": 125,
+      "apoio": 21,
+      "linhas": 34530,
+      "casos": 1514
+    },
+    "camadas_api": [
+      {
+        "nome": "domínio",
+        "papel": "puro: entidades, regras e portas",
+        "prefixo": "apps/api/src/toc_api/dominio/",
+        "arquivos": 38,
+        "linhas": 16132
+      },
+      {
+        "nome": "aplicação",
+        "papel": "puro: casos de uso e política",
+        "prefixo": "apps/api/src/toc_api/aplicacao/",
+        "arquivos": 17,
+        "linhas": 4697
+      },
+      {
+        "nome": "infraestrutura",
+        "papel": "adaptadores: SQLAlchemy, OTel, identidade",
+        "prefixo": "apps/api/src/toc_api/infra/",
+        "arquivos": 23,
+        "linhas": 5366
+      },
+      {
+        "nome": "HTTP",
+        "papel": "roteadores FastAPI, wire APH, composição",
+        "prefixo": "apps/api/src/toc_api/http/",
+        "arquivos": 17,
+        "linhas": 6406
+      },
+      {
+        "nome": "migrações",
+        "papel": "Alembic — nunca `create_all`",
+        "prefixo": "apps/api/src/toc_api/alembic/",
+        "arquivos": 10,
+        "linhas": 1612
+      }
+    ],
+    "camadas_web": [
+      {
+        "nome": "telas",
+        "papel": "uma tela por ferramenta + registro compartilhado",
+        "prefixo": "apps/web/src/telas/",
+        "arquivos": 12,
+        "linhas": 3705
+      },
+      {
+        "nome": "componentes",
+        "papel": "canvas, fichas, diagramas, painéis",
+        "prefixo": "apps/web/src/componentes/",
+        "arquivos": 36,
+        "linhas": 5218
+      },
+      {
+        "nome": "federação",
+        "papel": "canal `ghd.*`, admissão, embarque, tema",
+        "prefixo": "apps/web/src/federacao/",
+        "arquivos": 5,
+        "linhas": 687
+      },
+      {
+        "nome": "i18n",
+        "papel": "pt como língua-fonte, en como tradução",
+        "prefixo": "apps/web/src/i18n/",
+        "arquivos": 3,
+        "linhas": 1876
+      },
+      {
+        "nome": "documentação",
+        "papel": "verbete por ferramenta, com procedência",
+        "prefixo": "apps/web/src/documentacao/",
+        "arquivos": 9,
+        "linhas": 635
+      },
+      {
+        "nome": "cliente e estado",
+        "papel": "cliente do serviço e envelope de erro",
+        "prefixo": "apps/web/src/api/",
+        "arquivos": 2,
+        "linhas": 1092
+      }
+    ],
+    "suites": [
+      {
+        "nome": "domínio",
+        "papel": "sem banco e sem rede",
+        "prefixo": "apps/api/tests/dominio/",
+        "arquivos": 34,
+        "apoio": 6,
+        "casos": 496,
+        "linhas": 9808
+      },
+      {
+        "nome": "aplicação",
+        "papel": "com duplos das portas",
+        "prefixo": "apps/api/tests/aplicacao/",
+        "arquivos": 11,
+        "apoio": 6,
+        "casos": 129,
+        "linhas": 3606
+      },
+      {
+        "nome": "federação",
+        "papel": "fronteira APH: catálogo, FSM, wire, snapshot",
+        "prefixo": "apps/api/tests/federacao/",
+        "arquivos": 18,
+        "apoio": 2,
+        "casos": 246,
+        "linhas": 5138
+      },
+      {
+        "nome": "contrato",
+        "papel": "portas, schemas e cadeia de migrações",
+        "prefixo": "apps/api/tests/contrato/",
+        "arquivos": 17,
+        "apoio": 2,
+        "casos": 214,
+        "linhas": 5020
+      },
+      {
+        "nome": "integração",
+        "papel": "contra o PostgreSQL real",
+        "prefixo": "apps/api/tests/integracao/",
+        "arquivos": 17,
+        "apoio": 2,
+        "casos": 104,
+        "linhas": 4752
+      },
+      {
+        "nome": "interface (vitest)",
+        "papel": "React Testing Library, jsdom",
+        "prefixo": "apps/web/src/",
+        "arquivos": 27,
+        "apoio": 1,
+        "casos": 304,
+        "linhas": 5882
+      },
+      {
+        "nome": "canal (node:test)",
+        "papel": "envelope `ghd.*` sem framework",
+        "prefixo": "apps/web/src/federacao/",
+        "arquivos": 1,
+        "apoio": 0,
+        "casos": 21,
+        "linhas": 205
+      }
+    ],
+    "modulos": {
+      "M8": {
+        "arquivos": 41,
+        "linhas": 12110,
+        "api": 25,
+        "web": 16,
+        "caminhos": [
+          "apps/api/src/toc_api/alembic/env.py",
+          "apps/api/src/toc_api/alembic/versions/0001_esqueleto_tenant_e_projeto.py",
+          "apps/api/src/toc_api/alembic/versions/0002_nucleo_m1_no_e_aresta.py",
+          "apps/api/src/toc_api/alembic/versions/0003_m2_ude_exame_e_conector.py",
+          "apps/api/src/toc_api/alembic/versions/0004_federacao_proposta_e_traco.py",
+          "apps/api/src/toc_api/alembic/versions/0005_m3_nuvem_de_conflito.py",
+          "apps/api/src/toc_api/alembic/versions/0006_m4_arvores_de_futuro_e_implementacao.py",
+          "apps/api/src/toc_api/alembic/versions/0007_dedup_real_da_chave_de_idempotencia.py",
+          "apps/api/src/toc_api/alembic/versions/0008_m6_focalizacao.py",
+          "apps/api/src/toc_api/alembic/versions/0009_m5_estrategia_e_taticas.py",
+          "apps/api/src/toc_api/http/app.py",
+          "apps/api/src/toc_api/http/arranque.py",
+          "apps/api/src/toc_api/http/dependencias.py",
+          "apps/api/src/toc_api/http/erros.py",
+          "apps/api/src/toc_api/http/esquemas.py",
+          "apps/api/src/toc_api/infra/configuracao.py",
+          "apps/api/src/toc_api/infra/observabilidade/__init__.py",
+          "apps/api/src/toc_api/infra/observabilidade/otel.py",
+          "apps/api/src/toc_api/infra/persistencia/__init__.py",
+          "apps/api/src/toc_api/infra/persistencia/fabrica.py",
+          "apps/api/src/toc_api/infra/persistencia/memoria.py",
+          "apps/api/src/toc_api/infra/persistencia/motor.py",
+          "apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py",
+          "apps/api/src/toc_api/infra/persistencia/tabelas.py",
+          "apps/api/src/toc_api/infra/relogio.py",
+          "apps/web/src/api/cliente.ts",
+          "apps/web/src/api/erros.ts",
+          "apps/web/src/componentes/documentacao/BotaoDeAjuda.tsx",
+          "apps/web/src/componentes/documentacao/PainelDeDocumentacao.tsx",
+          "apps/web/src/documentacao/acervo.ts",
+          "apps/web/src/documentacao/tipos.ts",
+          "apps/web/src/documentacao/verbetes/apr.ts",
+          "apps/web/src/documentacao/verbetes/ara.ts",
+          "apps/web/src/documentacao/verbetes/arf.ts",
+          "apps/web/src/documentacao/verbetes/at.ts",
+          "apps/web/src/documentacao/verbetes/focalizacao.ts",
+          "apps/web/src/documentacao/verbetes/nc.ts",
+          "apps/web/src/documentacao/verbetes/snt.ts",
+          "apps/web/src/i18n/en.ts",
+          "apps/web/src/i18n/index.tsx",
+          "apps/web/src/i18n/pt.ts"
+        ]
+      },
+      "M2": {
+        "arquivos": 14,
+        "linhas": 3447,
+        "api": 8,
+        "web": 6,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/ara.py",
+          "apps/api/src/toc_api/dominio/analise.py",
+          "apps/api/src/toc_api/dominio/ara.py",
+          "apps/api/src/toc_api/dominio/criterios_ude.py",
+          "apps/api/src/toc_api/dominio/formulacao.py",
+          "apps/api/src/toc_api/dominio/lexico.py",
+          "apps/api/src/toc_api/dominio/suficiencia.py",
+          "apps/api/src/toc_api/http/roteadores/ara.py",
+          "apps/web/src/componentes/ude/ExameDeElo.tsx",
+          "apps/web/src/componentes/ude/FichaDeUde.tsx",
+          "apps/web/src/componentes/ude/RelatorioEstrutural.tsx",
+          "apps/web/src/componentes/ude/SeloDeUde.tsx",
+          "apps/web/src/componentes/ude/TextoComTrecho.tsx",
+          "apps/web/src/telas/TelaDaAra.tsx"
+        ]
+      },
+      "M4": {
+        "arquivos": 21,
+        "linhas": 7173,
+        "api": 10,
+        "web": 11,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/arvores.py",
+          "apps/api/src/toc_api/aplicacao/cadeia.py",
+          "apps/api/src/toc_api/dominio/apr.py",
+          "apps/api/src/toc_api/dominio/arf.py",
+          "apps/api/src/toc_api/dominio/at.py",
+          "apps/api/src/toc_api/dominio/encadeamento.py",
+          "apps/api/src/toc_api/dominio/referencia.py",
+          "apps/api/src/toc_api/dominio/verbalizacao.py",
+          "apps/api/src/toc_api/http/roteadores/arvores.py",
+          "apps/api/src/toc_api/http/roteadores/cadeia.py",
+          "apps/web/src/componentes/apr/ParesDaApr.tsx",
+          "apps/web/src/componentes/apr/SequenciaDaApr.tsx",
+          "apps/web/src/componentes/arf/CadeiaDeEfeitos.tsx",
+          "apps/web/src/componentes/arf/RamosNegativos.tsx",
+          "apps/web/src/componentes/arf/VerificacaoDaArf.tsx",
+          "apps/web/src/componentes/at/PassosDaAt.tsx",
+          "apps/web/src/componentes/cadeia/PercursoDaCadeia.tsx",
+          "apps/web/src/telas/TelaDaApr.tsx",
+          "apps/web/src/telas/TelaDaArf.tsx",
+          "apps/web/src/telas/TelaDaAt.tsx",
+          "apps/web/src/telas/TelaDaCadeia.tsx"
+        ]
+      },
+      "M1": {
+        "arquivos": 29,
+        "linhas": 6962,
+        "api": 16,
+        "web": 13,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/casos_de_uso.py",
+          "apps/api/src/toc_api/aplicacao/grafo.py",
+          "apps/api/src/toc_api/aplicacao/portabilidade.py",
+          "apps/api/src/toc_api/aplicacao/projetos.py",
+          "apps/api/src/toc_api/dominio/erros.py",
+          "apps/api/src/toc_api/dominio/eventos.py",
+          "apps/api/src/toc_api/dominio/exportacao.py",
+          "apps/api/src/toc_api/dominio/grafo.py",
+          "apps/api/src/toc_api/dominio/identidade.py",
+          "apps/api/src/toc_api/dominio/legado.py",
+          "apps/api/src/toc_api/dominio/portas.py",
+          "apps/api/src/toc_api/dominio/projeto.py",
+          "apps/api/src/toc_api/dominio/serializacao.py",
+          "apps/api/src/toc_api/dominio/valores.py",
+          "apps/api/src/toc_api/http/roteadores/portabilidade.py",
+          "apps/api/src/toc_api/http/roteadores/projetos.py",
+          "apps/web/src/componentes/Estados.tsx",
+          "apps/web/src/componentes/PainelDeEntidades.tsx",
+          "apps/web/src/componentes/canvas/ArestaDoCanvas.tsx",
+          "apps/web/src/componentes/canvas/Canvas.tsx",
+          "apps/web/src/componentes/canvas/NoDoCanvas.tsx",
+          "apps/web/src/componentes/canvas/PainelDoNo.tsx",
+          "apps/web/src/componentes/canvas/useViewport.ts",
+          "apps/web/src/componentes/mensagemDeErro.ts",
+          "apps/web/src/dominio/tipos.ts",
+          "apps/web/src/estado/useDesfazer.ts",
+          "apps/web/src/estado/useRecurso.ts",
+          "apps/web/src/telas/TelaDaLixeira.tsx",
+          "apps/web/src/telas/TelaDeProjetos.tsx"
+        ]
+      },
+      "M7": {
+        "arquivos": 38,
+        "linhas": 8244,
+        "api": 29,
+        "web": 9,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/federacao/__init__.py",
+          "apps/api/src/toc_api/aplicacao/federacao/acoes.py",
+          "apps/api/src/toc_api/aplicacao/federacao/catalogo.py",
+          "apps/api/src/toc_api/aplicacao/federacao/identidade.py",
+          "apps/api/src/toc_api/aplicacao/governanca.py",
+          "apps/api/src/toc_api/aplicacao/politica.py",
+          "apps/api/src/toc_api/dominio/federacao/__init__.py",
+          "apps/api/src/toc_api/dominio/federacao/admissao.py",
+          "apps/api/src/toc_api/dominio/federacao/catalogo.py",
+          "apps/api/src/toc_api/dominio/federacao/esquema.py",
+          "apps/api/src/toc_api/dominio/federacao/portas.py",
+          "apps/api/src/toc_api/dominio/federacao/principal.py",
+          "apps/api/src/toc_api/dominio/federacao/proposta.py",
+          "apps/api/src/toc_api/dominio/federacao/snapshot.py",
+          "apps/api/src/toc_api/dominio/federacao/telas.py",
+          "apps/api/src/toc_api/dominio/federacao/traco.py",
+          "apps/api/src/toc_api/dominio/federacao/wire.py",
+          "apps/api/src/toc_api/http/aph.py",
+          "apps/api/src/toc_api/http/roteadores/propostas.py",
+          "apps/api/src/toc_api/infra/federacao/__init__.py",
+          "apps/api/src/toc_api/infra/federacao/composicao.py",
+          "apps/api/src/toc_api/infra/federacao/executor.py",
+          "apps/api/src/toc_api/infra/federacao/introspeccao.py",
+          "apps/api/src/toc_api/infra/federacao/limitador.py",
+          "apps/api/src/toc_api/infra/federacao/memoria.py",
+          "apps/api/src/toc_api/infra/federacao/motor_local.py",
+          "apps/api/src/toc_api/infra/federacao/repositorio_sql.py",
+          "apps/api/src/toc_api/infra/identidade/__init__.py",
+          "apps/api/src/toc_api/infra/identidade/falso.py",
+          "apps/web/src/App.tsx",
+          "apps/web/src/componentes/federacao/SuperficieDeConfirmacao.tsx",
+          "apps/web/src/federacao/admissao.ts",
+          "apps/web/src/federacao/canal.d.mts",
+          "apps/web/src/federacao/canal.mjs",
+          "apps/web/src/federacao/embarque.ts",
+          "apps/web/src/federacao/tema.ts",
+          "apps/web/src/main.tsx",
+          "apps/web/src/telas/registro.ts"
+        ]
+      },
+      "M6": {
+        "arquivos": 9,
+        "linhas": 4180,
+        "api": 3,
+        "web": 6,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/focalizacao.py",
+          "apps/api/src/toc_api/dominio/focalizacao.py",
+          "apps/api/src/toc_api/http/roteadores/focalizacao.py",
+          "apps/web/src/componentes/focalizacao/JulgamentoDeHeranca.tsx",
+          "apps/web/src/componentes/focalizacao/LinhaDoTempo.tsx",
+          "apps/web/src/componentes/focalizacao/PainelDoPasso.tsx",
+          "apps/web/src/componentes/focalizacao/TrilhaDosPassos.tsx",
+          "apps/web/src/telas/TelaDaFocalizacao.tsx",
+          "apps/web/src/telas/TelaDeAnalisesDeFocalizacao.tsx"
+        ]
+      },
+      "M3": {
+        "arquivos": 12,
+        "linhas": 4002,
+        "api": 6,
+        "web": 6,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/nuvem.py",
+          "apps/api/src/toc_api/dominio/geracao.py",
+          "apps/api/src/toc_api/dominio/nuvem.py",
+          "apps/api/src/toc_api/http/roteadores/nuvem.py",
+          "apps/api/src/toc_api/infra/geracao/__init__.py",
+          "apps/api/src/toc_api/infra/geracao/motor_local.py",
+          "apps/web/src/componentes/nuvem/DiagramaDaNuvem.tsx",
+          "apps/web/src/componentes/nuvem/FichaDaAresta.tsx",
+          "apps/web/src/componentes/nuvem/MatrizDaNuvem.tsx",
+          "apps/web/src/componentes/nuvem/PreviaDaGeracao.tsx",
+          "apps/web/src/componentes/nuvem/VisaoDeSolucao.tsx",
+          "apps/web/src/telas/TelaDaNuvem.tsx"
+        ]
+      },
+      "M5": {
+        "arquivos": 8,
+        "linhas": 2759,
+        "api": 3,
+        "web": 5,
+        "caminhos": [
+          "apps/api/src/toc_api/aplicacao/snt.py",
+          "apps/api/src/toc_api/dominio/snt.py",
+          "apps/api/src/toc_api/http/roteadores/snt.py",
+          "apps/web/src/componentes/snt/ArvoreDeSnT.tsx",
+          "apps/web/src/componentes/snt/FichaDoPasso.tsx",
+          "apps/web/src/componentes/snt/PainelDeAcompanhamento.tsx",
+          "apps/web/src/componentes/snt/TabelaDaSnT.tsx",
+          "apps/web/src/telas/TelaDaSnT.tsx"
+        ]
+      }
+    },
+    "nao_atribuidos": [
+      "apps/api/src/toc_api/__init__.py",
+      "apps/api/src/toc_api/aplicacao/__init__.py",
+      "apps/api/src/toc_api/dominio/__init__.py",
+      "apps/api/src/toc_api/http/__init__.py",
+      "apps/api/src/toc_api/http/roteadores/__init__.py",
+      "apps/api/src/toc_api/infra/__init__.py",
+      "apps/web/src/vite-env.d.ts",
+      "apps/web/vite.config.ts",
+      "apps/web/vitest.setup.ts"
+    ],
+    "rotas": [
+      {
+        "metodo": "POST",
+        "caminho": "/aph/actions/{action_id}",
+        "arquivo": "apps/api/src/toc_api/http/aph.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/aph/catalog",
+        "arquivo": "apps/api/src/toc_api/http/aph.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/aph/sessions",
+        "arquivo": "apps/api/src/toc_api/http/aph.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/aph/sessions/{sessao_id}/events",
+        "arquivo": "apps/api/src/toc_api/http/aph.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/aph/sessions/{sessao_id}/messages",
+        "arquivo": "apps/api/src/toc_api/http/aph.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/aph/sessions/{sessao_id}/proposals/{proposal_id}",
+        "arquivo": "apps/api/src/toc_api/http/aph.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/aph/sessions/{sessao_id}/stream",
+        "arquivo": "apps/api/src/toc_api/http/aph.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/aph/traco",
+        "arquivo": "apps/api/src/toc_api/http/aph.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/saude",
+        "arquivo": "apps/api/src/toc_api/http/app.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/apr/projetos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/apr/projetos/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/apr/projetos/{projeto_id}/dependencias",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/apr/projetos/{projeto_id}/dependencias/{aresta_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/apr/projetos/{projeto_id}/elipses",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/apr/projetos/{projeto_id}/elipses/{elipse_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/apr/projetos/{projeto_id}/nos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/apr/projetos/{projeto_id}/nos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "PATCH",
+        "caminho": "/toc/apr/projetos/{projeto_id}/nos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/apr/projetos/{projeto_id}/nos/{no_id}/papel",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/apr/projetos/{projeto_id}/nos/{no_id}/verbalizacao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/apr/projetos/{projeto_id}/pares",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/apr/projetos/{projeto_id}/pares/{par_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/apr/projetos/{projeto_id}/pares/{par_id}/julgamentos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/apr/projetos/{projeto_id}/resumo",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/apr/projetos/{projeto_id}/sequenciamentos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/ara/projetos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/ara/projetos/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/ara/projetos/{projeto_id}/analises",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/ara/projetos/{projeto_id}/arestas",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/ara/projetos/{projeto_id}/arestas/{aresta_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "PATCH",
+        "caminho": "/toc/ara/projetos/{projeto_id}/arestas/{aresta_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/ara/projetos/{projeto_id}/arestas/{aresta_id}/exame",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/ara/projetos/{projeto_id}/conectores",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/ara/projetos/{projeto_id}/conectores/{conector_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/ara/projetos/{projeto_id}/efeitos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/ara/projetos/{projeto_id}/nos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "PATCH",
+        "caminho": "/toc/ara/projetos/{projeto_id}/nos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/ara/projetos/{projeto_id}/nos/{no_id}/ficha",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/ara/projetos/{projeto_id}/nos/{no_id}/pareceres",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/ara/projetos/{projeto_id}/nos/{no_id}/reformulacoes",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/ara/projetos/{projeto_id}/nos/{no_id}/status",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/ara/projetos/{projeto_id}/nos/{no_id}/ude",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/ara/projetos/{projeto_id}/nos/{no_id}/ude",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/ara/validacoes",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/ara.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/arf/projetos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/arf/projetos/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/arf/projetos/{projeto_id}/arestas",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/arf/projetos/{projeto_id}/arestas/{aresta_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/arf/projetos/{projeto_id}/arestas/{aresta_id}/exame",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/arf/projetos/{projeto_id}/conectores",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/arf/projetos/{projeto_id}/conectores/{conector_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/arf/projetos/{projeto_id}/espelhos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/arf/projetos/{projeto_id}/espelhos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/arf/projetos/{projeto_id}/nos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/arf/projetos/{projeto_id}/nos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "PATCH",
+        "caminho": "/toc/arf/projetos/{projeto_id}/nos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/arf/projetos/{projeto_id}/nos/{no_id}/papel",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/arf/projetos/{projeto_id}/ramos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/arf/projetos/{projeto_id}/ramos/{ramo_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/arf/projetos/{projeto_id}/verificacoes",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/at/projetos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/at/projetos/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/at/projetos/{projeto_id}/passos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/at/projetos/{projeto_id}/passos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "PATCH",
+        "caminho": "/toc/at/projetos/{projeto_id}/passos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/at/projetos/{projeto_id}/passos/{no_id}/status",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/at/projetos/{projeto_id}/precedencias",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/at/projetos/{projeto_id}/precedencias/{aresta_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/arvores.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/cadeia/derivacoes/apr",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/cadeia.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/cadeia/derivacoes/at",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/cadeia.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/cadeia/promocoes",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/cadeia.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/cadeia/semeaduras",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/cadeia.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/cadeia/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/cadeia.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/cadeia/{projeto_id}/referencias",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/cadeia.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/embarque",
+        "arquivo": "apps/api/src/toc_api/http/aph.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/focalizacao/analises",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/focalizacao/analises",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/heranca/{decisao_id}/veredito",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/jornada",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/linha-do-tempo",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/passos/{passo}/conclusao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/passos/{passo}/notas",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/passos/{passo}/vinculos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/passos/{passo}/vinculos/{vinculo_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/reaberturas",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/recomecos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/restauracao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/restricao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/restricao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/focalizacao/analises/{projeto_id}/sugestoes-de-restricao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/focalizacao/ferramentas/{alvo_id}/analises",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/focalizacao.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/nc/derivacoes",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/nc/projetos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/nc/projetos/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/nc/projetos/{projeto_id}/arestas/{chave}/premissas",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/nc/projetos/{projeto_id}/arestas/{chave}/premissas/ordem",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/nc/projetos/{projeto_id}/arestas/{chave}/sugestoes/premissas",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/nc/projetos/{projeto_id}/entidades/{papel}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/nc/projetos/{projeto_id}/geracoes",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/nc/projetos/{projeto_id}/injecoes/{injecao_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/nc/projetos/{projeto_id}/injecoes/{injecao_id}/separacao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/nc/projetos/{projeto_id}/injecoes/{injecao_id}/status",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/nc/projetos/{projeto_id}/matriz",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/nc/projetos/{projeto_id}/premissas/{premissa_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/nc/projetos/{projeto_id}/premissas/{premissa_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/nc/projetos/{projeto_id}/premissas/{premissa_id}/estado",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/nc/projetos/{projeto_id}/premissas/{premissa_id}/injecoes",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/nc/projetos/{projeto_id}/premissas/{premissa_id}/sugestoes/injecoes",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/nc/projetos/{projeto_id}/racional",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/nc/projetos/{projeto_id}/solucao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/nc/projetos/{projeto_id}/validacao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/nuvem.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/portabilidade/importacoes",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/portabilidade.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/portabilidade/projetos/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/portabilidade.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/projetos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/projetos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/projetos/lixeira",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/projetos/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/projetos/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/projetos/{projeto_id}/arestas",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/projetos/{projeto_id}/arestas/{aresta_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "PATCH",
+        "caminho": "/toc/projetos/{projeto_id}/arestas/{aresta_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/projetos/{projeto_id}/nos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/projetos/{projeto_id}/nos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "PATCH",
+        "caminho": "/toc/projetos/{projeto_id}/nos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/projetos/{projeto_id}/restaurar",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/projetos.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/propostas",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/propostas.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/propostas/{proposal_id}/decisao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/propostas.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/snt/projetos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/snt/projetos/{projeto_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/snt/projetos/{projeto_id}/acompanhamento",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/snt/projetos/{projeto_id}/exportacao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/snt/projetos/{projeto_id}/meta-global",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/snt/projetos/{projeto_id}/passos",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/toc/snt/projetos/{projeto_id}/passos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/snt/projetos/{projeto_id}/passos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "PATCH",
+        "caminho": "/toc/snt/projetos/{projeto_id}/passos/{no_id}",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/snt/projetos/{projeto_id}/passos/{no_id}/posicao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/snt/projetos/{projeto_id}/passos/{no_id}/premissas",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/snt/projetos/{projeto_id}/passos/{no_id}/previa-de-exclusao",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "PUT",
+        "caminho": "/toc/snt/projetos/{projeto_id}/passos/{no_id}/status",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/toc/snt/projetos/{projeto_id}/previas-de-mover",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/toc/snt/projetos/{projeto_id}/tabela",
+        "arquivo": "apps/api/src/toc_api/http/roteadores/snt.py"
+      }
+    ],
+    "rotas_por_metodo": {
+      "GET": 31,
+      "POST": 62,
+      "PUT": 21,
+      "PATCH": 8,
+      "DELETE": 22
+    },
+    "migracoes": [
+      {
+        "id": "0001",
+        "nome": "0001_esqueleto_tenant_e_projeto",
+        "anterior": "",
+        "path": "apps/api/src/toc_api/alembic/versions/0001_esqueleto_tenant_e_projeto.py"
+      },
+      {
+        "id": "0002",
+        "nome": "0002_nucleo_m1_no_e_aresta",
+        "anterior": "0001",
+        "path": "apps/api/src/toc_api/alembic/versions/0002_nucleo_m1_no_e_aresta.py"
+      },
+      {
+        "id": "0003",
+        "nome": "0003_m2_ude_exame_e_conector",
+        "anterior": "0002",
+        "path": "apps/api/src/toc_api/alembic/versions/0003_m2_ude_exame_e_conector.py"
+      },
+      {
+        "id": "0004",
+        "nome": "0004_federacao_proposta_e_traco",
+        "anterior": "0003",
+        "path": "apps/api/src/toc_api/alembic/versions/0004_federacao_proposta_e_traco.py"
+      },
+      {
+        "id": "0005",
+        "nome": "0005_m3_nuvem_de_conflito",
+        "anterior": "0004",
+        "path": "apps/api/src/toc_api/alembic/versions/0005_m3_nuvem_de_conflito.py"
+      },
+      {
+        "id": "0006",
+        "nome": "0006_m4_arvores_de_futuro_e_implementacao",
+        "anterior": "0005",
+        "path": "apps/api/src/toc_api/alembic/versions/0006_m4_arvores_de_futuro_e_implementacao.py"
+      },
+      {
+        "id": "0007",
+        "nome": "0007_dedup_real_da_chave_de_idempotencia",
+        "anterior": "0006",
+        "path": "apps/api/src/toc_api/alembic/versions/0007_dedup_real_da_chave_de_idempotencia.py"
+      },
+      {
+        "id": "0008",
+        "nome": "0008_m6_focalizacao",
+        "anterior": "0007",
+        "path": "apps/api/src/toc_api/alembic/versions/0008_m6_focalizacao.py"
+      },
+      {
+        "id": "0009",
+        "nome": "0009_m5_estrategia_e_taticas",
+        "anterior": "0008",
+        "path": "apps/api/src/toc_api/alembic/versions/0009_m5_estrategia_e_taticas.py"
+      }
+    ],
+    "tabelas": 36,
+    "portoes": [
+      "check-adr.sh",
+      "check-adrs-sucessao.sh",
+      "check-agents.sh",
+      "check-arquitetura.sh",
+      "check-caminhos.sh",
+      "check-canal.sh",
+      "check-conformance.sh",
+      "check-conformidade-aph.sh",
+      "check-documentacao.sh",
+      "check-ecosystem.sh",
+      "check-evals.sh",
+      "check-evidencia-colada.sh",
+      "check-i18n.sh",
+      "check-install.sh",
+      "check-jornadas.sh",
+      "check-links.sh",
+      "check-manifesto.sh",
+      "check-politica.sh",
+      "check-raiz-do-agregado.sh",
+      "check-retro.sh",
+      "check-roles.sh",
+      "check-rounds.sh",
+      "check-specs.sh",
+      "check-trava-da-proposta.sh",
+      "check-trava-otimista.sh",
+      "check-vazamento.sh"
+    ],
+    "sabotagens": 76,
+    "bases_de_sabotagem": 12,
+    "nota": "Contagens do código como ele está escrito: arquivos, linhas, casos de teste declarados, rotas por decorador, migrações e tabelas. O gerador NÃO roda a suíte — que os testes passem é afirmação do `qa-report.md` do ciclo, com a saída colada."
   }
 }

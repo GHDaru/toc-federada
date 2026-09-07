@@ -62,3 +62,64 @@ def test_os_adaptadores_de_infra_satisfazem_as_mesmas_portas():
         assert isinstance(
             RepositorioDeProjetosSQL.__new__(RepositorioDeProjetosSQL), porta
         ), f"o adaptador SQL não satisfaz {porta.__name__}"
+
+
+# --------------------------------------------------------------------------------------
+# Nome de esquema é CONTRATO: dois iguais no mesmo módulo é um defeito silencioso
+#
+# `esquemas.py` é um módulo só, e em Python a segunda definição de uma classe **apaga a
+# primeira**. Quando isso acontece entre dois modelos de resposta, o código que instancia
+# o primeiro passa a instanciar o segundo — e o erro não aparece na importação nem no
+# `mypy`: aparece em produção, como `ValidationError` de campo que "não existe", na
+# primeira vez que aquela rota devolve dado.
+#
+# Foi exatamente o que aconteceu: `PendenciaOut` foi definida para a pendência de um passo
+# da jornada de focalização (M6 — passo, regra, detalhe) e **de novo** para a pendência do
+# plano de Estratégia & Táticas (M5 — no_id, numero, tipo). A segunda venceu, e as cinco
+# provas de traço do M6 caíram com "6 validation errors for PendenciaOut".
+#
+# Este teste é a função de aptidão da regra. Ele não julga nomes bonitos: julga colisão.
+def test_nenhum_esquema_http_tem_nome_repetido():
+    import ast
+    import collections
+    import pathlib
+
+    caminho = pathlib.Path(__file__).resolve().parents[2] / "src/toc_api/http/esquemas.py"
+    arvore = ast.parse(caminho.read_text(encoding="utf-8"))
+    nomes = [n.name for n in arvore.body if isinstance(n, ast.ClassDef)]
+    repetidos = {n: q for n, q in collections.Counter(nomes).items() if q > 1}
+
+    print(f"classes de esquema examinadas: {len(nomes)} · repetidas: {repetidos}")
+    assert repetidos == {}, (
+        "duas classes com o mesmo nome no mesmo módulo: a segunda apaga a primeira e o "
+        f"defeito só aparece em tempo de resposta — {repetidos}"
+    )
+
+
+# O mesmo defeito, um andar acima: em `erros.py` o que colide não é a classe, é o NOME
+# IMPORTADO. `from ..dominio.ara import TransicaoDeStatusRecusada` seguido de
+# `from ..dominio.snt import TransicaoDeStatusRecusada` deixa o segundo no lugar do
+# primeiro — e `@app.exception_handler(TransicaoDeStatusRecusada)` passa a registrar DUAS
+# VEZES a mesma classe, deixando a outra sem tradutor. O efeito no cliente é silencioso e
+# caro: a recusa da Árvore da Realidade Atual, que devia dizer
+# `details.motivo = "reabertura_sem_justificativa"`, chegava como `MUTATION_REFUSED` seco.
+def test_nenhum_nome_importado_em_erros_py_e_ligado_duas_vezes():
+    import ast
+    import collections
+    import pathlib
+
+    caminho = pathlib.Path(__file__).resolve().parents[2] / "src/toc_api/http/erros.py"
+    arvore = ast.parse(caminho.read_text(encoding="utf-8"))
+    ligados = [
+        alias.asname or alias.name
+        for no in ast.walk(arvore)
+        if isinstance(no, (ast.Import, ast.ImportFrom))
+        for alias in no.names
+    ]
+    repetidos = {n: q for n, q in collections.Counter(ligados).items() if q > 1}
+
+    print(f"nomes importados em erros.py: {len(ligados)} · ligados duas vezes: {repetidos}")
+    assert repetidos == {}, (
+        "um nome importado duas vezes esconde uma classe de exceção inteira do registro "
+        f"de tradutores — dê apelido (`as`) ao segundo: {repetidos}"
+    )

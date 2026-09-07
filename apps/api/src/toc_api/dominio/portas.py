@@ -21,6 +21,7 @@ from .focalizacao import AnaliseDeFocalizacao
 from .nuvem import NuvemDeConflito
 from .projeto import Projeto
 from .referencia import ReferenciaCruzada
+from .snt import ArvoreSnT
 
 
 @runtime_checkable
@@ -278,6 +279,44 @@ class RepositorioDaSugestaoDeRestricao(RepositorioDaJornada, RepositorioDeARA, P
     aceita. É a única operação do M6 que precisa conhecer outro módulo por dentro — e por
     isso é a única que declara a porta composta, em vez de todo o módulo carregar o
     acoplamento.
+    """
+
+
+# ---------------------------------------------------------------------------------------
+# M5 · Estratégia & Táticas (spec 010)
+#
+# Uma porta própria, pelo mesmo motivo das anteriores (RN-04 da spec 004): o núcleo não
+# conhece semântica da Teoria das Restrições, e uma porta única obrigaria a assinatura do
+# M1 a mencionar meta global, premissa de suficiência e numeração derivada. O adaptador
+# implementa todas; o domínio continua com uma por ferramenta.
+# ---------------------------------------------------------------------------------------
+
+
+@runtime_checkable
+class RepositorioDeSnT(Protocol):
+    """Persistência da `ArvoreSnT` — a árvore de Estratégia & Táticas (M5).
+
+    A regra do inquilino não tem exceção aqui tampouco: primeiro parâmetro posicional, sem
+    valor padrão.
+    """
+
+    def salvar_snt(self, arvore: "ArvoreSnT") -> None: ...
+
+    def obter_snt(self, inquilino_id: str, projeto_id: UUID) -> "ArvoreSnT | None": ...
+
+
+@runtime_checkable
+class RepositorioDaSnT(RepositorioDeSnT, RepositorioDeProjetos, Protocol):
+    """As duas portas juntas — a forma que o ciclo de vida herdado do M1 exige (RF-01).
+
+    A S&T **não reimplementa** listagem, lixeira nem restauração: elas são do M1, e o
+    módulo as consome pelo mesmo repositório. Declarar a exigência como `Protocol` composto
+    é o que impede o caso de uso de receber um repositório que só sabe metade do caminho.
+
+    O que ela deliberadamente **não** compõe: as portas do M2, M3 e M4. O vínculo
+    automático com Árvore de Pré-Requisitos e Árvore de Transição está **fora** do round
+    010 (declarado na spec 010), e compor aquelas portas aqui acoplaria a S&T à evolução de
+    todas elas para não ganhar nada hoje.
     """
 
 

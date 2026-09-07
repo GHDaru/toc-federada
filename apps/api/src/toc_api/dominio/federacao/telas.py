@@ -268,6 +268,83 @@ REGISTRO_DE_TELAS = RegistroDeTelas(
                 CampoDeTela("ciclos_fechados", "number", label="Ciclos fechados"),
             ),
         ),
+        # M5 — Estratégia & Táticas (spec 010, INT-02). Quatro telas, e a regra do
+        # `ai_visible` é a dos módulos anteriores: **grandeza e vocabulário sim, texto de
+        # pessoa não**. Número do passo, contagem por status e quantidade de pendências
+        # dizem ONDE o plano está; estratégia, tática e as três premissas são o que o
+        # grupo escreveu — item 7 da constituição ("tela é dado e nunca instrução"):
+        # texto de usuário é sempre camada não-confiável.
+        #
+        # As quatro declaram `READ` e `NAVIGATE` e **não** declaram `SUBMIT`: este módulo
+        # não tem ação de catálogo nenhuma (INT-04 da spec 010 declara isso
+        # explicitamente), e uma tela que anunciasse `SUBMIT` prometeria à fundação um
+        # verbo que não existe.
+        Tela(
+            id="toc.snt_arvore",
+            route="/toc/snt",
+            title="Arvore de Estrategia e Taticas",
+            ai_actions=("READ", "NAVIGATE"),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Projeto"),
+                CampoDeTela("passos", "number", label="Passos"),
+                CampoDeTela("niveis", "number", label="Níveis da árvore"),
+                CampoDeTela("passo_selecionado", "entity", label="Passo selecionado"),
+                CampoDeTela("numero_selecionado", "text", label="Número do passo"),
+                CampoDeTela("filtro_de_status", "select", label="Filtro por status"),
+                CampoDeTela("pendencias", "number", label="Pendências lógicas"),
+                # A meta global é o enunciado que o grupo escreveu para o próprio plano.
+                # Não é segredo — é conteúdo do inquilino, e a assistência só o recebe
+                # quando a pessoa o coloca numa ação governada, nunca por raspagem.
+                CampoDeTela("meta_global", "text", ai_visible=False),
+            ),
+        ),
+        Tela(
+            id="toc.snt_passo",
+            route="/toc/snt/passo",
+            title="Ficha do passo",
+            ai_actions=("READ", "NAVIGATE"),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Projeto"),
+                CampoDeTela("numero", "text", label="Número do passo"),
+                CampoDeTela("status", "select", label="Status do passo"),
+                CampoDeTela("categoria", "select", label="Categoria do passo"),
+                CampoDeTela("filhos", "number", label="Filhos"),
+                CampoDeTela("premissas_preenchidas", "number", label="Premissas preenchidas"),
+                # As três premissas e os dois textos do passo são a lógica que o grupo
+                # escreveu. Mesma decisão do `rascunho_de_parecer` do M2, pelo mesmo motivo.
+                CampoDeTela("estrategia", "text", ai_visible=False),
+                CampoDeTela("tatica", "text", ai_visible=False),
+                CampoDeTela("premissa_paralela", "text", ai_visible=False),
+                CampoDeTela("premissa_necessidade_ao_pai", "text", ai_visible=False),
+                CampoDeTela("premissa_suficiencia_dos_filhos", "text", ai_visible=False),
+            ),
+        ),
+        Tela(
+            id="toc.snt_tabela",
+            route="/toc/snt/tabela",
+            title="Vista tabular da S&T",
+            ai_actions=("READ", "NAVIGATE"),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Projeto"),
+                CampoDeTela("linhas", "number", label="Linhas"),
+                CampoDeTela("linhas_sem_tatica", "number", label="Linhas sem tática"),
+            ),
+        ),
+        Tela(
+            id="toc.snt_acompanhamento",
+            route="/toc/snt/acompanhamento",
+            title="Painel de acompanhamento da S&T",
+            ai_actions=("READ",),
+            campos=(
+                CampoDeTela("projeto_id", "text", label="Projeto"),
+                CampoDeTela("passos", "number", label="Passos"),
+                CampoDeTela("validados", "number", label="Passos validados"),
+                CampoDeTela("em_execucao", "number", label="Passos em execução"),
+                CampoDeTela("nao_validados", "number", label="Passos não validados"),
+                CampoDeTela("pendencias", "number", label="Pendências lógicas"),
+                CampoDeTela("progresso", "number", label="Progresso"),
+            ),
+        ),
         Tela(
             id="toc.lixeira",
             route="/toc/lixeira",

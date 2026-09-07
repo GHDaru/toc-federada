@@ -66,6 +66,13 @@ PORTOES=(
   # uma afirmação falsa em setembro, vestida de prova. Sem esta linha o agregador diria
   # "todos os portões verdes" sobre um README que anuncia 40 testes onde a suíte tem 48.
   "scripts/check-evidencia-colada.sh|evidência colada: o comando ainda devolve o número (R1)|afirmações registradas|ocorrências conferidas"
+  # Entraram com o M8 (spec 011). O de i18n porque a dívida de tradução é INVISÍVEL — a
+  # tela funciona, o texto aparece, e só quem troca de idioma descobre; foi assim que a
+  # quarta geração da linhagem gastou duas das suas cinco specs em retrofit e AINDA ficou
+  # com literais em português no código. O de documentação porque a linhagem acertou a
+  # forma do `DocsView` e documentou duas ferramentas de seis, sem nada reprovar.
+  "scripts/check-i18n.sh|internacionalização: paridade, literal órfão e chave que falha alto (E8.3)|arquivos .tsx varridos|cadeias examinadas|cadeias pelo dicionário|chaves em pt|chaves em en|pendências de tradução"
+  "scripts/check-documentacao.sh|documentação embutida: cobertura ferramenta × verbete (E8.4)|ferramentas registradas|verbetes no acervo|caminhos de procedência|âncoras declaradas"
   # Os quatro da federação (specs 003 e 006). Entraram com o módulo M7, pelo mesmo motivo
   # do de arquitetura: sem eles o agregador diria "todos os portões verdes" enquanto NADA
   # teria olhado para a fronteira — nem para o manifesto que circula na admissão, nem para
@@ -111,7 +118,14 @@ for entrada in "${PORTOES[@]}"; do
   # O resumo é recorte da saída do portão; o total de linhas é contado aqui e rotulado
   # como contado aqui, para ninguém o ler como se o portão o tivesse dito.
   nlinhas="$(wc -l < "$saida" | tr -d ' ')"
-  resumo="$(printf '%s' "$denominador" | tr '\n' ' ' | sed 's/  */ /g; s/|/·/g' | cut -c1-260)"
+  # O corte é por CARACTERE, e a razão é um defeito medido: `cut -c` conta BYTES quando o
+  # locale é `POSIX` (é o caso deste ambiente — `locale` devolve `LC_CTYPE="POSIX"`), e
+  # cortar 260 bytes no meio de um "ç" produzia UTF-8 inválido no meio do relatório. Quem
+  # tentasse ler o arquivo como texto quebrava. `awk` não serve de substituto porque o
+  # `mawk` deste ambiente também é orientado a byte; `python3` já é dependência dos outros
+  # portões (`check-caminhos.sh`, `check-evidencia-colada.sh`) e corta por caractere.
+  resumo="$(printf '%s' "$denominador" | tr '\n' ' ' | sed 's/  */ /g; s/|/·/g' \
+            | python3 -c 'import sys; sys.stdout.write(sys.stdin.read()[:260])')"
   resumo="$resumo <br>· saída completa: $nlinhas linhas (contadas por este script)"
   veredito=$([[ $codigo -eq 0 ]] && echo "✓ verde" || echo "✗ vermelho")
 

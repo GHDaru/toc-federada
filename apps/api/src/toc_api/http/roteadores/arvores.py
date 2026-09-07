@@ -177,13 +177,32 @@ def adicionar_no_da_arf(
 def editar_no_da_arf(
     projeto_id: UUID, no_id: UUID, corpo: EditarNoDaArvoreIn, executor: ExecutorDependente
 ) -> NoDaArvoreOut:
-    no = executor.rodar(
-        EditarNoDaARF,
-        projeto_id=projeto_id,
-        no_id=no_id,
-        titulo=corpo.titulo,
-        descricao=corpo.descricao,
-    )
+    """PATCH parcial pela RAIZ do agregado — texto, posição e recolhimento.
+
+    A posição entra por aqui, e não pela rota genérica do M1: sobre projeto de ferramenta
+    a genérica responde `AGGREGATE_ROOT_REQUIRED` (a porta dos fundos está fechada), e sem
+    esta rota o arrastar do canvas da ARF não teria onde gravar.
+    """
+    no = None
+    if corpo.titulo is not None or corpo.descricao is not None:
+        no = executor.rodar(
+            EditarNoDaARF,
+            projeto_id=projeto_id,
+            no_id=no_id,
+            titulo=corpo.titulo,
+            descricao=corpo.descricao,
+        )
+    if corpo.posicao is not None:
+        no = executor.rodar(
+            MoverNoDaARF,
+            projeto_id=projeto_id,
+            no_id=no_id,
+            posicao=corpo.posicao.para_dominio(),
+        )
+    if no is None:
+        raise DadoInvalido(
+            "editar_no: informe ao menos um de titulo, descricao ou posicao"
+        )
     arvore = executor.rodar(AbrirProjetoARF, projeto_id=projeto_id)
     return NoDaArvoreOut.de(no, arvore.papel_do_no(no_id).value)
 
@@ -411,13 +430,27 @@ def adicionar_no_da_apr(
 def editar_no_da_apr(
     projeto_id: UUID, no_id: UUID, corpo: EditarNoDaArvoreIn, executor: ExecutorDependente
 ) -> NoDaArvoreOut:
-    no = executor.rodar(
-        EditarNoDaAPR,
-        projeto_id=projeto_id,
-        no_id=no_id,
-        titulo=corpo.titulo,
-        descricao=corpo.descricao,
-    )
+    """O espelho do PATCH da ARF, pela raiz da Árvore de Pré-Requisitos."""
+    no = None
+    if corpo.titulo is not None or corpo.descricao is not None:
+        no = executor.rodar(
+            EditarNoDaAPR,
+            projeto_id=projeto_id,
+            no_id=no_id,
+            titulo=corpo.titulo,
+            descricao=corpo.descricao,
+        )
+    if corpo.posicao is not None:
+        no = executor.rodar(
+            MoverNoDaAPR,
+            projeto_id=projeto_id,
+            no_id=no_id,
+            posicao=corpo.posicao.para_dominio(),
+        )
+    if no is None:
+        raise DadoInvalido(
+            "editar_no: informe ao menos um de titulo, descricao ou posicao"
+        )
     arvore = executor.rodar(AbrirProjetoAPR, projeto_id=projeto_id)
     return NoDaArvoreOut.de(no, arvore.papel_do_no(no_id).value)
 

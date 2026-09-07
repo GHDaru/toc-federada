@@ -37,6 +37,11 @@ class RepositorioDeProjetosSQL:
             self._gravar_projeto(s, analise.projeto)
         analise.projeto.confirmar_gravacao()
 
+    def salvar_snt(self, arvore) -> None:
+        with self._sessao.begin() as s:
+            self._gravar_projeto(s, arvore.projeto)
+        arvore.projeto.confirmar_gravacao()
+
     def salvar_referencia(self, referencia) -> None:
         with self._sessao.begin() as s:
             self._gravar_referencia(s, referencia)

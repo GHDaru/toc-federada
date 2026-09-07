@@ -1293,3 +1293,879 @@ mark {
   border-radius: var(--toc-raio);
   font-size: 0.85rem;
 }
+
+/* =========================================================================================
+   M4 · Árvores de Futuro e Implementação (spec 008) — ARF, APR, AT e a cadeia
+   =========================================================================================
+
+   Siglas, uma vez: ARF — Árvore da Realidade Futura · APR — Árvore de Pré-Requisitos ·
+   AT — Árvore de Transição · ED — Efeito Desejável · RI/RN — requisito de interface /
+   regra de negócio.
+
+   A regra visual continua a mesma do M6: **estado distinguível por forma e rótulo, nunca
+   só por cor**. Aqui ela tem um caso de honra — o **ramo negativo**. Ele não pode parecer
+   mais um efeito da árvore: é a contramão da injeção, e uma tela que o desenhasse igual
+   estaria dizendo que ele é mais uma consequência boa. Por isso ele carrega, ao mesmo
+   tempo: rótulo por extenso ("Efeito indevido"), borda tracejada, faixa lateral, fundo
+   próprio e o atributo `data-ramo-negativo` no elemento. Apague a cor deste arquivo e o
+   ramo continua distinguível — que é o teste que esta seção tem de passar.
+   ======================================================================================= */
+
+.tela-da-arf,
+.tela-da-apr,
+.tela-da-at,
+.tela-da-cadeia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-3);
+}
+
+.painel-da-arf,
+.painel-da-apr {
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-4);
+  min-width: 320px;
+  max-width: 460px;
+  overflow-y: auto;
+}
+
+.leitura-da-arf .explicacao,
+.sequencia-da-apr .explicacao,
+.passos-da-at .explicacao,
+.ramos-negativos .explicacao,
+.verificacao-da-arf .explicacao,
+.objetivo-da-apr .explicacao {
+  color: var(--toc-suave);
+  font-size: 0.85rem;
+  margin: 0 0 var(--toc-espaco-2);
+}
+
+/* -- ARF: o ponto de partida e os efeitos encadeados ------------------------------------ */
+
+.lista-de-injecoes,
+.lista-de-efeitos,
+.lista-de-ramos,
+.lista-de-pares,
+.lista-de-passos,
+.percurso-da-cadeia .etapas,
+.camadas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-2);
+}
+
+.lista-de-injecoes > li,
+.lista-de-efeitos > li {
+  border: 1px solid var(--toc-borda);
+  border-left: 4px solid var(--toc-suave);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-2);
+  background: var(--toc-fundo);
+}
+
+/* A injeção é o que ainda NÃO existe: linha cheia à esquerda, para a leitura começar nela. */
+.lista-de-injecoes > li {
+  border-left-color: var(--toc-ok);
+}
+
+.texto-do-no {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.selo-ed {
+  display: inline-block;
+  margin: var(--toc-espaco-1) 0 0;
+  padding: 0 var(--toc-espaco-1);
+  border: 1px solid var(--toc-ok);
+  border-radius: var(--toc-raio);
+  color: var(--toc-ok);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.leituras {
+  list-style: none;
+  margin: var(--toc-espaco-1) 0 0;
+  padding: 0;
+}
+
+.leitura-do-elo,
+.grau {
+  color: var(--toc-suave);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+/* -- ARF: o ramo negativo e a poda ------------------------------------------------------ */
+
+/* O nó raiz do ramo, na lista dos efeitos: tracejado + faixa + selo. Três sinais, e
+   nenhum deles é cor sozinha. */
+.lista-de-efeitos > li[data-ramo-negativo="sim"] {
+  border-style: dashed;
+  border-left-width: 6px;
+  border-left-color: var(--toc-atencao);
+  background: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 8px,
+    rgba(180, 83, 9, 0.06) 8px,
+    rgba(180, 83, 9, 0.06) 16px
+  );
+}
+
+.selo-ramo {
+  display: inline-block;
+  margin: var(--toc-espaco-1) 0 0;
+  padding: 0 var(--toc-espaco-1);
+  border: 1px dashed var(--toc-atencao);
+  border-radius: var(--toc-raio);
+  color: var(--toc-atencao);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ramos-negativos {
+  border: 2px dashed var(--toc-atencao);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-3);
+}
+
+.ramos-negativos > h3 {
+  margin-top: 0;
+}
+
+.ficha-do-ramo {
+  border: 1px solid var(--toc-borda);
+  border-left: 6px solid var(--toc-atencao);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-2);
+}
+
+/* O estado do ramo muda a FORMA da moldura, não só a cor: aberto é tracejado (falta
+   decidir), tratado é sólido (a poda existe), aceito é pontilhado (conviver por escrito). */
+.ficha-do-ramo[data-estado="aberto"] {
+  border-style: dashed;
+}
+
+.ficha-do-ramo[data-estado="tratado"] {
+  border-left-color: var(--toc-ok);
+}
+
+.ficha-do-ramo[data-estado="aceito"] {
+  border-style: dotted;
+}
+
+.ficha-do-ramo .rotulo-do-ramo,
+.ficha-do-par .rotulo,
+.ficha-do-passo .rotulo {
+  margin: var(--toc-espaco-2) 0 0;
+  color: var(--toc-suave);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.estado-do-ramo,
+.estado-do-elo,
+.status-atual {
+  display: inline-block;
+  margin: var(--toc-espaco-1) 0;
+  padding: 0 var(--toc-espaco-1);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.acoes-do-ramo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--toc-espaco-3);
+  margin-top: var(--toc-espaco-2);
+}
+
+.acoes-do-ramo .poda,
+.acoes-do-ramo .aceite {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-1);
+}
+
+.poda-aplicada {
+  color: var(--toc-ok);
+}
+
+/* A aresta que sai de um ramo negativo é o que ele arrasta: tracejada no canvas. */
+.aresta-do-ramo-negativo {
+  stroke-dasharray: 6 4;
+}
+
+/* -- ARF: a verificação estrutural ------------------------------------------------------ */
+
+.verificacao-da-arf .veredito[data-pronta="nao"] {
+  color: var(--toc-atencao);
+  font-weight: 600;
+}
+
+.verificacao-da-arf .veredito[data-pronta="sim"] {
+  color: var(--toc-ok);
+  font-weight: 600;
+}
+
+.cobertura li[data-coberto="nao"] .estado {
+  color: var(--toc-atencao);
+}
+
+/* -- APR: o objetivo e o sequenciamento ------------------------------------------------- */
+
+.objetivo-da-apr {
+  border: 2px solid var(--toc-ok);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-3);
+}
+
+.texto-do-objetivo {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 var(--toc-espaco-1);
+}
+
+/* A ordem é a informação principal: cada camada é um degrau, e o degrau se vê. */
+.camadas > li {
+  border-left: 3px solid var(--toc-borda);
+  padding-left: var(--toc-espaco-3);
+}
+
+.camadas > li + li {
+  margin-top: var(--toc-espaco-2);
+}
+
+.camadas h4 {
+  margin: 0 0 var(--toc-espaco-1);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--toc-suave);
+}
+
+.sequencia-da-apr .veredito[data-bloqueado="sim"] {
+  color: var(--toc-atencao);
+  font-weight: 600;
+}
+
+.ciclos {
+  color: var(--toc-atencao);
+}
+
+.ficha-do-par {
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-2);
+}
+
+.teste-de-validade {
+  font-style: italic;
+  margin: 0;
+}
+
+.vereditos {
+  display: flex;
+  gap: var(--toc-espaco-2);
+  margin-top: var(--toc-espaco-2);
+}
+
+/* -- AT: os passos ---------------------------------------------------------------------- */
+
+.ficha-do-passo {
+  border: 1px solid var(--toc-borda);
+  border-left: 6px solid var(--toc-suave);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-2);
+}
+
+.ficha-do-passo[data-status="concluido"] {
+  border-left-color: var(--toc-ok);
+}
+
+.ficha-do-passo[data-status="bloqueado"] {
+  border-left-color: var(--toc-atencao);
+  border-style: dashed;
+}
+
+.leitura-corrida {
+  font-weight: 600;
+  margin: 0;
+}
+
+.divergencia,
+.inalcancavel,
+.motivo-do-bloqueio {
+  color: var(--toc-atencao);
+  font-size: 0.85rem;
+}
+
+/* -- a cadeia --------------------------------------------------------------------------- */
+
+.trilha-de-ferramentas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--toc-espaco-2);
+}
+
+.trilha-de-ferramentas li {
+  padding: var(--toc-espaco-1) var(--toc-espaco-2);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  background: var(--toc-fundo);
+  font-size: 0.85rem;
+}
+
+/* A seta entre ferramentas é conteúdo gerado — decorativa, e por isso ela não substitui
+   texto nenhum: a ordem já está na lista ordenada e no rótulo de cada etapa. */
+.trilha-de-ferramentas li + li::before {
+  content: "→ ";
+  color: var(--toc-suave);
+}
+
+.percurso-da-cadeia .etapas > li {
+  border: 1px solid var(--toc-borda);
+  border-left: 4px solid var(--toc-ok);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-2);
+}
+
+/* O elo pendente NUNCA some (RF-35): ele fica, e fica diferente. */
+.percurso-da-cadeia .etapas > li[data-estado="pendente"] {
+  border-style: dashed;
+  border-left-color: var(--toc-atencao);
+}
+
+.percurso-da-cadeia h4 {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--toc-suave);
+}
+
+.costura {
+  font-weight: 600;
+  margin: var(--toc-espaco-1) 0;
+}
+
+.pontas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--toc-espaco-3);
+}
+
+.ponta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--toc-espaco-1);
+  flex-wrap: wrap;
+}
+
+.ponta .rotulo,
+.ponta .elementos {
+  color: var(--toc-suave);
+  font-size: 0.8rem;
+}
+
+.ponta .ferramenta {
+  font-weight: 600;
+}
+
+.motivo-do-elo,
+.pendentes-da-cadeia {
+  color: var(--toc-atencao);
+  font-size: 0.85rem;
+}
+
+/* --- M5 · árvore de Estratégia & Táticas (spec 010) ----------------------------------
+ *
+ * O layout é calculado da hierarquia (RI-01): a meta global no topo, as raízes na primeira
+ * linha, os filhos recuados sob o pai. O usuário ordena e move passos — não arruma caixas,
+ * e por isso não há canvas nem posição livre aqui (as `pos_x`/`pos_y` da linhagem,
+ * `tocbuilderv3/types.ts:296-297`, não foram portadas).
+ *
+ * O status distingue por FORMA e RÓTULO antes de por cor (RI-02): a borda esquerda muda de
+ * espessura e o símbolo (○ ✓ ✗ ▶) acompanha o texto escrito. A paleta da linhagem
+ * (`constants.ts:438-441`) é herdada como intenção, nunca como único sinal.
+ */
+
+.tela-da-snt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-4);
+  padding: var(--toc-espaco-4);
+}
+
+.cabecalho-da-snt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--toc-espaco-3);
+}
+
+.cabecalho-da-snt h2 {
+  margin: 0;
+}
+
+.contagem-de-passos {
+  color: var(--toc-suave);
+  font-size: 0.85rem;
+}
+
+.vistas-da-snt {
+  display: flex;
+  gap: var(--toc-espaco-2);
+  margin-left: auto;
+}
+
+.vistas-da-snt button[aria-pressed="true"] {
+  font-weight: 700;
+  border-color: var(--toc-color-primary);
+}
+
+.arvore-da-snt .meta-global {
+  border-left: 4px solid var(--toc-color-primary);
+  padding: var(--toc-espaco-2) var(--toc-espaco-3);
+  background: var(--toc-color-surface);
+  border-radius: var(--toc-raio);
+  box-shadow: var(--toc-sombra);
+}
+
+.arvore-da-snt .meta-global h3 {
+  margin: 0 0 var(--toc-espaco-1);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--toc-suave);
+}
+
+.meta-global-texto {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.raizes-da-snt,
+.filhos-da-snt {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.filhos-da-snt {
+  margin-left: var(--toc-espaco-4);
+  padding-left: var(--toc-espaco-3);
+  border-left: 1px dashed var(--toc-borda);
+}
+
+.ramo-da-snt {
+  margin-top: var(--toc-espaco-2);
+}
+
+.no-da-snt {
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-borda);
+  border-left-width: 6px;
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-2) var(--toc-espaco-3);
+  box-shadow: var(--toc-sombra);
+  max-width: 62ch;
+}
+
+.no-da-snt.selecionado {
+  outline: 2px solid var(--toc-color-primary);
+}
+
+/* O ancestral que só está em tela para dar contexto ao filtro (RF-18). */
+.no-da-snt.fora-do-filtro {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.no-da-snt .abrir-passo {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.numero-do-passo {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--toc-suave);
+  margin-right: var(--toc-espaco-1);
+}
+
+.estrategia-do-passo {
+  font-weight: 600;
+}
+
+.no-da-snt .status-do-passo {
+  margin: var(--toc-espaco-1) 0 0;
+  font-size: 0.8rem;
+  color: var(--toc-suave);
+}
+
+.no-da-snt.status-validado {
+  border-left-color: var(--toc-ok);
+}
+
+.no-da-snt.status-nao_validado {
+  border-left-color: var(--toc-color-danger);
+}
+
+.no-da-snt.status-em_execucao {
+  border-left-color: var(--toc-color-primary);
+}
+
+.no-da-snt.status-nenhum {
+  border-left-color: var(--toc-borda);
+}
+
+.acoes-do-no {
+  display: flex;
+  gap: var(--toc-espaco-2);
+  margin: var(--toc-espaco-2) 0 0;
+}
+
+.acoes-do-no button {
+  font-size: 0.75rem;
+}
+
+/* --- ficha do passo: as três premissas nas posições de leitura (RI-03) -------------- */
+
+.ficha-do-passo {
+  background: var(--toc-color-surface);
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-3);
+  box-shadow: var(--toc-sombra);
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-3);
+}
+
+.campos-do-passo {
+  display: grid;
+  gap: var(--toc-espaco-1);
+}
+
+.premissas-do-passo {
+  display: grid;
+  gap: var(--toc-espaco-3);
+}
+
+.premissa {
+  border-left: 3px solid var(--toc-borda);
+  padding-left: var(--toc-espaco-3);
+}
+
+/* A de necessidade LIGA AO PAI (acima) e a de suficiência AOS FILHOS (abaixo). */
+.premissa-necessidade_ao_pai {
+  border-left-color: var(--toc-color-primary);
+}
+
+.premissa-suficiencia_dos_filhos {
+  border-left-color: var(--toc-ok);
+}
+
+.premissa-paralela {
+  border-left-style: dashed;
+}
+
+.premissa h4 {
+  margin: 0 0 var(--toc-espaco-1);
+  font-size: 0.8rem;
+  color: var(--toc-suave);
+}
+
+.leitura-dirigida {
+  margin: 0 0 var(--toc-espaco-2);
+  font-style: italic;
+}
+
+.leitura-dirigida[data-completa="false"] {
+  color: var(--toc-atencao);
+}
+
+.premissa.nao-aplicavel .leitura-dirigida {
+  color: var(--toc-suave);
+  font-style: normal;
+}
+
+.ficha-do-passo textarea,
+.ficha-do-passo input {
+  width: 100%;
+}
+
+.acoes-da-ficha {
+  display: flex;
+  gap: var(--toc-espaco-2);
+  margin: 0;
+}
+
+.acoes-da-ficha .perigo,
+.previa-de-exclusao .perigo {
+  color: var(--toc-color-danger);
+  border-color: var(--toc-color-danger);
+}
+
+/* --- prévias: a renumeração e a contagem, ANTES de confirmar (RI-05, RI-06) --------- */
+
+.previa-de-mover,
+.previa-de-exclusao {
+  border: 1px solid var(--toc-color-primary);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-3);
+  background: var(--toc-color-surface);
+}
+
+.previa-de-exclusao {
+  border-color: var(--toc-color-danger);
+}
+
+.mudancas-de-numero {
+  font-variant-numeric: tabular-nums;
+}
+
+.aviso-de-desfazer,
+.aviso-de-pendencia {
+  color: var(--toc-suave);
+  font-size: 0.85rem;
+}
+
+/* --- painel de acompanhamento (RF-17, RI-07) --------------------------------------- */
+
+.painel-de-acompanhamento {
+  border: 1px solid var(--toc-borda);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-3);
+  background: var(--toc-color-surface);
+}
+
+.contagens-por-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--toc-espaco-2);
+  margin: var(--toc-espaco-2) 0;
+}
+
+.contagens-por-status .contagem[aria-pressed="true"] {
+  font-weight: 700;
+  border-color: var(--toc-color-primary);
+}
+
+.contagens-por-status .valor {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.pendencias-logicas ul {
+  margin: var(--toc-espaco-2) 0;
+  padding-left: var(--toc-espaco-4);
+}
+
+/* --- vista tabular indentada (RF-19, RI-08) ---------------------------------------- */
+
+.tabela-da-snt {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--toc-color-surface);
+}
+
+.tabela-da-snt caption {
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: var(--toc-espaco-2);
+}
+
+.tabela-da-snt th,
+.tabela-da-snt td {
+  border-bottom: 1px solid var(--toc-borda);
+  padding: var(--toc-espaco-2);
+  text-align: left;
+  vertical-align: top;
+}
+
+.tabela-da-snt th[scope="row"] {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tabela-da-snt td.ausente {
+  color: var(--toc-atencao);
+}
+
+.marcas-de-premissa span {
+  margin-right: var(--toc-espaco-1);
+  color: var(--toc-suave);
+}
+
+.marcas-de-premissa span[data-presente="true"] {
+  color: var(--toc-ok);
+}
+
+/* --- documentação embutida (E8.4, spec 011: RI-04 e RI-05) ---------------------- */
+/*
+ * Painel LATERAL, e não modal bloqueante — é a RI-04, e o motivo está na US-11: a pessoa
+ * abre a ajuda **enquanto** preenche um campo, e o diagrama tem de continuar carregado
+ * atrás. Um modal escureceria o trabalho em andamento e forçaria a decisão "fecho isto ou
+ * leio aquilo", que é exatamente a troca de contexto que a ajuda contextual existe para
+ * evitar.
+ *
+ * Abaixo de 720 px ele passa a ocupar a largura toda, empilhado: numa tela estreita, o
+ * painel lateral de 400 px espremeria a ferramenta a nada — e a RI-10 pede que tudo
+ * funcione de 420 px para cima.
+ */
+.painel-de-documentacao {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--toc-color-surface);
+  border-left: 1px solid var(--toc-borda);
+  box-shadow: var(--toc-sombra);
+  z-index: 20;
+  overflow: hidden;
+}
+
+.painel-de-documentacao-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--toc-espaco-2);
+  padding: var(--toc-espaco-3);
+  border-bottom: 1px solid var(--toc-borda);
+}
+
+.painel-de-documentacao-cabecalho h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.painel-de-documentacao-corpo {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  min-height: 0;
+  flex: 1;
+}
+
+.painel-de-documentacao-corpo nav {
+  border-right: 1px solid var(--toc-borda);
+  overflow-y: auto;
+  padding: var(--toc-espaco-2);
+}
+
+.painel-de-documentacao-corpo nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--toc-espaco-1);
+}
+
+.painel-de-documentacao-corpo nav button {
+  width: 100%;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.painel-de-documentacao-corpo nav button[aria-current="true"] {
+  background: var(--toc-realce);
+}
+
+.painel-de-documentacao-corpo article {
+  overflow-y: auto;
+  padding: var(--toc-espaco-3);
+  line-height: 1.55;
+}
+
+.painel-de-documentacao-corpo article h3 {
+  margin-top: 0;
+}
+
+.painel-de-documentacao-corpo article h4 {
+  margin-bottom: var(--toc-espaco-1);
+}
+
+/* A seção ancorada recebe FOCO ao abrir pela ajuda de um campo: sem contorno visível,
+   quem navega por teclado não veria onde chegou. */
+.painel-de-documentacao-corpo article section:focus-visible {
+  outline: 2px solid var(--toc-ok);
+  outline-offset: var(--toc-espaco-1);
+}
+
+.verbete-resposta {
+  font-weight: 600;
+}
+
+.verbete-exemplo {
+  background: var(--toc-fundo);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-2) var(--toc-espaco-3);
+}
+
+/* F8.4.3: o aviso de tradução pendente é visível e não é um erro — conteúdo na
+   língua-fonte é degradação declarada, nunca falha. */
+.aviso-de-traducao {
+  background: var(--toc-realce);
+  border-radius: var(--toc-raio);
+  padding: var(--toc-espaco-2);
+  font-size: 0.85rem;
+}
+
+.botao-de-ajuda {
+  font-size: 0.8rem;
+  padding: var(--toc-espaco-1) var(--toc-espaco-2);
+}
+
+@media (max-width: 720px) {
+  .painel-de-documentacao {
+    width: 100vw;
+    border-left: none;
+  }
+
+  .painel-de-documentacao-corpo {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .painel-de-documentacao-corpo nav {
+    border-right: none;
+    border-bottom: 1px solid var(--toc-borda);
+  }
+
+  .painel-de-documentacao-corpo nav ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

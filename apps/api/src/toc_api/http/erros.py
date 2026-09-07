@@ -46,7 +46,10 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as ErroHTTPStarlette
 
 from ..aplicacao.governanca import AutorizacaoNegada, PoliticaAusente
-from ..dominio.ara import ConectorInvalido, TransicaoDeStatusRecusada
+from ..dominio.ara import ConectorInvalido
+# Apelido obrigatório: `snt.py` também define `TransicaoDeStatusRecusada`, e um
+# nome importado duas vezes deixa a primeira classe SEM tradutor registrado.
+from ..dominio.ara import TransicaoDeStatusRecusada as TransicaoDeStatusDaAra
 from ..dominio.geracao import ResultadoDeGeracaoInvalido
 from ..dominio.nuvem import (
     DerivacaoInvalida,
@@ -58,6 +61,9 @@ from ..dominio.nuvem import (
 from ..dominio.apr import ElipseInvalida, PapelNaAprInvalido, ParInvalido
 from ..dominio.arf import EspelhoInvalido, PapelNaArfInvalido, RamoNegativoInvalido
 from ..dominio.at import PassoInvalido, TransicaoDePassoRecusada
+from ..dominio.snt import MovimentoRecusado
+from ..dominio.snt import PassoInvalido as PassoDaSnTInvalido
+from ..dominio.snt import TransicaoDeStatusRecusada as TransicaoDeStatusDaSnT
 from ..dominio.encadeamento import (
     DerivacaoInvalidaDoM4,
     PromocaoInvalida,
@@ -194,8 +200,8 @@ def registrar_tradutores(app: FastAPI) -> None:
             409, "INVALID_CONNECTOR", str(erro), detalhes={"regra": erro.regra}
         )
 
-    @app.exception_handler(TransicaoDeStatusRecusada)
-    async def _transicao(request: Request, erro: TransicaoDeStatusRecusada):
+    @app.exception_handler(TransicaoDeStatusDaAra)
+    async def _transicao(request: Request, erro: TransicaoDeStatusDaAra):
         return _resposta(
             409, "INVALID_TRANSITION", str(erro), detalhes={"motivo": erro.motivo}
         )
@@ -331,6 +337,28 @@ def registrar_tradutores(app: FastAPI) -> None:
     async def _heranca(request: Request, erro: HerancaInvalida):
         return _resposta(
             409, "INVALID_INHERITED_DECISION", str(erro), detalhes={"regra": erro.regra}
+        )
+
+    # -- M5 · Estratégia & Táticas (spec 010) -------------------------------------------
+    #
+    # Dois códigos próprios, e o critério é o do §A.7: a CORREÇÃO do cliente é diferente.
+    # `INVALID_SNT_STEP` é "esse passo não existe nesta árvore" (recarregue-a);
+    # `INVALID_MOVE` é "esse destino torna a árvore inválida" (escolha outro destino). O
+    # apelido no import existe porque três módulos nomearam a exceção `PassoInvalido` — o
+    # passo da Árvore de Transição, o passo da jornada de focalização e o passo da S&T são
+    # coisas diferentes, com correções diferentes.
+    @app.exception_handler(PassoDaSnTInvalido)
+    async def _passo_da_snt(request: Request, erro: PassoDaSnTInvalido):
+        return _resposta(409, "INVALID_SNT_STEP", str(erro), detalhes={"regra": erro.regra})
+
+    @app.exception_handler(MovimentoRecusado)
+    async def _movimento(request: Request, erro: MovimentoRecusado):
+        return _resposta(409, "INVALID_MOVE", str(erro), detalhes={"motivo": erro.motivo})
+
+    @app.exception_handler(TransicaoDeStatusDaSnT)
+    async def _transicao_de_status(request: Request, erro: TransicaoDeStatusDaSnT):
+        return _resposta(
+            409, "INVALID_TRANSITION", str(erro), detalhes={"motivo": erro.motivo}
         )
 
     @app.exception_handler(MutacaoForaDaRaiz)

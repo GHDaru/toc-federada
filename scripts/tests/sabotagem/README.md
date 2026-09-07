@@ -46,6 +46,8 @@ temporário criado com `mktemp -d` e sabota a cópia.
 | `trava-otimista/` | `scripts/check-trava-otimista.sh` | um adaptador sintético que condiciona a escrita à versão lida e confere o `rowcount` |
 | `trava-da-proposta/` | `scripts/check-trava-da-proposta.sh` | um caso de uso sintético que **reserva a proposta antes do efeito**, com o adaptador condicionando a escrita ao estado lido e o duplo em memória recusando o mesmo |
 | `evidencia-colada/` | `scripts/check-evidencia-colada.sh` | um registro de duas afirmações com comando reproduzível e um documento que cola os dois valores — a base mínima do portão que confere se a saída colada ainda é a que o comando devolve |
+| `i18n/` | `scripts/check-i18n.sh` | dois dicionários em paridade, um componente com todo texto vindo de `t(...)`, um literal legítimo declarado com motivo e o mecanismo que lança em chave ausente (base do ciclo 011) |
+| `documentacao/` | `scripts/check-documentacao.sh` | um domínio sintético com **duas ferramentas registradas**, dois verbetes que as cobrem, duas procedências que resolvem e um componente que declara uma âncora existente — o denominador vem do registro do serviço, nunca do próprio acervo (base do ciclo 011) |
 
 Base 100% sintética, por regra do ADR 0006: personas fictícias (**Facilitadora TOC**,
 "Instituição Horizonte"), nenhum nome, enunciado ou data de pessoa real. A regra vale aqui
@@ -55,15 +57,42 @@ como vale em spec e em captura — fixture é exatamente onde a dívida da irmã
 ## As sabotagens
 
 A tabela viva está em `scripts/tests/run-sabotagem.sh` (a mutação e o trecho exigido moram
-juntos, para não divergirem). São **61** mutações sobre **10** bases — número medido, não
-lembrado, e conferido pelo `scripts/check-evidencia-colada.sh` para não envelhecer como a
-redação anterior desta linha, que dizia 27 depois que a suíte já tinha crescido:
+juntos, para não divergirem). São **67** mutações na forma de uma
+linha só, sobre **12** bases — número medido, não lembrado, e conferido pelo `scripts/check-evidencia-colada.sh`
+para não envelhecer como a redação anterior desta linha, que dizia 27 depois que a suíte já
+tinha crescido:
 
 ```text
 $ grep -cE '^  "scripts/check-[a-z-]+\.sh" +"[a-z-]+" "[a-z0-9-]+"$' scripts/tests/run-sabotagem.sh
-61
+67
 $ ls -d scripts/tests/sabotagem/*/ | wc -l
-10
+12
+```
+
+A própria suíte declara **76**, e a diferença de nove tem uma causa exata — corrigida aqui
+em 2026-09-06, porque a redação anterior a explicava errado ("as sabotagens do
+`check-i18n.sh` e do `check-documentacao.sh` são escritas em forma de várias linhas", o que
+não é verdade: são de uma linha só, como as demais). **As nove que o `grep` não casa são
+todas do `check-i18n.sh`**, e o motivo é o padrão do registro: `check-[a-z-]+\.sh` não casa
+o dígito de `i18n`. As do `check-documentacao.sh` casam normalmente. Medido com um contador
+que lê o array `SABOTAGENS` do script:
+
+```text
+$ python3 -c 'import re; t=open("scripts/tests/run-sabotagem.sh",encoding="utf-8").read(); b=re.search(r"^SABOTAGENS=\((.*?)^\)$",t,re.M|re.S).group(1); c=[l for l in b.splitlines() if l.strip().startswith(chr(34)+"scripts/check-")]; f=[l for l in c if not re.match(r"^\s*\"scripts/check-[a-z-]+\.sh\" +\"[^\"]+\" \"[^\"]+\"\s*$",l)]; print("cabecas de tupla:",len(c),"- fora do padrao do registro:",len(f)); print("portoes das que ficam de fora:",sorted({l.split(chr(34))[1] for l in f}))'
+cabecas de tupla: 76 - fora do padrao do registro: 9
+portoes das que ficam de fora: ['scripts/check-i18n.sh']
+```
+
+O número colado acima (**67**) continua sendo o que aquele `grep` devolve, e é isso que o
+portão `check-evidencia-colada.sh` confere — ele garante que o número bate com o comando,
+**não** que a prosa ao lado esteja certa, e este parágrafo é a demonstração desse limite.
+Quem manda sobre **quantas sabotagens existem** é a saída da suíte:
+
+```text
+$ scripts/tests/run-sabotagem.sh
+  portões cobertos: 12  ·  bases válidas aceitas: 12/12
+  sabotagens declaradas: 76  ·  reprovadas pelo motivo certo: 76/76
+  sabotagens de ambiente: 2  ·  recusadas pelo motivo certo: 2/2
 ```
 
 Em resumo, elas cobrem:
@@ -95,6 +124,16 @@ Em resumo, elas cobrem:
 - **`check-evidencia-colada.sh`** — número que saiu do lugar; saída colada que envelheceu; e
   as três formas de desligar o portão por dentro (registro sem documento de destino, molde
   que casaria com qualquer valor, documento citado que não existe).
+- **`check-i18n.sh`** — literal plantado dentro do JSX e em atributo visível (o defeito de
+  `tocbuilderv3/components/SnTView.tsx:182`); exceção sem motivo e exceção que não
+  corresponde a literal nenhum (as duas formas de a lista de exceções virar licença);
+  chave sem tradução, chave só na tradução e tradução vazia (os três jeitos de os
+  dicionários divergirem em silêncio); e as duas do mecanismo — deixar de lançar em chave
+  ausente e devolver a chave crua para a tela, que é `I18nProvider.tsx:41` de volta.
+- **`check-documentacao.sh`** — ferramenta registrada sem verbete (o `DocsView` que cobria
+  duas ferramentas de seis) e verbete órfão sem ferramenta; procedência que não resolve e
+  verbete sem procedência nenhuma; âncora de ajuda que não existe no verbete; verbete sem
+  exemplo sintético.
 
 ### Os nomes plantados são inventados, e isso foi verificado
 

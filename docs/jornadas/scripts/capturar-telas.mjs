@@ -331,6 +331,18 @@ function zerarBanco() {
     "foco_reabertura",
     "foco_vinculo",
     "foco_heranca",
+    // M4 — Árvores de Futuro e Implementação (spec 008). Sem estas, a corrida seguinte
+    // encontraria a árvore da anterior e a J-10 narraria uma cadeia que já existia.
+    "arf_arvore",
+    "arf_espelho",
+    "arf_ramo_negativo",
+    "apr_arvore",
+    "apr_par",
+    "apr_julgamento",
+    "apr_elipse",
+    "at_arvore",
+    "at_passo",
+    "referencia_cruzada",
   ];
   execSync(
     `psql -h /var/run/postgresql -p 5433 -U toc -d toc_federada -v ON_ERROR_STOP=1 ` +
@@ -1181,6 +1193,658 @@ async function jornadaFocalizacao(navegador, { araId, nuvemId, aprId }) {
   await pagina.close();
 }
 
+
+// =======================================================================================
+// J-10 — As três árvores de futuro e a cadeia (spec 008, M4)
+//
+// É a jornada que fecha o percurso da Teoria das Restrições nesta aplicação: o Efeito
+// Indesejável validado da J-02 é promovido a dilema, a injeção escolhida semeia a Árvore
+// da Realidade Futura, o efeito futuro deriva a Árvore de Pré-Requisitos e o objetivo
+// intermediário vira a Árvore de Transição. No fim, a tela da cadeia mostra as quatro
+// costuras de uma vez — o que nenhuma das quatro gerações do TOC-Builder teve.
+//
+// A divisão de trabalho entre serviço e tela é a mesma das outras jornadas: o volume entra
+// pela API (as costuras, o posicionamento dos nós), e os **gestos característicos** são
+// feitos na interface de verdade — marcar o ramo negativo, podá-lo com a injeção que o
+// corta, espelhar o Efeito Desejável, parear obstáculo e objetivo intermediário, julgar o
+// teste de validade, registrar o passo e bloqueá-lo.
+// =======================================================================================
+
+const NOME_DA_NC_DA_CADEIA = "Dilema da conferência documental";
+const NOME_DA_ARF = "Futuro da conferência documental";
+const NOME_DA_APR_DA_CADEIA = "Pré-requisitos do posto de conferência";
+const NOME_DA_AT = "Implantar o posto de conferência";
+
+const PREMISSA_DA_CADEIA =
+  "Conferir documento exige a leitura fina de quem conhece o histórico do curso.";
+const INJECAO_SEMENTE =
+  "A conferência documental passa a ser feita na inscrição, por checklist automático";
+const EFEITO_DESEJAVEL = "A fila de conferência deixa de crescer";
+const RAMO_NEGATIVO = "A secretaria perde a leitura fina do documento raro";
+const INJECAO_DE_CORTE = "Fila de exceção com conferência humana para documento raro";
+const OBSTACULO_DA_CADEIA = "Ninguém confere documento no ato da inscrição";
+const OI_DA_CADEIA = "Há um posto de conferência no ato da inscrição";
+
+/** Move um nó pela rota da RAIZ do agregado — a genérica do M1 recusa (`AGGREGATE_ROOT_REQUIRED`). */
+async function posicionar(ferramenta, projetoId, noId, posicao) {
+  await api(`/toc/${ferramenta}/projetos/${projetoId}/nos/${noId}`, {
+    metodo: "PATCH",
+    corpo: { posicao },
+  });
+}
+
+/** Abre um projeto pela LISTA, como quem usa faria — e espera a tela da ferramenta. */
+async function abrirProjetoPelaLista(pagina, nome, esperar) {
+  await pagina.getByRole("button", { name: "Projetos" }).click();
+  await linhaDoProjeto(pagina, nome).getByRole("button", { name: "Abrir" }).click();
+  await esperar();
+  await pagina.waitForTimeout(500);
+}
+
+// `jornadaAra` devolve `{ projetoId, porId }` — o mesmo par que a J-07 recebe.
+async function jornadaArvoresDeFuturoEACadeia(navegador, { projetoId: araId, porId }) {
+  log("J-10 · as três árvores de futuro e a cadeia");
+  const jornada = "010-as-tres-arvores-e-a-cadeia";
+  const pagina = await navegador.newPage({ viewport: VIEWPORT });
+
+  // -- 1. a costura ARA → NC: só UDE `Validado` promove (RN-13) --------------------------
+  const udeValidado = porId.get("U-01");
+  const nuvem = await api("/toc/cadeia/promocoes", {
+    metodo: "POST",
+    corpo: { ara_projeto_id: araId, no_ids: [udeValidado], nome: NOME_DA_NC_DA_CADEIA },
+  });
+  log(`  · promovido: 1 Efeito Indesejável validado → nuvem ${nuvem.id}`);
+
+  // -- 2. a injeção que semeia a árvore de futuro precisa estar ESCOLHIDA -----------------
+  const premissa = await api(`/toc/nc/projetos/${nuvem.id}/arestas/D_D_PRIME/premissas`, {
+    metodo: "POST",
+    corpo: { texto: PREMISSA_DA_CADEIA },
+  });
+  const injecao = await api(`/toc/nc/projetos/${nuvem.id}/premissas/${premissa.id}/injecoes`, {
+    metodo: "POST",
+    corpo: { texto: INJECAO_SEMENTE, separacao: "tempo" },
+  });
+  await api(`/toc/nc/projetos/${nuvem.id}/injecoes/${injecao.id}/status`, {
+    metodo: "PUT",
+    corpo: { status: "escolhida", justificativa: "" },
+  });
+  const arf = await api("/toc/cadeia/semeaduras", {
+    metodo: "POST",
+    corpo: { nc_projeto_id: nuvem.id, injecao_id: injecao.id, nome: NOME_DA_ARF },
+  });
+  log(
+    `  · semeada: injeção escolhida → ARF ${arf.id} · nós ${arf.nos.length} ` +
+      `· Efeitos Indesejáveis da cadeia: ${arf.udes_da_cadeia.length}`,
+  );
+
+  // -- 3. a Árvore da Realidade Futura, PELA TELA ----------------------------------------
+  await pagina.goto(URL_AUTONOMA, { waitUntil: "networkidle" });
+  await abrirProjetoPelaLista(pagina, NOME_DA_ARF, () =>
+    pagina.getByRole("region", { name: /Ramos negativos/ }).waitFor({ timeout: 25000 }),
+  );
+  await capturar(jornada, "01-arf-semeada-pela-injecao", pagina);
+
+  // Os três nós que faltam entram PELO FORMULÁRIO da tela — papel escolhido a cada um.
+  for (const [papel, texto] of [
+    ["efeito_futuro", EFEITO_DESEJAVEL],
+    ["efeito_futuro", RAMO_NEGATIVO],
+    ["injecao", INJECAO_DE_CORTE],
+  ]) {
+    await pagina.getByLabel("Papel na árvore").first().selectOption(papel);
+    await pagina.getByLabel("Texto do nó").fill(texto);
+    await pagina.getByRole("button", { name: "Acrescentar à árvore" }).click();
+    await pagina.waitForTimeout(700);
+  }
+  await capturar(jornada, "02-injecao-e-efeitos-no-formulario", pagina);
+
+  // Posicionar pela API: nó novo nasce na origem, e quatro nós empilhados no mesmo ponto
+  // não fazem captura legível nem clique confiável. É a rota `PATCH` da raiz — a mesma
+  // que o arrastar do canvas usa.
+  const arfCompleta = await api(`/toc/arf/projetos/${arf.id}`);
+  const noPorTexto = new Map(arfCompleta.nos.map((n) => [n.titulo, n.id]));
+  const layout = [
+    [INJECAO_SEMENTE, { x: 60, y: 420 }],
+    [EFEITO_DESEJAVEL, { x: 60, y: 160 }],
+    [RAMO_NEGATIVO, { x: 470, y: 160 }],
+    [INJECAO_DE_CORTE, { x: 470, y: 420 }],
+  ];
+  for (const [texto, posicao] of layout) {
+    await posicionar("arf", arf.id, noPorTexto.get(texto), posicao);
+  }
+  await pagina.reload({ waitUntil: "networkidle" });
+  await abrirProjetoPelaLista(pagina, NOME_DA_ARF, () =>
+    pagina.getByRole("region", { name: /Ramos negativos/ }).waitFor({ timeout: 25000 }),
+  );
+
+  // Ligar a injeção aos dois efeitos, pelo canvas — a aresta nasce COM exame (RF-03).
+  for (const destino of [EFEITO_DESEJAVEL, RAMO_NEGATIVO]) {
+    await pagina.getByRole("button", { name: "Ligar nós" }).click();
+    await pagina.locator(".canvas-area").getByRole("button", { name: INJECAO_SEMENTE }).click();
+    await pagina.locator(".canvas-area").getByRole("button", { name: destino }).click();
+    await pagina.waitForTimeout(800);
+  }
+  await capturar(jornada, "03-injecao-encadeia-os-efeitos", pagina);
+
+  // O espelho Efeito Indesejável → Efeito Desejável: só existe com cadeia vinculada (RF-07).
+  await pagina
+    .locator("li[data-papel='efeito_futuro'] button.texto-do-no")
+    .filter({ hasText: EFEITO_DESEJAVEL })
+    .click();
+  await pagina.getByLabel("Efeito Indesejável de origem").selectOption({ index: 1 });
+  await pagina.getByRole("button", { name: "Marcar como Efeito Desejável" }).click();
+  await pagina.waitForTimeout(800);
+  await capturar(
+    jornada,
+    "04-efeito-desejavel-espelha-o-ude",
+    pagina.getByRole("region", { name: /Efeitos desejáveis/ }),
+  );
+
+  // O RAMO NEGATIVO — o gesto que separa árvore de futuro de lista de desejos.
+  await pagina
+    .locator("li[data-papel='efeito_futuro'] button.texto-do-no")
+    .filter({ hasText: RAMO_NEGATIVO })
+    .click();
+  // A marcação é UM clique, e o que se espera dele é a ficha do ramo — não a região, que
+  // já está na tela desde o começo (foi assim que a primeira corrida seguiu adiante sobre
+  // um ramo que não existia, e só quebrou 30s depois, no seletor da poda). Uma repetição
+  // é o teto: a interface avisa a falha de rede na própria tela, e insistir mais do que
+  // isso seria esconder um defeito atrás de um laço.
+  await pagina.getByRole("button", { name: "Marcar como ramo negativo" }).click();
+  await pagina.waitForTimeout(1200);
+  if ((await pagina.locator("li.ficha-do-ramo").count()) === 0) {
+    const aviso = await pagina.locator("p.erro[role=alert]").allTextContents();
+    log(`  · a marcação do ramo não pegou de primeira (${JSON.stringify(aviso)}); repetindo`);
+    await pagina.getByRole("button", { name: "Marcar como ramo negativo" }).click();
+    await pagina.waitForTimeout(1500);
+  }
+  await pagina.locator("li.ficha-do-ramo").first().waitFor({ timeout: 15000 });
+  await capturar(jornada, "05-ramo-negativo-aberto", pagina);
+  await capturar(
+    jornada,
+    "06-a-poda-espera-a-injecao",
+    pagina.getByRole("region", { name: /Ramos negativos/ }),
+  );
+
+  // Podar: `tratado` EXIGE a injeção que corta, e o seletor só oferece injeção (RN-04).
+  const seletorDaPoda = pagina.getByLabel("Injeção que corta o ramo");
+  await seletorDaPoda.selectOption({ label: INJECAO_DE_CORTE });
+  await pagina.getByRole("button", { name: "Podar com esta injeção" }).click();
+  await pagina.waitForTimeout(900);
+  await capturar(
+    jornada,
+    "07-ramo-podado-pela-injecao",
+    pagina.getByRole("region", { name: /Ramos negativos/ }),
+  );
+  await capturar(
+    jornada,
+    "08-verificacao-estrutural-da-arf",
+    pagina.getByRole("region", { name: /Verificação estrutural/ }),
+  );
+
+  const arfDepois = await api(`/toc/arf/projetos/${arf.id}`);
+  medidas.arf = {
+    nos: arfDepois.nos.length,
+    injecoes: arfDepois.nos.filter((n) => n.papel === "injecao").length,
+    efeitos_futuros: arfDepois.nos.filter((n) => n.papel === "efeito_futuro").length,
+    elos: arfDepois.elos.length,
+    espelhos: arfDepois.espelhos.length,
+    ramos: arfDepois.ramos.map((r) => r.estado),
+    verificacao: arfDepois.verificacao,
+  };
+  log(
+    `  · ARF: ${medidas.arf.nos} nós (${medidas.arf.injecoes} injeções, ` +
+      `${medidas.arf.efeitos_futuros} efeitos) · elos ${medidas.arf.elos} · ` +
+      `espelhos ${medidas.arf.espelhos} · ramos ${JSON.stringify(medidas.arf.ramos)} · ` +
+      `pronta: ${medidas.arf.verificacao.pronta}`,
+  );
+
+  // -- 4. a Árvore de Pré-Requisitos, derivada do efeito desejável -----------------------
+  const apr = await api("/toc/cadeia/derivacoes/apr", {
+    metodo: "POST",
+    corpo: {
+      arf_projeto_id: arf.id,
+      no_id: noPorTexto.get(EFEITO_DESEJAVEL),
+      nome: NOME_DA_APR_DA_CADEIA,
+      objetivo: null,
+    },
+  });
+  log(`  · derivada: efeito futuro → APR ${apr.id} · objetivo proposto: ${apr.objetivo.titulo}`);
+
+  await abrirProjetoPelaLista(pagina, NOME_DA_APR_DA_CADEIA, () =>
+    pagina.getByRole("region", { name: /Sequenciamento/ }).waitFor({ timeout: 25000 }),
+  );
+  await capturar(jornada, "09-apr-derivada-com-o-objetivo", pagina);
+
+  for (const [papel, texto] of [
+    ["obstaculo", OBSTACULO_DA_CADEIA],
+    ["objetivo_intermediario", OI_DA_CADEIA],
+  ]) {
+    await pagina.getByLabel("Papel na árvore").first().selectOption(papel);
+    await pagina.getByLabel("Texto do nó").fill(texto);
+    await pagina.getByRole("button", { name: "Acrescentar à árvore" }).click();
+    await pagina.waitForTimeout(700);
+  }
+  await pagina.getByLabel("Obstáculo", { exact: true }).selectOption({ label: OBSTACULO_DA_CADEIA });
+  await pagina
+    .getByLabel("Objetivo intermediário", { exact: true })
+    .selectOption({ label: OI_DA_CADEIA });
+  await pagina.getByRole("button", { name: "Parear", exact: true }).click();
+  await pagina.waitForTimeout(900);
+  await capturar(
+    jornada,
+    "10-obstaculo-pareado-com-o-objetivo-intermediario",
+    pagina.getByRole("region", { name: /Obstáculos/ }),
+  );
+
+  // O julgamento do teste de validade ACUMULA e o autor vem do principal (RN-07).
+  await pagina
+    .getByLabel("Justificativa do julgamento")
+    .first()
+    .fill("O posto no ato remove a fila que o obstáculo cria; o grupo conferiu na secretaria.");
+  await pagina.getByRole("button", { name: "Julgar válido" }).first().click();
+  await pagina.waitForTimeout(900);
+  await capturar(
+    jornada,
+    "11-teste-de-validade-julgado",
+    pagina.getByRole("region", { name: /Obstáculos/ }),
+  );
+  await capturar(
+    jornada,
+    "12-sequenciamento-por-dependencia",
+    pagina.getByRole("region", { name: /Sequenciamento/ }),
+  );
+
+  const aprDepois = await api(`/toc/apr/projetos/${apr.id}`);
+  medidas.apr = {
+    nos: aprDepois.nos.length,
+    pares: aprDepois.pares.length,
+    julgamentos: aprDepois.pares.reduce((n, p) => n + p.julgamentos.length, 0),
+    sequenciamento: aprDepois.sequenciamento,
+  };
+  log(
+    `  · APR: ${medidas.apr.nos} nós · pares ${medidas.apr.pares} · ` +
+      `julgamentos ${medidas.apr.julgamentos} · camadas ` +
+      `${medidas.apr.sequenciamento.camadas.length} · completo: ` +
+      `${medidas.apr.sequenciamento.completo}`,
+  );
+
+  // -- 5. a Árvore de Transição, derivada do objetivo intermediário ----------------------
+  const oiId = aprDepois.nos.find((n) => n.titulo === OI_DA_CADEIA).id;
+  const at = await api("/toc/cadeia/derivacoes/at", {
+    metodo: "POST",
+    corpo: { apr_projeto_id: apr.id, no_id: oiId, nome: NOME_DA_AT },
+  });
+  log(`  · derivada: objetivo intermediário → AT ${at.id}`);
+
+  await abrirProjetoPelaLista(pagina, NOME_DA_AT, () =>
+    pagina.getByRole("region", { name: /Passos/ }).waitFor({ timeout: 25000 }),
+  );
+  await capturar(jornada, "13-at-derivada-sem-passos", pagina);
+
+  // A tripla é obrigatória: necessidade, ação e resultado esperado (RN-10).
+  const passos = [
+    [
+      "não existe lista do que se confere",
+      "publicar o checklist de documentos exigidos",
+      "o checklist está no portal e na recepção",
+    ],
+    [
+      "a recepção não sabe conferir",
+      "treinar a recepção no checklist",
+      "a recepção confere sem consultar a secretaria",
+    ],
+  ];
+  for (const [necessidade, acao, esperado] of passos) {
+    await pagina.getByLabel("Necessidade").first().fill(necessidade);
+    await pagina.getByLabel("Ação").first().fill(acao);
+    await pagina.getByLabel("Resultado esperado").first().fill(esperado);
+    await pagina.getByRole("button", { name: "Registrar passo" }).click();
+    await pagina.waitForTimeout(800);
+  }
+  await capturar(jornada, "14-passos-com-a-tripla", pagina);
+
+  // Bloquear EXIGE motivo (RF-30) — e o resultado esperado não é apagado por isso.
+  const primeiroPasso = pagina.getByRole("listitem", { name: /^Para não existe lista/ });
+  await primeiroPasso.getByLabel("Status").selectOption("bloqueado");
+  await primeiroPasso.getByLabel("Motivo do bloqueio").fill("a publicação do portal está em fila");
+  await primeiroPasso.getByRole("button", { name: "Mudar o status" }).click();
+  await pagina.waitForTimeout(900);
+  await capturar(jornada, "15-passo-bloqueado-com-motivo", pagina);
+
+  const atDepois = await api(`/toc/at/projetos/${at.id}`);
+  medidas.at = {
+    passos: atDepois.passos.length,
+    resumo: atDepois.resumo,
+    ordem_de_leitura: atDepois.ordem_de_leitura.length,
+  };
+  log(`  · AT: ${medidas.at.passos} passos · resumo ${JSON.stringify(medidas.at.resumo)}`);
+
+  // -- 6. A CADEIA: o percurso inteiro numa tela só ---------------------------------------
+  await pagina.getByRole("button", { name: "A cadeia" }).click();
+  await pagina.getByRole("region", { name: /Percurso da análise/ }).waitFor({ timeout: 25000 });
+  await pagina.waitForTimeout(700);
+  await capturar(jornada, "16-a-cadeia-inteira", pagina);
+  await capturar(
+    jornada,
+    "17-percurso-elo-a-elo",
+    pagina.getByRole("region", { name: /Percurso da análise/ }),
+  );
+
+  const cadeia = await api(`/toc/cadeia/${at.id}`);
+  medidas.cadeia = {
+    elos: cadeia.elos.map((e) => `${e.origem.ferramenta}→${e.destino.ferramenta} (${e.estado})`),
+    ferramentas: cadeia.ferramentas,
+    resumo: cadeia.resumo,
+  };
+  log(`  · cadeia: ${medidas.cadeia.elos.join(" · ")}`);
+  log(`  · ferramentas atravessadas: ${cadeia.ferramentas.join(" → ")}`);
+  if (cadeia.elos.length !== 4) {
+    falhas.push({
+      jornada,
+      captura: "16",
+      erro: `a cadeia devia ter 4 elos e tem ${cadeia.elos.length}`,
+    });
+  }
+
+  await pagina.close();
+}
+
+// =======================================================================================
+// J-011 — A árvore de Estratégia & Táticas (spec 010, M5)
+//
+// É a única ferramenta que REGREDIU na linhagem: habilitada na 1ª geração
+// (`TOC-Builder/components/Sidebar.tsx:44`, sem `disabled`) e desligada da 3ª em diante
+// (`tocbuilderv3/components/Sidebar.tsx:58`, `disabled: true`). Esta jornada é a prova de
+// que ela voltou — com TRÊS níveis, que é o portão que o roadmap nomeia para o ciclo 010.
+//
+// O que a captura tem de mostrar, e por isso a ordem das cenas: o número **derivado** da
+// posição (nunca digitado), as três premissas nas posições de leitura, a renumeração
+// pré-visualizada antes do mover, a contagem antes da exclusão, e a reunião conduzida por
+// status e pendências.
+// =======================================================================================
+
+const NOME_DA_SNT = "Dobrar a capacidade de atendimento";
+const META_DA_SNT =
+  "Dobrar a capacidade de atendimento da Instituição Horizonte em doze meses sem perder a qualidade acadêmica que sustenta a reputação dela.";
+
+/** O plano sintético de três níveis: `[chave, chave do pai, estratégia, tática]`. */
+const PLANO_DA_SNT = [
+  ["1", null, "Atender o dobro de pessoas com a estrutura atual", "Trabalhar fluxo, equipe e demanda na mesma cadência trimestral"],
+  ["1.1", "1", "Reduzir o tempo de espera do atendimento pela metade", "Medir a fila semanalmente e atacar a etapa mais lenta a cada quinzena"],
+  ["1.1.1", "1.1", "Enxergar a fila em tempo real", "Publicar um painel de fila alimentado pelo próprio sistema de agendamento"],
+  ["1.1.2", "1.1", "Eliminar a espera por conferência documental", "Conferir documentos na entrada, e não na véspera do atendimento"],
+  ["1.2", "1", "Formar a equipe necessária sem contratar em massa", "Formar internamente duas turmas de multiplicadores por semestre"],
+  ["1.2.1", "1.2", "Ter quem ensine dentro de casa", "Selecionar multiplicadores entre quem já executa o atendimento hoje"],
+  ["1.3", "1", "Sustentar a demanda nova sem quebrar a qualidade", "Abrir vagas por lote, com revisão de qualidade a cada lote"],
+];
+
+const PREMISSAS_DE_1_1 = {
+  paralela: "a fila é hoje o gargalo do atendimento, e não a falta de sala",
+  necessidade_ao_pai: "sem cortar a espera, o dobro de pessoas só faz a fila dobrar junto",
+  suficiencia_dos_filhos:
+    "enxergar a fila e tirar a conferência do caminho crítico cobrem as duas únicas etapas que hoje respondem por mais de 80% da espera",
+};
+
+async function jornadaEstrategiaETaticas(navegador) {
+  log("J-011 · a árvore de Estratégia & Táticas");
+  const jornada = "011-estrategia-e-taticas";
+  const pagina = await navegador.newPage({ viewport: VIEWPORT });
+  await pagina.goto(URL_AUTONOMA, { waitUntil: "networkidle" });
+
+  // 0. o projeto nasce PELA TELA, e a meta global é obrigatória (RF-01): o campo só
+  // aparece quando a ferramenta escolhida é a S&T.
+  await pagina.getByLabel("Nome", { exact: true }).fill(NOME_DA_SNT);
+  await pagina.getByLabel("Ferramenta").selectOption("snt");
+  await pagina.getByLabel("Meta global").fill(META_DA_SNT);
+  await capturar(jornada, "00-criar-com-meta-global", pagina);
+  await pagina.getByRole("button", { name: "Criar projeto" }).click();
+
+  const linha = pagina.getByRole("row", { name: new RegExp(NOME_DA_SNT) }).first();
+  await linha.waitFor({ timeout: 20000 });
+  await linha.getByRole("button", { name: "Abrir" }).click();
+  try {
+    await pagina.getByRole("heading", { name: NOME_DA_SNT }).waitFor({ timeout: 20000 });
+  } catch (erro) {
+    // A tela não abriu: o que a bancada tem em mãos vira diagnóstico, e não uma foto
+    // muda. Capturar o estado real é o que distingue "a jornada falhou" de "a jornada
+    // falhou e ninguém sabe por quê".
+    log(`  DIAGNÓSTICO: ${(await pagina.locator("body").innerText()).slice(0, 600)}`);
+    throw erro;
+  }
+  await capturar(jornada, "01-arvore-vazia-com-a-meta-no-topo", pagina);
+
+  const projetos = await api("/toc/projetos");
+  const projeto = projetos.find((p) => p.nome === NOME_DA_SNT);
+  if (!projeto) throw new Error("o projeto S&T criado pela tela não voltou na listagem");
+  const projetoId = projeto.id;
+
+  // 1. o primeiro passo entra PELA TELA — e o formulário não tem campo de número.
+  await pagina.getByRole("button", { name: "Adicionar frente (passo raiz)" }).click();
+  await pagina.getByLabel("Estratégia (o quê)").fill(PLANO_DA_SNT[0][2]);
+  await capturar(jornada, "02-formulario-sem-campo-de-numero", pagina);
+  await pagina.getByRole("button", { name: "Adicionar", exact: true }).click();
+  await pagina.waitForTimeout(500);
+
+  // O resto do plano entra pela API — são seis passos iguais, e a jornada não ganha nada
+  // repetindo o mesmo gesto seis vezes. O que ela precisa provar (o gesto e a ausência do
+  // campo de número) já está capturado acima, no build real.
+  const porChave = {};
+  const raizes = await api(`/toc/snt/projetos/${projetoId}`);
+  porChave["1"] = raizes.passos[0].id;
+  await api(`/toc/snt/projetos/${projetoId}/passos/${porChave["1"]}`, {
+    metodo: "PATCH",
+    corpo: { tatica: PLANO_DA_SNT[0][3] },
+  });
+  for (const [chave, pai, estrategia, tatica] of PLANO_DA_SNT.slice(1)) {
+    const passo = await api(`/toc/snt/projetos/${projetoId}/passos`, {
+      metodo: "POST",
+      corpo: { estrategia, tatica, pai_id: porChave[pai] },
+    });
+    porChave[chave] = passo.id;
+  }
+
+  // Voltar pela lista, e não por `reload()`: a rota da ferramenta não está na URL (achado
+  // A-01 da J-02), então recarregar a página devolve a listagem em vez da árvore. O gesto
+  // aqui é o mesmo que a pessoa faz — sair e voltar —, e é ele que recarrega a árvore.
+  await pagina.getByRole("button", { name: "Voltar" }).click();
+  await pagina.getByRole("row", { name: new RegExp(NOME_DA_SNT) }).first().waitFor({ timeout: 20000 });
+  await pagina
+    .getByRole("row", { name: new RegExp(NOME_DA_SNT) })
+    .first()
+    .getByRole("button", { name: "Abrir" })
+    .click();
+  await pagina.getByRole("heading", { name: NOME_DA_SNT }).waitFor({ timeout: 20000 });
+  await pagina.waitForTimeout(600);
+  const arvore = await api(`/toc/snt/projetos/${projetoId}`);
+  medidas.snt = {
+    passos: arvore.passos.length,
+    niveis: Math.max(...arvore.passos.map((p) => p.numero.split(".").length)),
+    numeracao: arvore.passos.map((p) => p.numero),
+  };
+  log(`  árvore com ${medidas.snt.passos} passos em ${medidas.snt.niveis} níveis: ${medidas.snt.numeracao.join(", ")}`);
+  await capturar(jornada, "03-arvore-de-tres-niveis", pagina);
+
+  // 2. a ficha do passo 1.1 — as três premissas NAS POSIÇÕES DE LEITURA (RI-03).
+  await pagina.getByRole("button", { name: /^1\.1 Reduzir/ }).click();
+  await pagina.getByRole("region", { name: "Ficha do passo" }).waitFor({ timeout: 15000 });
+  await capturar(jornada, "04-ficha-com-premissas-vazias", pagina);
+
+  await pagina
+    .getByRole("textbox", { name: "Premissa de necessidade (lida contra o pai)" })
+    .fill(PREMISSAS_DE_1_1.necessidade_ao_pai);
+  await pagina.getByRole("textbox", { name: "Premissa paralela (o que, no contexto, sustenta este passo)" }).click();
+  await pagina.waitForTimeout(500);
+  await pagina.getByRole("textbox", { name: "Premissa paralela (o que, no contexto, sustenta este passo)" }).fill(PREMISSAS_DE_1_1.paralela);
+  await pagina.getByRole("textbox", { name: "Premissa de suficiência (lida contra os filhos)" }).click();
+  await pagina.waitForTimeout(500);
+  await pagina.getByRole("textbox", { name: "Premissa de suficiência (lida contra os filhos)" }).fill(PREMISSAS_DE_1_1.suficiencia_dos_filhos);
+  await pagina.getByRole("heading", { name: "Ficha do passo" }).click();
+  await pagina.waitForTimeout(800);
+  await capturar(jornada, "05-leitura-dirigida-das-tres-premissas", pagina);
+
+  // 3. mover PRÉ-VISUALIZA a renumeração antes de confirmar (RI-05).
+  const antesDoMover = (await api(`/toc/snt/projetos/${projetoId}`)).passos.map((p) => p.numero);
+  await pagina.getByRole("button", { name: "Mover para…" }).click();
+  await pagina.getByRole("heading", { name: "Como a numeração fica" }).waitFor({ timeout: 15000 });
+  await pagina.waitForTimeout(400);
+  await capturar(jornada, "06-previa-da-renumeracao", pagina);
+  await pagina.getByRole("button", { name: "Confirmar o movimento" }).click();
+  await pagina.waitForTimeout(900);
+  const depoisDoMover = (await api(`/toc/snt/projetos/${projetoId}`)).passos.map((p) => p.numero);
+  medidas.snt.mover = { antes: antesDoMover, depois: depoisDoMover };
+  log(`  renumeração após o mover: ${antesDoMover.join(", ")} → ${depoisDoMover.join(", ")}`);
+  await capturar(jornada, "07-arvore-renumerada", pagina);
+
+  // 4. a reunião: status por passo e o painel de acompanhamento (E5.2).
+  // O passo é escolhido pela ESTRATÉGIA, e não pelo número: o número acabou de mudar, e é
+  // essa a diferença entre uma numeração derivada e uma digitada.
+  await pagina.getByRole("button", { name: /Enxergar a fila em tempo real/ }).first().click();
+  await pagina.getByRole("region", { name: "Ficha do passo" }).waitFor({ timeout: 15000 });
+  await pagina
+    .getByRole("region", { name: "Ficha do passo" })
+    .getByRole("button", { name: "Validado", exact: true })
+    .click();
+  await pagina.waitForTimeout(700);
+  await pagina.getByRole("button", { name: "Acompanhamento", exact: true }).click();
+  await pagina.getByRole("heading", { name: "Acompanhamento" }).waitFor({ timeout: 15000 });
+  await pagina.waitForTimeout(500);
+  const acompanhamento = await api(`/toc/snt/projetos/${projetoId}/acompanhamento`);
+  medidas.snt.acompanhamento = {
+    passos: acompanhamento.passos,
+    por_status: acompanhamento.por_status,
+    pendencias: acompanhamento.pendencias.length,
+  };
+  log(
+    `  acompanhamento: ${acompanhamento.passos} passos · ${acompanhamento.pendencias.length} pendências lógicas`,
+  );
+  await capturar(jornada, "08-painel-de-acompanhamento", pagina);
+
+  // 5. a vista tabular indentada (RF-19).
+  await pagina.getByRole("button", { name: "Tabela", exact: true }).click();
+  await pagina.getByRole("table", { name: /tabular/i }).waitFor({ timeout: 15000 }).catch(() => {});
+  await pagina.waitForTimeout(500);
+  await capturar(jornada, "09-vista-tabular-indentada", pagina);
+
+  // 6. excluir avisa a CONTAGEM antes — o contraexemplo é o defeito da linhagem que
+  // descartava todos os passos menos o excluído (`mockApiService.ts:521`).
+  await pagina.getByRole("button", { name: "Árvore", exact: true }).click();
+  await pagina.waitForTimeout(400);
+  await pagina
+    .getByRole("button", { name: /Reduzir o tempo de espera do atendimento pela metade/ })
+    .first()
+    .click();
+  await pagina.getByRole("region", { name: "Ficha do passo" }).waitFor({ timeout: 15000 });
+  await pagina.getByRole("button", { name: "Excluir subárvore" }).click();
+  await pagina.waitForTimeout(500);
+  await capturar(jornada, "10-exclusao-avisa-a-contagem", pagina);
+  const antesDaExclusao = (await api(`/toc/snt/projetos/${projetoId}`)).passos.length;
+  await pagina.getByRole("button", { name: "Excluir mesmo assim" }).click();
+  await pagina.waitForTimeout(900);
+  const depoisDaExclusao = await api(`/toc/snt/projetos/${projetoId}`);
+  medidas.snt.exclusao = {
+    passos_antes: antesDaExclusao,
+    passos_depois: depoisDaExclusao.passos.length,
+    numeracao_depois: depoisDaExclusao.passos.map((p) => p.numero),
+  };
+  log(
+    `  exclusão de subárvore: ${antesDaExclusao} → ${depoisDaExclusao.passos.length} passos · ` +
+      `numeração ${depoisDaExclusao.passos.map((p) => p.numero).join(", ")}`,
+  );
+  await capturar(jornada, "11-demais-passos-intactos-e-renumerados", pagina);
+  await pagina.close();
+
+  await medirDesempenhoDaSnT();
+}
+
+/**
+ * RNF-04 da spec 010, medido contra o serviço de verdade — não estimado.
+ *
+ * Dois alvos: abrir uma árvore de 100 passos em 5 níveis abaixo de 1 s no percentil 95, e
+ * mover uma subárvore de 20 passos (renumeração incluída) abaixo de 500 ms. A medição usa
+ * a MESMA rota que a interface usa; o que ela não cobre é o tempo de pintura do navegador,
+ * e isso está dito na jornada em vez de suposto.
+ */
+async function medirDesempenhoDaSnT() {
+  const projeto = await api("/toc/snt/projetos", {
+    metodo: "POST",
+    corpo: {
+      nome: "Medição de desempenho da S&T",
+      meta_global: "Árvore sintética de 100 passos em 5 níveis, para medir a abertura e o mover",
+    },
+  });
+  // A forma da árvore é DECLARADA, e não sorteada: 100 passos em 5 níveis, com um ramo
+  // grande de exatamente 20 (o alvo do mover que a RNF-04 nomeia). Uma árvore sorteada
+  // mediria um caso diferente a cada corrida, e a comparação entre ciclos morreria.
+  let criados = 0;
+  async function passo(pai) {
+    criados += 1;
+    const novo = await api(`/toc/snt/projetos/${projeto.id}/passos`, {
+      metodo: "POST",
+      corpo: { estrategia: `Passo sintético ${criados}`, tatica: "medição", pai_id: pai },
+    });
+    return novo.id;
+  }
+
+  const raizes = [];
+  for (let i = 0; i < 4; i += 1) raizes.push(await passo(null));
+
+  // O ramo grande: A (nível 1) + 4 filhos + 12 netos + 3 bisnetos = subárvore de 20.
+  const ramoGrande = await passo(raizes[0]);
+  const filhosDoRamo = [];
+  for (let i = 0; i < 4; i += 1) filhosDoRamo.push(await passo(ramoGrande));
+  const netosDoRamo = [];
+  for (const filho of filhosDoRamo) {
+    for (let i = 0; i < 3; i += 1) netosDoRamo.push(await passo(filho));
+  }
+  for (let i = 0; i < 3; i += 1) await passo(netosDoRamo[i]);
+
+  // O resto do plano, espalhado pelas outras raízes até fechar 100 passos.
+  const nivel1 = [];
+  while (criados < 100) {
+    if (nivel1.length < 12) nivel1.push(await passo(raizes[1 + (nivel1.length % 3)]));
+    else await passo(nivel1[criados % nivel1.length]);
+  }
+
+  const amostras = [];
+  for (let i = 0; i < 20; i += 1) {
+    const t0 = performance.now();
+    await api(`/toc/snt/projetos/${projeto.id}`);
+    amostras.push(performance.now() - t0);
+  }
+  amostras.sort((a, b) => a - b);
+  const p95 = amostras[Math.min(amostras.length - 1, Math.ceil(0.95 * amostras.length) - 1)];
+
+  // A subárvore a mover é a declarada acima: 20 passos, de uma raiz para outra.
+  const arvore = await api(`/toc/snt/projetos/${projeto.id}`);
+  const descendentesDe = (id) => {
+    const filhos = arvore.passos.filter((p) => p.pai_id === id);
+    return filhos.reduce((total, f) => total + 1 + descendentesDe(f.id), 0);
+  };
+  const alvo = { id: ramoGrande, quantos: 1 + descendentesDe(ramoGrande) };
+  const t0 = performance.now();
+  await api(`/toc/snt/projetos/${projeto.id}/passos/${alvo.id}/posicao`, {
+    metodo: "PUT",
+    corpo: { novo_pai_id: raizes[3] },
+  });
+  const mover = performance.now() - t0;
+
+  medidas.snt.desempenho = {
+    passos: arvore.passos.length,
+    niveis: Math.max(...arvore.passos.map((p) => p.numero.split(".").length)),
+    abrir_amostras: amostras.length,
+    abrir_p95_ms: Number(p95.toFixed(1)),
+    abrir_mediana_ms: Number(amostras[Math.floor(amostras.length / 2)].toFixed(1)),
+    mover_subarvore_de: alvo.quantos,
+    mover_ms: Number(mover.toFixed(1)),
+  };
+  log(
+    `  desempenho (RNF-04): abrir ${arvore.passos.length} passos em ` +
+      `${medidas.snt.desempenho.niveis} níveis — p95 ${medidas.snt.desempenho.abrir_p95_ms} ms ` +
+      `sobre ${amostras.length} amostras (alvo < 1000 ms) · mover subárvore de ` +
+      `${alvo.quantos} passos — ${medidas.snt.desempenho.mover_ms} ms (alvo < 500 ms)`,
+  );
+}
+
 // =======================================================================================
 // J-02b — a exclusão reversível e a lixeira (fecha a jornada do projeto)
 // =======================================================================================
@@ -1283,7 +1947,7 @@ async function principal() {
     // A J-09 entra na MESMA sequência: ela vincula a Árvore da Realidade Atual da J-02 e
     // a Nuvem de Conflito da J-03. Pedir `--jornada J-09` sozinha reconstrói as duas
     // anteriores — é a costura do módulo, não um defeito da captura.
-    if (quer("J-02") || quer("J-07") || quer("J-03") || quer("J-09")) {
+    if (quer("J-02") || quer("J-07") || quer("J-03") || quer("J-09") || quer("J-10")) {
       const ara = await jornadaAra(navegador);
       const travessia = await jornadaTravessia(navegador, ara);
       await jornadaNuvem(navegador, travessia);
@@ -1299,7 +1963,20 @@ async function principal() {
           aprId: apr,
         });
       }
+      if (quer("J-10")) {
+        // A J-10 depende da MESMA Árvore da Realidade Atual da J-02: é dela que sai o
+        // Efeito Indesejável validado que a cadeia promove. Pedir `--jornada J-10`
+        // sozinha reconstrói a anterior — é a costura do módulo, não um defeito.
+        await jornadaArvoresDeFuturoEACadeia(navegador, ara);
+      }
       await jornadaLixeira(navegador);
+    }
+    // J-011 é INDEPENDENTE das outras: a árvore de Estratégia & Táticas não se liga
+    // automaticamente a nenhuma outra ferramenta neste ciclo (o vínculo com a Árvore de
+    // Pré-Requisitos e a de Transição está **fora** do round 010, declarado na spec 010).
+    // Por isso ela não entra na sequência acima — e `--jornada J-011` roda sozinha.
+    if (quer("J-011")) {
+      await jornadaEstrategiaETaticas(navegador);
     }
   } finally {
     await navegador.close();

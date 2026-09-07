@@ -25,6 +25,7 @@ FSM — máquina de estados finitos; OTel — OpenTelemetry.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import posixpath
 import re
@@ -661,7 +662,12 @@ def discover_jornadas(project: Path) -> tuple[list[dict], str]:
         if f.name == "README.md":
             continue
         text = _read(f)
-        steps = len(re.findall(r"^##\s+Passo\s+\d+", text, re.M))
+        # Passo da jornada: a convenção deste repositório é `### N · título` sob
+        # `## O percurso` (a origem procurava `## Passo N`, que aqui não existe — e o site
+        # anunciava "0 passos" para jornadas de treze passos, que é pior que não anunciar).
+        steps = len(re.findall(r"^###\s+\d+\s+·", text, re.M))
+        if not steps:
+            steps = len(re.findall(r"^##\s+Passo\s+\d+", text, re.M))
         journeys.append({"id": f.stem, "name": _first_line_heading(text) or f.stem,
                          "description": "", "steps": steps,
                          "path": str(f.relative_to(project))})
@@ -673,6 +679,372 @@ def discover_jornadas(project: Path) -> tuple[list[dict], str]:
                 "jornadas nascem no ciclo em que a sua ferramenta passa a existir.")
     return journeys, note
 
+
+# ──────────────────────────────────────────────────────────────────────
+# Código de produção — ADAPTAÇÃO (17)
+#
+# Por que existe: este gerador nasceu num repositório que era só specs, e por isso
+# escrevia `["Linhas de código de produção", "0"]` como CONSTANTE. Quando o serviço e a
+# interface nasceram, a constante virou uma afirmação falsa vestida de medição — o pior
+# tipo de mentira num site cujo argumento inteiro é honestidade (é o mesmo defeito que
+# `scripts/check-evidencia-colada.sh` existe para pegar). Daqui em diante o gerador
+# ENXERGA `apps/api` e `apps/web` e CONTA: arquivos, linhas, casos de teste por camada,
+# rotas publicadas, migrações, tabelas e portões.
+#
+# O que ele não faz: rodar a suíte. Contar `def test_` é contar o que está escrito, não o
+# que passou — e o site diz isso com todas as letras. Quem prova que passa é o
+# `qa-report.md` do ciclo, com a saída colada.
+# ──────────────────────────────────────────────────────────────────────
+
+_EXT_CODIGO = {".py": "Python", ".ts": "TypeScript", ".tsx": "TypeScript",
+               ".mjs": "JavaScript", ".mts": "TypeScript"}
+_DIR_IGNORADO = {"__pycache__", "node_modules", ".venv", "dist", ".pytest_cache",
+                 ".mypy_cache", ".ruff_cache", "coverage"}
+
+# Atribuição DECLARADA de caminho a módulo M1–M8. O gerador não adivinha o módulo de um
+# arquivo (tentar adivinhar por menção a "M4" no comentário devolve 47 arquivos para um
+# módulo de 9 — medido antes de escrever isto): ele conta o que encontra sob cada padrão,
+# na ordem, e o primeiro padrão que casa leva o arquivo. O que não casa padrão nenhum
+# entra em "não atribuído" e APARECE na linha de contagem — nada some em silêncio.
+_MAPA_DE_CODIGO: list[tuple[str, list[str]]] = [
+    ("M2", [
+        "apps/api/src/toc_api/dominio/ara.py",
+        "apps/api/src/toc_api/dominio/criterios_ude.py",
+        "apps/api/src/toc_api/dominio/suficiencia.py",
+        "apps/api/src/toc_api/dominio/analise.py",
+        "apps/api/src/toc_api/dominio/lexico.py",
+        "apps/api/src/toc_api/dominio/formulacao.py",
+        "apps/api/src/toc_api/aplicacao/ara.py",
+        "apps/api/src/toc_api/http/roteadores/ara.py",
+        "apps/web/src/componentes/ude/*",
+        "apps/web/src/telas/TelaDaAra.tsx",
+    ]),
+    ("M3", [
+        "apps/api/src/toc_api/dominio/nuvem.py",
+        "apps/api/src/toc_api/dominio/geracao.py",
+        "apps/api/src/toc_api/aplicacao/nuvem.py",
+        "apps/api/src/toc_api/http/roteadores/nuvem.py",
+        "apps/api/src/toc_api/infra/geracao/*",
+        "apps/web/src/componentes/nuvem/*",
+        "apps/web/src/telas/TelaDaNuvem.tsx",
+    ]),
+    ("M4", [
+        "apps/api/src/toc_api/dominio/arf.py",
+        "apps/api/src/toc_api/dominio/apr.py",
+        "apps/api/src/toc_api/dominio/at.py",
+        "apps/api/src/toc_api/dominio/encadeamento.py",
+        "apps/api/src/toc_api/dominio/verbalizacao.py",
+        "apps/api/src/toc_api/dominio/referencia.py",
+        "apps/api/src/toc_api/aplicacao/arvores.py",
+        "apps/api/src/toc_api/aplicacao/cadeia.py",
+        "apps/api/src/toc_api/http/roteadores/arvores.py",
+        "apps/api/src/toc_api/http/roteadores/cadeia.py",
+        "apps/web/src/componentes/arf/*",
+        "apps/web/src/componentes/apr/*",
+        "apps/web/src/componentes/at/*",
+        "apps/web/src/componentes/cadeia/*",
+        "apps/web/src/telas/TelaDaArf.tsx",
+        "apps/web/src/telas/TelaDaApr.tsx",
+        "apps/web/src/telas/TelaDaAt.tsx",
+        "apps/web/src/telas/TelaDaCadeia.tsx",
+    ]),
+    ("M5", [
+        "apps/api/src/toc_api/dominio/snt.py",
+        "apps/api/src/toc_api/aplicacao/snt.py",
+        "apps/api/src/toc_api/http/roteadores/snt.py",
+        "apps/web/src/componentes/snt/*",
+        "apps/web/src/telas/TelaDaSnT.tsx",
+    ]),
+    ("M6", [
+        "apps/api/src/toc_api/dominio/focalizacao.py",
+        "apps/api/src/toc_api/aplicacao/focalizacao.py",
+        "apps/api/src/toc_api/http/roteadores/focalizacao.py",
+        "apps/web/src/componentes/focalizacao/*",
+        "apps/web/src/telas/TelaDaFocalizacao.tsx",
+        "apps/web/src/telas/TelaDeAnalisesDeFocalizacao.tsx",
+    ]),
+    ("M7", [
+        "apps/api/src/toc_api/dominio/federacao/*",
+        "apps/api/src/toc_api/aplicacao/federacao/*",
+        "apps/api/src/toc_api/aplicacao/politica.py",
+        "apps/api/src/toc_api/aplicacao/governanca.py",
+        "apps/api/src/toc_api/infra/federacao/*",
+        "apps/api/src/toc_api/infra/identidade/*",
+        "apps/api/src/toc_api/http/aph.py",
+        "apps/api/src/toc_api/http/roteadores/propostas.py",
+        "apps/web/src/federacao/*",
+        "apps/web/src/componentes/federacao/*",
+        "apps/web/src/telas/registro.ts",
+        "apps/web/src/App.tsx",
+        "apps/web/src/main.tsx",
+    ]),
+    ("M8", [
+        "apps/api/src/toc_api/alembic/*",
+        "apps/api/src/toc_api/alembic/versions/*",
+        "apps/api/src/toc_api/infra/persistencia/*",
+        "apps/api/src/toc_api/infra/observabilidade/*",
+        "apps/api/src/toc_api/infra/configuracao.py",
+        "apps/api/src/toc_api/infra/relogio.py",
+        "apps/api/src/toc_api/http/app.py",
+        "apps/api/src/toc_api/http/arranque.py",
+        "apps/api/src/toc_api/http/dependencias.py",
+        "apps/api/src/toc_api/http/erros.py",
+        "apps/api/src/toc_api/http/esquemas.py",
+        "apps/web/src/i18n/*",
+        "apps/web/src/documentacao/*",
+        "apps/web/src/documentacao/verbetes/*",
+        "apps/web/src/componentes/documentacao/*",
+        "apps/web/src/api/*",
+    ]),
+    # O M1 vem por último de propósito: ele é o núcleo compartilhado, e ficar no fim
+    # impede que `dominio/projeto.py` engula o que pertence a uma ferramenta.
+    ("M1", [
+        "apps/api/src/toc_api/dominio/projeto.py",
+        "apps/api/src/toc_api/dominio/grafo.py",
+        "apps/api/src/toc_api/dominio/valores.py",
+        "apps/api/src/toc_api/dominio/serializacao.py",
+        "apps/api/src/toc_api/dominio/identidade.py",
+        "apps/api/src/toc_api/dominio/erros.py",
+        "apps/api/src/toc_api/dominio/eventos.py",
+        "apps/api/src/toc_api/dominio/portas.py",
+        "apps/api/src/toc_api/dominio/exportacao.py",
+        "apps/api/src/toc_api/dominio/legado.py",
+        "apps/api/src/toc_api/aplicacao/projetos.py",
+        "apps/api/src/toc_api/aplicacao/grafo.py",
+        "apps/api/src/toc_api/aplicacao/casos_de_uso.py",
+        "apps/api/src/toc_api/aplicacao/portabilidade.py",
+        "apps/api/src/toc_api/http/roteadores/projetos.py",
+        "apps/api/src/toc_api/http/roteadores/portabilidade.py",
+        "apps/web/src/componentes/canvas/*",
+        "apps/web/src/componentes/PainelDeEntidades.tsx",
+        "apps/web/src/componentes/Estados.tsx",
+        "apps/web/src/componentes/mensagemDeErro.ts",
+        "apps/web/src/estado/*",
+        "apps/web/src/dominio/*",
+        "apps/web/src/telas/TelaDeProjetos.tsx",
+        "apps/web/src/telas/TelaDaLixeira.tsx",
+    ]),
+]
+
+
+def _e_teste(rel: str) -> bool:
+    """Teste é o que o executor de teste roda: `test_*.py`, `*.test.ts(x)`, `*.test.mjs`,
+    ou qualquer arquivo sob `tests/`, `testes/` e `e2e/`."""
+    nome = rel.rsplit("/", 1)[-1]
+    return (nome.startswith("test_") or ".test." in nome
+            or "/tests/" in rel or "/testes/" in rel or "/e2e/" in rel)
+
+
+def _casos_de_teste(texto: str, sufixo: str) -> int:
+    """Casos ESCRITOS (não casos que passaram — quem prova isso é o `qa-report.md`)."""
+    if sufixo == ".py":
+        return len(re.findall(r"^\s*(?:async\s+)?def\s+test_", texto, re.M))
+    # `it(`, `test(` e as formas com modificador (`it.each(...)`, `test.skip`) — uma
+    # DECLARAÇÃO cada. `it.each` vira N casos em tempo de execução, e é por isso que este
+    # número é rotulado "casos escritos" e nunca "testes que passaram".
+    return len(re.findall(r"^\s*(?:it|test)(?:\.\w+(?:\([^\n]*\))?)?\s*\(", texto, re.M))
+
+
+def _varrer_codigo(raiz: Path, project: Path) -> list[dict]:
+    arquivos: list[dict] = []
+    if not raiz.is_dir():
+        return arquivos
+    for f in sorted(raiz.rglob("*")):
+        if not f.is_file() or f.suffix not in _EXT_CODIGO:
+            continue
+        if any(part in _DIR_IGNORADO for part in f.parts):
+            continue
+        texto = _read(f)
+        rel = f.relative_to(project).as_posix()
+        arquivos.append({
+            "path": rel,
+            "ext": f.suffix,
+            "lang": _EXT_CODIGO[f.suffix],
+            "linhas": len(texto.splitlines()),
+            "teste": _e_teste(rel),
+            "casos": _casos_de_teste(texto, f.suffix) if _e_teste(rel) else 0,
+        })
+    return arquivos
+
+
+def _modulo_do_arquivo(rel: str) -> str:
+    for mod, padroes in _MAPA_DE_CODIGO:
+        for p in padroes:
+            if fnmatch.fnmatchcase(rel, p):
+                return mod
+    return ""
+
+
+def _rotas_publicadas(project: Path) -> list[dict]:
+    """Rotas declaradas por decorador nos roteadores FastAPI, com o prefixo do próprio
+    `APIRouter` — contadas do código, não do OpenAPI (o gerador não sobe o serviço)."""
+    rotas: list[dict] = []
+    base = project / "apps" / "api" / "src" / "toc_api" / "http"
+    if not base.is_dir():
+        return rotas
+    for f in sorted(base.rglob("*.py")):
+        if "__pycache__" in f.parts:
+            continue
+        texto = _read(f)
+        prefixos = {m.group(1): m.group(2)
+                    for m in re.finditer(r"(\w+)\s*=\s*APIRouter\(\s*prefix=\"([^\"]*)\"", texto)}
+        for m in re.finditer(r"(\w+)\s*=\s*APIRouter\(\s*\)", texto):
+            prefixos.setdefault(m.group(1), "")
+        for m in re.finditer(
+                r"@(\w+)\.(get|post|put|patch|delete)\(\s*\"([^\"]*)\"", texto):
+            var, verbo, caminho = m.group(1), m.group(2).upper(), m.group(3)
+            rotas.append({
+                "metodo": verbo,
+                "caminho": prefixos.get(var, "") + caminho,
+                "arquivo": f.relative_to(project).as_posix(),
+            })
+    return sorted(rotas, key=lambda r: (r["caminho"], r["metodo"]))
+
+
+def _migracoes(project: Path) -> list[dict]:
+    d = project / "apps" / "api" / "src" / "toc_api" / "alembic" / "versions"
+    saida = []
+    for f in sorted(d.glob("[0-9]*.py")) if d.is_dir() else []:
+        texto = _read(f)
+        rev = re.search(r"^revision(?::\s*str)?\s*=\s*\"([^\"]+)\"", texto, re.M)
+        down = re.search(r"^down_revision(?::[^=]+)?\s*=\s*(\"[^\"]+\"|None)", texto, re.M)
+        saida.append({
+            "id": rev.group(1) if rev else f.stem.split("_")[0],
+            "nome": f.stem,
+            "anterior": (down.group(1).strip('"') if down and down.group(1) != "None" else ""),
+            "path": f.relative_to(project).as_posix(),
+        })
+    return saida
+
+
+def discover_codebase(project: Path) -> dict:
+    api = _varrer_codigo(project / "apps" / "api", project)
+    web = _varrer_codigo(project / "apps" / "web", project)
+    todos = api + web
+
+    producao = [a for a in todos if not a["teste"]]
+    testes = [a for a in todos if a["teste"]]
+
+    def _soma(lista, campo="linhas"):
+        return sum(a[campo] for a in lista)
+
+    # Camadas do serviço (P3 — DDD + hexagonal) e pastas da interface.
+    camadas_api = []
+    for nome, prefixo, papel in [
+        ("domínio", "apps/api/src/toc_api/dominio/", "puro: entidades, regras e portas"),
+        ("aplicação", "apps/api/src/toc_api/aplicacao/", "puro: casos de uso e política"),
+        ("infraestrutura", "apps/api/src/toc_api/infra/", "adaptadores: SQLAlchemy, OTel, identidade"),
+        ("HTTP", "apps/api/src/toc_api/http/", "roteadores FastAPI, wire APH, composição"),
+        ("migrações", "apps/api/src/toc_api/alembic/", "Alembic — nunca `create_all`"),
+    ]:
+        sel = [a for a in producao if a["path"].startswith(prefixo)]
+        camadas_api.append({"nome": nome, "papel": papel, "prefixo": prefixo,
+                            "arquivos": len(sel), "linhas": _soma(sel)})
+
+    camadas_web = []
+    for nome, prefixo, papel in [
+        ("telas", "apps/web/src/telas/", "uma tela por ferramenta + registro compartilhado"),
+        ("componentes", "apps/web/src/componentes/", "canvas, fichas, diagramas, painéis"),
+        ("federação", "apps/web/src/federacao/", "canal `ghd.*`, admissão, embarque, tema"),
+        ("i18n", "apps/web/src/i18n/", "pt como língua-fonte, en como tradução"),
+        ("documentação", "apps/web/src/documentacao/", "verbete por ferramenta, com procedência"),
+        ("cliente e estado", "apps/web/src/api/", "cliente do serviço e envelope de erro"),
+    ]:
+        sel = [a for a in producao if a["path"].startswith(prefixo)]
+        camadas_web.append({"nome": nome, "papel": papel, "prefixo": prefixo,
+                            "arquivos": len(sel), "linhas": _soma(sel)})
+
+    suites = []
+    for nome, prefixo, papel in [
+        ("domínio", "apps/api/tests/dominio/", "sem banco e sem rede"),
+        ("aplicação", "apps/api/tests/aplicacao/", "com duplos das portas"),
+        ("federação", "apps/api/tests/federacao/", "fronteira APH: catálogo, FSM, wire, snapshot"),
+        ("contrato", "apps/api/tests/contrato/", "portas, schemas e cadeia de migrações"),
+        ("integração", "apps/api/tests/integracao/", "contra o PostgreSQL real"),
+        ("interface (vitest)", "apps/web/src/", "React Testing Library, jsdom"),
+        ("canal (node:test)", "apps/web/src/federacao/", "envelope `ghd.*` sem framework"),
+    ]:
+        if nome == "canal (node:test)":
+            sel = [a for a in testes if a["path"].startswith(prefixo) and a["ext"] == ".mjs"]
+        elif nome == "interface (vitest)":
+            sel = [a for a in testes if a["path"].startswith(prefixo) and a["ext"] in (".ts", ".tsx")]
+        else:
+            sel = [a for a in testes if a["path"].startswith(prefixo)]
+        # "arquivos" conta os que TÊM caso: `conftest.py`, `__init__.py` e o módulo de
+        # apoio da interface moram sob `tests/` mas não são arquivos de teste, e contá-los
+        # inflaria o denominador que a regra R2 pede honesto. Eles entram em "apoio".
+        com_caso = [a for a in sel if a["casos"]]
+        suites.append({"nome": nome, "papel": papel, "prefixo": prefixo,
+                       "arquivos": len(com_caso), "apoio": len(sel) - len(com_caso),
+                       "casos": _soma(sel, "casos"), "linhas": _soma(sel)})
+
+    por_modulo: dict[str, dict] = {}
+    nao_atribuidos: list[str] = []
+    for a in producao:
+        mod = _modulo_do_arquivo(a["path"])
+        if not mod:
+            nao_atribuidos.append(a["path"])
+            continue
+        alvo = por_modulo.setdefault(mod, {"arquivos": 0, "linhas": 0, "api": 0, "web": 0,
+                                           "caminhos": []})
+        alvo["arquivos"] += 1
+        alvo["linhas"] += a["linhas"]
+        alvo["api" if a["path"].startswith("apps/api/") else "web"] += 1
+        alvo["caminhos"].append(a["path"])
+
+    rotas = _rotas_publicadas(project)
+    migracoes = _migracoes(project)
+
+    tabelas = len(re.findall(
+        r"^[a-z_]+ = Table\(",
+        _read(project / "apps" / "api" / "src" / "toc_api" / "infra" / "persistencia" / "tabelas.py"),
+        re.M))
+
+    portoes = sorted(p.name for p in (project / "scripts").glob("check-*.sh"))
+    # Conta como a própria suíte conta (`n_sabotagens=${#SABOTAGENS[@]}/5`): a cabeça de
+    # cada tupla de cinco campos dentro do array `SABOTAGENS`. O `grep` de uma linha só do
+    # registro de evidência colada devolve 67 porque `[a-z-]+` não casa `check-i18n.sh`;
+    # quem manda é a suíte, que declara 76.
+    sabotagem = _read(project / "scripts" / "tests" / "run-sabotagem.sh")
+    bloco_sab = re.search(r"^SABOTAGENS=\((.*?)^\)$", sabotagem, re.M | re.S)
+    sabotagens = len([l for l in (bloco_sab.group(1).splitlines() if bloco_sab else [])
+                      if l.strip().startswith('"scripts/check-')])
+    bases = len([d for d in (project / "scripts" / "tests" / "sabotagem").glob("*")
+                 if d.is_dir()]) if (project / "scripts" / "tests" / "sabotagem").is_dir() else 0
+
+    return {
+        "producao": {
+            "arquivos": len(producao),
+            "linhas": _soma(producao),
+            "api_arquivos": len([a for a in producao if a["path"].startswith("apps/api/")]),
+            "api_linhas": _soma([a for a in producao if a["path"].startswith("apps/api/")]),
+            "web_arquivos": len([a for a in producao if a["path"].startswith("apps/web/")]),
+            "web_linhas": _soma([a for a in producao if a["path"].startswith("apps/web/")]),
+        },
+        "testes": {
+            "arquivos": len([a for a in testes if a["casos"]]),
+            "apoio": len([a for a in testes if not a["casos"]]),
+            "linhas": _soma(testes),
+            "casos": _soma(testes, "casos"),
+        },
+        "camadas_api": camadas_api,
+        "camadas_web": camadas_web,
+        "suites": suites,
+        "modulos": por_modulo,
+        "nao_atribuidos": sorted(nao_atribuidos),
+        "rotas": rotas,
+        "rotas_por_metodo": {v: len([r for r in rotas if r["metodo"] == v])
+                             for v in ("GET", "POST", "PUT", "PATCH", "DELETE")},
+        "migracoes": migracoes,
+        "tabelas": tabelas,
+        "portoes": portoes,
+        "sabotagens": sabotagens,
+        "bases_de_sabotagem": bases,
+        "nota": ("Contagens do código como ele está escrito: arquivos, linhas, casos de "
+                 "teste declarados, rotas por decorador, migrações e tabelas. O gerador "
+                 "NÃO roda a suíte — que os testes passem é afirmação do `qa-report.md` "
+                 "do ciclo, com a saída colada."),
+    }
 
 # ──────────────────────────────────────────────────────────────────────
 # Stack e visão geral
@@ -730,11 +1102,24 @@ def extract_overview(project: Path, specs: list[dict], modules: list[dict],
                     "servida de eTLD+1 distinto do hospedeiro (ADR 0003). Assistência de "
                     "inteligência artificial exclusivamente pela fundação, por catálogo de ações "
                     "governadas (ADR 0007)."},
+        {"title": "🧱 O que já existe em código",
+         "content": f"{counts['linhas_producao']} linhas de produção em "
+                    f"{counts['arquivos_producao']} arquivos (<code>apps/api</code> + "
+                    f"<code>apps/web</code>), com {counts['casos_de_teste']} casos de teste "
+                    f"escritos em {counts['arquivos_de_teste']} arquivos, "
+                    f"{counts['rotas']} rotas HTTP publicadas, {counts['migracoes']} migrações "
+                    f"Alembic sobre {counts['tabelas']} tabelas e "
+                    f"{counts['modulos_com_codigo']} dos {counts['modules']} módulos com código. "
+                    "Contado pelo gerador nos arquivos; que a suíte passe é afirmação do "
+                    "<code>qa-report.md</code> do ciclo, com a saída colada."},
         {"title": "⚖️ Estado honesto",
-         "content": "Ciclo 001 (fundação e planejamento) <b>em curso</b>, ainda sem gate humano. "
-                    "<b>Zero linha de código de produção</b> — nenhuma nasce antes do ciclo 003. "
-                    "Nenhuma jornada: jornada sem captura de build real é ficção (P6). Todo "
-                    "requisito nasce com selo 🟡 PLANEJADO; 🟢 só com <code>arquivo:linha</code>."},
+         "content": f"Nenhum ciclo foi <b>promovido</b>: o gate humano é indelegável e continua "
+                    f"aberto em todos eles. O que existe é construção fechada do lado do agente, "
+                    f"com {counts['portoes']} portões executáveis e {counts['sabotagens']} "
+                    f"sabotagens que provam que os portões sabem reprovar, e "
+                    f"{counts['journeys']} jornadas vivas com captura do build real (P6). "
+                    "O selo 🟡 PLANEJADO continua no requisito que ninguém mediu; 🟢 só com "
+                    "<code>arquivo:linha</code>."},
     ]
     return {
         "eyebrow": "Visão geral",
@@ -777,7 +1162,16 @@ def extract_roadmap(project: Path, specs: list[dict]) -> dict:
         c = by_num.get(num)
         if not c:
             continue
-        if "em andamento" in heading.lower():
+        # O estado sai do que o CABEÇALHO do ciclo declara em `docs/roadmap.md` — nunca de
+        # uma lista fixa aqui dentro. Cinco estados, na ordem em que são testados.
+        h = heading.lower()
+        if "promovido" in h:
+            c["state"] = "promovido"
+        elif "construção concluída" in h or "fechado do lado do agente" in h:
+            c["state"] = "construído"
+        elif "execução parcial" in h:
+            c["state"] = "parcial"
+        elif "em andamento" in h or "em curso" in h:
             c["state"] = "em curso"
         for line in gates_body.splitlines():
             s = line.strip()
@@ -817,10 +1211,11 @@ def extract_roadmap(project: Path, specs: list[dict]) -> dict:
     return {
         "eyebrow": "Roadmap",
         "title": "Sequência de ciclos",
-        "lede": ("Doze ciclos propostos ao Product Steward em 2026-09-03, lidos de "
-                 "<code>docs/roadmap.md</code>. Nenhuma linha de código de produção nasce antes "
-                 "do ciclo 003, e o protótipo do ciclo 002 é descartável por decisão, não por "
-                 "promessa. Apetite: um ciclo por linha — estourou, perde escopo, não ganha ciclo."),
+        "lede": ("Doze ciclos propostos ao Product Steward em 2026-09-03 e lidos de "
+                 "<code>docs/roadmap.md</code> como estão escritos — inclusive o estado que "
+                 "cada cabeçalho declara. O protótipo do ciclo 002 é descartável por decisão, "
+                 "não por promessa; apetite de um ciclo por linha — estourou, perde escopo, "
+                 "não ganha ciclo. Promoção é gate humano, e nenhuma foi assinada."),
         "callout": ("<b>Barra:</b> roadmap julgado contra o <b>GitLab Product Handbook</b> "
                     "(fonte única, portões explícitos, responsável nomeado) — cada ciclo mostra "
                     "os seus portões reais e o que não pode começar sem; clareza pela "
@@ -830,7 +1225,7 @@ def extract_roadmap(project: Path, specs: list[dict]) -> dict:
         "legend": [
             {"cls": "", "label": "Raia plena"},
             {"cls": "infra", "label": "Raia infra (reversibilidade explícita)"},
-            {"cls": "fix", "label": "Ciclo em curso"},
+            {"cls": "fix", "label": "Construção concluída — aguardando o gate humano"},
         ],
         "source": "docs/roadmap.md",
     }
@@ -1127,6 +1522,20 @@ def generate(project_dir: str | Path) -> dict:
     skills = discover_skills(project)
     scripts = discover_scripts(project)
     journeys, journeys_note = discover_jornadas(project)
+    codebase = discover_codebase(project)
+    # Cada módulo passa a saber o que existe dele em código (adaptação 17). O mapa é
+    # declarado em `_MAPA_DE_CODIGO`; os números são contados nos arquivos.
+    for mod in modules:
+        mod["code"] = codebase["modulos"].get(mod["id"], {"arquivos": 0, "linhas": 0,
+                                                          "api": 0, "web": 0, "caminhos": []})
+    # A cadeia forward da spec deixa de dizer "todo" quando o código do módulo existe.
+    for s in specs:
+        com_codigo = [m for m in s["modules"] if codebase["modulos"].get(m)]
+        if com_codigo and s["chain"] and s["chain"][-1]["state"] == "todo":
+            s["chain"][-1]["state"] = "ok"
+            s["chain"][-1]["label"] = (
+                "código: " + ", ".join(
+                    f"{m} ({codebase['modulos'][m]['arquivos']} arq.)" for m in com_codigo))
     stack = extract_stack(project)
     roadmap = extract_roadmap(project, specs)
     traceability = build_traceability(specs)
@@ -1150,6 +1559,18 @@ def generate(project_dir: str | Path) -> dict:
         "journeys": len(journeys),
         "cycles": len(roadmap["cycles"]),
         "principles": len(principles),
+        # Contadas por `discover_codebase` (adaptação 17): o site deixou de afirmar
+        # "0 linhas" por constante e passou a contar o que existe.
+        "linhas_producao": codebase["producao"]["linhas"],
+        "arquivos_producao": codebase["producao"]["arquivos"],
+        "casos_de_teste": codebase["testes"]["casos"],
+        "arquivos_de_teste": codebase["testes"]["arquivos"],
+        "rotas": len(codebase["rotas"]),
+        "migracoes": len(codebase["migracoes"]),
+        "tabelas": codebase["tabelas"],
+        "portoes": len(codebase["portoes"]),
+        "sabotagens": codebase["sabotagens"],
+        "modulos_com_codigo": len(codebase["modulos"]),
     }
     counts["requisitos"] = counts["rf"] + counts["ri"] + counts["rnf"]
 
@@ -1172,14 +1593,24 @@ def generate(project_dir: str | Path) -> dict:
         ["Skills instaladas", str(counts["skills"])],
         ["Scripts de aptidão", str(counts["scripts"])],
         ["Jornadas vivas", str(counts["journeys"])],
-        ["Linhas de código de produção", "0"],
+        ["Módulos com código (M1–M8)", f"{counts['modulos_com_codigo']} de {counts['modules']}"],
+        ["Arquivos de produção (apps/api + apps/web)", str(counts["arquivos_producao"])],
+        ["Linhas de código de produção", str(counts["linhas_producao"])],
+        ["Arquivos de teste", str(counts["arquivos_de_teste"])],
+        ["Casos de teste escritos", str(counts["casos_de_teste"])],
+        ["Rotas HTTP publicadas", str(counts["rotas"])],
+        ["Migrações Alembic", str(counts["migracoes"])],
+        ["Tabelas do esquema", str(counts["tabelas"])],
+        ["Portões executáveis (scripts/check-*.sh)", str(counts["portoes"])],
+        ["Sabotagens declaradas", str(counts["sabotagens"])],
     ]
 
     return {
         "project": {
             "name": "TOC Federada",
             "mark": "TF",
-            "subtitle": "Ciclo 001 · planejamento",
+            "subtitle": (f"{counts['modulos_com_codigo']} de {counts['modules']} módulos com "
+                         f"código · {counts['linhas_producao']} linhas"),
             "lang": "pt-BR",
             "theme_key": "tocfed-theme",
             "generated_from": "docs/roadmap.md · docs/produto/modulos.md · specs/ · docs/adr/",
@@ -1200,6 +1631,7 @@ def generate(project_dir: str | Path) -> dict:
         "stack": stack,
         "traceability": traceability,
         "roadmap": roadmap,
+        "codebase": codebase,
     }
 
 
@@ -1222,6 +1654,14 @@ def main():
         print(f"  módulos={c['modules']} specs={c['specs']} adrs={c['adrs']} "
               f"RF={c['rf']} RI={c['ri']} RNF={c['rnf']} RN={c['rn']} INT={c['int']} "
               f"fontes={c['sources']} lacunas={c['lacunas']} ciclos={c['cycles']}", file=sys.stderr)
+        # A segunda linha é a adaptação 17: o gerador agora enxerga o código e diz o que
+        # contou nele (regra R2 — verde que não declara o denominador não é evidência).
+        print(f"  código: arquivos={c['arquivos_producao']} linhas={c['linhas_producao']} "
+              f"testes={c['arquivos_de_teste']} casos={c['casos_de_teste']} "
+              f"rotas={c['rotas']} migrações={c['migracoes']} tabelas={c['tabelas']} "
+              f"portões={c['portoes']} sabotagens={c['sabotagens']} "
+              f"módulos com código={c['modulos_com_codigo']}/{c['modules']} "
+              f"não atribuídos={len(data['codebase']['nao_atribuidos'])}", file=sys.stderr)
     else:
         print(output)
 

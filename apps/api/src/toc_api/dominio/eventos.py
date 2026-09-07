@@ -761,3 +761,89 @@ class DecisaoHerdadaJulgada(EventoDeDominio):
     veredito: str = ""
     autor: str = ""
     tipo_de_acao: str = "focalizacao.julgar_decisao_herdada"
+
+
+# -- M5 · Árvore de Estratégia & Táticas (S&T, spec 010) --------------------------------
+#
+# Oito eventos, e três deles existem por causa de um defeito medido na linhagem:
+# `PassoDaSnTMovido` carrega os números de antes e de depois porque mover renumera
+# (RF-07), `SubarvoreExcluida` carrega a CONTAGEM porque a exclusão da quarta geração
+# descartava todos os passos menos o excluído (`tocbuilderv3/services/mockApiService.ts:521`),
+# e `StatusDoPassoMudou` carrega o autor porque a linhagem mudava status sem registrar
+# quem (RN-03).
+#
+# Nenhum deles carrega texto de pessoa: número, contagem, papel e vocabulário fechado
+# viajam; estratégia, tática e premissa ficam no agregado (ADR 0006 e P5 juntos — span e
+# log recebem grandeza, nunca enunciado).
+
+
+@dataclass(frozen=True, slots=True)
+class ArvoreSnTCriada(EventoDeDominio):
+    """RF-01: a S&T nasce com meta global — o `overallGoal` da linhagem, agora exigido."""
+
+    tipo_de_acao: str = "snt.criar_arvore"
+
+
+@dataclass(frozen=True, slots=True)
+class MetaGlobalEditada(EventoDeDominio):
+    """RF-02: a meta global tem evento PRÓPRIO — mudar o alvo do plano não é metadado."""
+
+    tipo_de_acao: str = "snt.editar_meta_global"
+
+
+@dataclass(frozen=True, slots=True)
+class PassoDaSnTAdicionado(EventoDeDominio):
+    no_id: UUID | None = None
+    pai_id: UUID | None = None
+    numero: str = ""
+    tipo_de_acao: str = "snt.adicionar_passo"
+
+
+@dataclass(frozen=True, slots=True)
+class PassoDaSnTEditado(EventoDeDominio):
+    no_id: UUID | None = None
+    campos: tuple[str, ...] = ()
+    tipo_de_acao: str = "snt.editar_passo"
+
+
+@dataclass(frozen=True, slots=True)
+class PassoDaSnTMovido(EventoDeDominio):
+    """RF-08: mover leva a subárvore inteira, e a renumeração é parte do fato."""
+
+    no_id: UUID | None = None
+    pai_anterior_id: UUID | None = None
+    pai_novo_id: UUID | None = None
+    numero_anterior: str = ""
+    numero_novo: str = ""
+    descendentes: int = 0
+    tipo_de_acao: str = "snt.mover_passo"
+
+
+@dataclass(frozen=True, slots=True)
+class SubarvoreExcluida(EventoDeDominio):
+    """RN-05: a contagem é parte do fato — é ela que o aviso do RF-09 promete."""
+
+    no_id: UUID | None = None
+    numero: str = ""
+    passos_excluidos: int = 0
+    tipo_de_acao: str = "snt.excluir_subarvore"
+
+
+@dataclass(frozen=True, slots=True)
+class PremissasEditadas(EventoDeDominio):
+    """RN-02: as três premissas mudam por evento próprio — são a lógica do plano."""
+
+    no_id: UUID | None = None
+    campos: tuple[str, ...] = ()
+    tipo_de_acao: str = "snt.editar_premissas"
+
+
+@dataclass(frozen=True, slots=True)
+class StatusDoPassoMudou(EventoDeDominio):
+    """RN-03: os quatro valores da linhagem, agora com autor e data."""
+
+    no_id: UUID | None = None
+    de: str = ""
+    para: str = ""
+    autor: str = ""
+    tipo_de_acao: str = "snt.mudar_status"

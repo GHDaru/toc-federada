@@ -124,6 +124,13 @@ completo na linhagem — numeração hierárquica (1, 1.1, 1.1.2) e as três pre
 
 - **Depende de**: M1.
 - **Spec**: `specs/010-estrategia-e-taticas/`
+- **Estado**: 🟢 **construído no ciclo 010** — domínio puro
+  (`apps/api/src/toc_api/dominio/snt.py`), casos de uso, migração `0009`, 13 rotas sob
+  `/toc/snt`, tela (`apps/web/src/telas/TelaDaSnT.tsx`) e a jornada viva
+  [J-011](../jornadas/011-estrategia-e-taticas.md). A numeração passou a ser **derivada da
+  posição** (o número digitado da linhagem não atravessou) e as três premissas ganharam
+  papel estrutural com leitura dirigida. Decisões do modelo em
+  [ADR 0014](../adr/0014-categoria-portada-e-transicao-de-status-livre-na-snt.md).
 
 ## M6 — Focalização
 

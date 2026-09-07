@@ -12,7 +12,11 @@ import { ProvedorDeIdioma, type Idioma } from "../i18n";
 import type { Cliente } from "../api/cliente";
 import type {
   AnaliseDeFocalizacao,
+  Apr,
   Ara,
+  Arf,
+  At,
+  Cadeia,
   Jornada,
   No,
   Nuvem,
@@ -21,6 +25,11 @@ import type {
   Proposta,
   Ude,
   ValidacaoFormal,
+  AcompanhamentoDaSnT,
+  FichaDoPassoSnT,
+  PassoDaSnT,
+  SnT,
+  TabelaDaSnT,
 } from "../dominio/tipos";
 
 export function renderComIdioma(elemento: ReactElement, idioma: Idioma = "pt") {
@@ -256,10 +265,413 @@ export const ANALISE_DE_FOCALIZACAO: AnaliseDeFocalizacao = {
   ],
 };
 
+// ---------------------------------------------------------------------------------------
+// M4 · Árvores de Futuro e Implementação (spec 008) — a análise sintética da Horizonte
+//
+// A árvore de futuro abaixo é a continuação do MESMO caso: a restrição é a conferência
+// documental da secretaria, a injeção é o checklist no ato da inscrição, e o ramo negativo
+// é o que essa injeção piora — a leitura fina do documento raro. É de propósito que ela
+// tenha um ramo negativo ABERTO e uma injeção SEM efeito: uma árvore sem pendência não
+// prova que a verificação estrutural vê alguma coisa.
+//
+// Base sintética por regra (ADR 0006): a instituição é fictícia e as personas são papéis.
+// ---------------------------------------------------------------------------------------
+
+function noDaArvore(
+  id: string,
+  papel: string,
+  titulo: string,
+  x = 0,
+  y = 0,
+): Arf["nos"][number] {
+  return { id, papel, titulo, descricao: "", posicao: { x, y }, recolhido: false };
+}
+
+export const ARF: Arf = {
+  id: "p-arf",
+  nome: "Futuro da conferência documental",
+  ferramenta: "arf",
+  descricao_do_problema: "O que passa a ser verdade quando a conferência sai da fila.",
+  versao: 5,
+  origem: {
+    ferramenta: "nc",
+    projeto_id: "p-nc",
+    elementos: ["in1"],
+    papel: "injecao",
+  },
+  udes_da_cadeia: ["u1"],
+  nos: [
+    noDaArvore("i1", "injecao", "Conferência documental feita na inscrição, por checklist automático", 60, 420),
+    noDaArvore("e1", "efeito_futuro", "A fila de conferência deixa de crescer", 60, 260),
+    noDaArvore("e2", "efeito_futuro", "O candidato recebe a matrícula na semana em que se inscreve", 60, 100),
+    noDaArvore("e3", "efeito_futuro", "A secretaria perde a leitura fina do documento raro", 380, 260),
+    noDaArvore("i2", "injecao", "Fila de exceção com conferência humana para documento raro", 700, 420),
+  ],
+  elos: [
+    {
+      id: "a1",
+      origem_id: "i1",
+      destino_id: "e1",
+      rotulo: "",
+      leitura:
+        "Se Conferência documental feita na inscrição, por checklist automático, então A fila de conferência deixa de crescer",
+      exame: { estado: "suficiente", reserva: "" },
+    },
+    {
+      id: "a2",
+      origem_id: "e1",
+      destino_id: "e2",
+      rotulo: "",
+      leitura:
+        "Se A fila de conferência deixa de crescer, então O candidato recebe a matrícula na semana em que se inscreve",
+      exame: { estado: "nao_examinado", reserva: "" },
+    },
+    {
+      id: "a3",
+      origem_id: "i1",
+      destino_id: "e3",
+      rotulo: "",
+      leitura:
+        "Se Conferência documental feita na inscrição, por checklist automático, então A secretaria perde a leitura fina do documento raro",
+      exame: { estado: "com_reserva", reserva: "vale só para o documento fora do padrão" },
+    },
+  ],
+  conectores: [],
+  espelhos: [{ no_id: "e1", ude_id: "u1", projeto_de_origem_id: "p-ara" }],
+  ramos: [
+    {
+      id: "r1",
+      raiz_id: "e3",
+      estado: "aberto",
+      injecao_de_corte_id: null,
+      justificativa: "",
+      autor: "",
+    },
+  ],
+  verificacao: {
+    eds_sem_caminho: [],
+    injecoes_sem_efeito: 1,
+    injecoes_sem_efeito_ids: ["i2"],
+    ramos_abertos: ["r1"],
+    cobertura: [{ ude_id: "u1", espelhado_por: "e1", alcancado: true }],
+    sem_origem_vinculada: false,
+    pronta: false,
+  },
+};
+
+export const APR: Apr = {
+  id: "p-apr",
+  nome: "Ampliar a secretaria acadêmica",
+  ferramenta: "apr",
+  descricao_do_problema: "O que precisa existir para a fila deixar de acumular.",
+  versao: 3,
+  origem: { ferramenta: "arf", projeto_id: "p-arf", elementos: ["e1"], papel: "efeito_futuro" },
+  objetivo: noDaArvore("o1", "objetivo", "A conferência documental deixa de acumular fila", 400, 60),
+  nos: [
+    noDaArvore("o1", "objetivo", "A conferência documental deixa de acumular fila", 400, 60),
+    noDaArvore("ob1", "obstaculo", "Ninguém confere documento no ato da inscrição", 120, 300),
+    noDaArvore("oi1", "objetivo_intermediario", "Há um posto de conferência no ato da inscrição", 120, 460),
+    noDaArvore("ob2", "obstaculo", "O checklist de documentos não existe", 620, 300),
+    noDaArvore("oi2", "objetivo_intermediario", "O checklist de documentos está publicado e em uso", 620, 460),
+  ],
+  dependencias: [
+    {
+      id: "d1",
+      antes_id: "oi2",
+      depois_id: "oi1",
+      leitura:
+        "O checklist de documentos está publicado e em uso precisa existir antes de Há um posto de conferência no ato da inscrição",
+    },
+  ],
+  pares: [
+    {
+      id: "par1",
+      obstaculo_id: "ob1",
+      objetivo_intermediario_id: "oi1",
+      teste_de_validade:
+        "Se Há um posto de conferência no ato da inscrição, então Ninguém confere documento no ato da inscrição deixa de impedir o objetivo",
+      julgamentos: [],
+    },
+    {
+      id: "par2",
+      obstaculo_id: "ob2",
+      objetivo_intermediario_id: "oi2",
+      teste_de_validade:
+        "Se O checklist de documentos está publicado e em uso, então O checklist de documentos não existe deixa de impedir o objetivo",
+      julgamentos: [
+        {
+          autor: "usr-facilitadora",
+          valido: true,
+          justificativa: "O checklist é condição de qualquer conferência no ato.",
+          instante: "2026-09-06T11:00:00Z",
+        },
+      ],
+    },
+  ],
+  elipses: [],
+  sequenciamento: {
+    camadas: [["oi2"], ["oi1"]],
+    ramos_paralelos: [["oi2", "oi1"]],
+    elipses: [],
+    ciclos: [],
+    obstaculos_sem_oi: [],
+    objetivos_sem_obstaculo: [],
+    bloqueado: false,
+    completo: true,
+  },
+};
+
+export const RESUMO_DA_APR = {
+  linhas: [
+    {
+      camada: 0,
+      objetivo_intermediario: "O checklist de documentos está publicado e em uso",
+      objetivo_intermediario_id: "oi2",
+      obstaculo: "O checklist de documentos não existe",
+      obstaculo_id: "ob2",
+      depende_de: [] as string[],
+      julgamento: "valido",
+    },
+    {
+      camada: 1,
+      objetivo_intermediario: "Há um posto de conferência no ato da inscrição",
+      objetivo_intermediario_id: "oi1",
+      obstaculo: "Ninguém confere documento no ato da inscrição",
+      obstaculo_id: "ob1",
+      depende_de: ["O checklist de documentos está publicado e em uso"],
+      julgamento: "",
+    },
+  ],
+};
+
+export const AT: At = {
+  id: "p-at",
+  nome: "Implantar o posto de conferência",
+  ferramenta: "at",
+  descricao_do_problema: "Os passos entre hoje e o posto de conferência funcionando.",
+  versao: 4,
+  alvo: {
+    ferramenta: "apr",
+    projeto_id: "p-apr",
+    elementos: ["oi1"],
+    papel: "objetivo_intermediario",
+  },
+  passos: [
+    {
+      id: "p1",
+      necessidade: "não existe lista do que se confere",
+      acao: "publicar o checklist de documentos exigidos",
+      resultado_esperado: "o checklist está no portal e na recepção",
+      status: "concluido",
+      motivo_do_bloqueio: "",
+      resultado_real: "o checklist está no portal e na recepção",
+      divergente: false,
+      leitura:
+        "Para não existe lista do que se confere, publicar o checklist de documentos exigidos; espero o checklist está no portal e na recepção",
+    },
+    {
+      id: "p2",
+      necessidade: "a recepção não sabe conferir",
+      acao: "treinar a recepção no checklist",
+      resultado_esperado: "a recepção confere sem consultar a secretaria",
+      status: "em_execucao",
+      motivo_do_bloqueio: "",
+      resultado_real: "",
+      divergente: false,
+      leitura:
+        "Para a recepção não sabe conferir, treinar a recepção no checklist; espero a recepção confere sem consultar a secretaria",
+    },
+    {
+      id: "p3",
+      necessidade: "não há posto físico na entrada",
+      acao: "montar o posto de conferência na recepção",
+      resultado_esperado: "o posto atende no horário de inscrição",
+      status: "bloqueado",
+      motivo_do_bloqueio: "a reforma da recepção não tem data",
+      resultado_real: "",
+      divergente: false,
+      leitura:
+        "Para não há posto físico na entrada, montar o posto de conferência na recepção; espero o posto atende no horário de inscrição",
+    },
+  ],
+  precedencias: [
+    { id: "pr1", antes_id: "p1", depois_id: "p2" },
+    { id: "pr2", antes_id: "p2", depois_id: "p3" },
+  ],
+  ordem_de_leitura: ["p1", "p2", "p3"],
+  inalcancaveis: [],
+  resumo: {
+    pendente: 0,
+    em_execucao: 1,
+    concluido: 1,
+    bloqueado: 1,
+    passos: 3,
+    inalcancaveis: 0,
+  },
+};
+
+/**
+ * A travessia inteira, com um elo PENDENTE de propósito: o elo que perdeu uma ponta
+ * continua à vista (RF-35, US-18). Omiti-lo seria esconder justamente o que a pessoa
+ * precisa consertar.
+ */
+export const CADEIA: Cadeia = {
+  elos: [
+    {
+      referencia_id: "ref1",
+      tipo: "promocao_ude_nc",
+      origem: { ferramenta: "ara", projeto_id: "p-ara", elementos: ["u1", "u2"], papel: "ude" },
+      destino: { ferramenta: "nc", projeto_id: "p-nc", elementos: [], papel: "" },
+      estado: "ativa",
+      motivo: "",
+    },
+    {
+      referencia_id: "ref2",
+      tipo: "semeadura_injecao_arf",
+      origem: { ferramenta: "nc", projeto_id: "p-nc", elementos: ["in1"], papel: "injecao" },
+      destino: { ferramenta: "arf", projeto_id: "p-arf", elementos: ["i1"], papel: "injecao" },
+      estado: "ativa",
+      motivo: "",
+    },
+    {
+      referencia_id: "ref3",
+      tipo: "derivacao_arf_apr",
+      origem: { ferramenta: "arf", projeto_id: "p-arf", elementos: ["e1"], papel: "efeito_futuro" },
+      destino: { ferramenta: "apr", projeto_id: "p-apr", elementos: ["o1"], papel: "objetivo" },
+      estado: "ativa",
+      motivo: "",
+    },
+    {
+      referencia_id: "ref4",
+      tipo: "derivacao_oi_at",
+      origem: {
+        ferramenta: "apr",
+        projeto_id: "p-apr",
+        elementos: ["oi1"],
+        papel: "objetivo_intermediario",
+      },
+      destino: { ferramenta: "at", projeto_id: "p-at", elementos: [], papel: "" },
+      estado: "pendente",
+      motivo: "o projeto de destino foi excluído",
+    },
+  ],
+  ferramentas: ["ara", "nc", "arf", "apr", "at"],
+  resumo: { elos: 4, elos_pendentes: 1, ferramentas: 5, projetos: 5 },
+};
+
 /**
  * Um cliente com todos os métodos espiáveis. Cada teste sobrescreve o que lhe interessa —
  * o resto responde vazio, para a tela nunca quebrar por método não previsto.
  */
+/**
+ * A árvore de Estratégia & Táticas sintética da "Instituição Horizonte" — TRÊS níveis,
+ * que é o portão do roadmap para o ciclo 010 (ADR 0006: nenhum dado real de pessoa).
+ *
+ * Os números **não são digitados**: eles são o que o servidor calcula da posição na
+ * árvore (RN-01), e a fixture os carrega já calculados porque é assim que eles chegam à
+ * interface. Na quarta geração da linhagem eram texto livre digitado à mão
+ * (`tocbuilderv3/types.ts:288`), e é essa a regressão que o módulo desfaz.
+ */
+function passoDaSnT(
+  id: string,
+  numero: string,
+  nivel: number,
+  pai_id: string | null,
+  estrategia: string,
+  tatica: string,
+  filhos: string[] = [],
+  status: PassoDaSnT["status"] = "nenhum",
+): PassoDaSnT {
+  return {
+    id,
+    numero,
+    nivel,
+    pai_id,
+    estrategia,
+    tatica,
+    categoria: "nenhuma",
+    status,
+    premissas: { paralela: "", necessidade_ao_pai: "", suficiencia_dos_filhos: "" },
+    filhos,
+  };
+}
+
+export const PASSOS_DA_SNT: PassoDaSnT[] = [
+  passoDaSnT("s1", "1", 0, null, "Atender o dobro de pessoas com a estrutura atual", "Três frentes por trimestre", ["s2", "s5"]),
+  passoDaSnT("s2", "1.1", 1, "s1", "Reduzir o tempo de espera pela metade", "Medir a fila semanalmente", ["s3", "s4"], "em_execucao"),
+  passoDaSnT("s3", "1.1.1", 2, "s2", "Enxergar a fila em tempo real", "Publicar um painel de fila", [], "validado"),
+  passoDaSnT("s4", "1.1.2", 2, "s2", "Eliminar a espera por conferência", "Conferir na entrada", [], "nao_validado"),
+  passoDaSnT("s5", "1.2", 1, "s1", "Formar a equipe necessária", "", []),
+];
+
+export const SNT: SnT = {
+  id: "p-snt",
+  nome: "Dobrar a capacidade de atendimento",
+  ferramenta: "snt",
+  descricao_do_problema: "",
+  versao: 8,
+  meta_global:
+    "Dobrar a capacidade de atendimento da Instituição Horizonte em doze meses sem perder a qualidade acadêmica.",
+  passos: PASSOS_DA_SNT,
+  raizes: ["s1"],
+};
+
+/** A ficha do passo `1.1`, com as três leituras dirigidas montadas no servidor (RF-13). */
+export const FICHA_DO_PASSO: FichaDoPassoSnT = {
+  ...PASSOS_DA_SNT[1]!,
+  leituras: [
+    {
+      papel: "paralela",
+      texto: "No contexto de <1.1> Reduzir o tempo de espera pela metade, …",
+      aplicavel: true,
+      completa: false,
+    },
+    {
+      papel: "necessidade_ao_pai",
+      texto:
+        "Para alcançar <1> Atender o dobro de pessoas com a estrutura atual, é necessário <1.1> Reduzir o tempo de espera pela metade porque …",
+      aplicavel: true,
+      completa: false,
+    },
+    {
+      papel: "suficiencia_dos_filhos",
+      texto:
+        "<1.1.1> Enxergar a fila em tempo real e <1.1.2> Eliminar a espera por conferência bastam para <1.1> Reduzir o tempo de espera pela metade porque …",
+      aplicavel: true,
+      completa: false,
+    },
+  ],
+};
+
+export const ACOMPANHAMENTO_DA_SNT: AcompanhamentoDaSnT = {
+  passos: 5,
+  por_status: { nenhum: 2, validado: 1, nao_validado: 1, em_execucao: 1 },
+  progresso: 0.2,
+  pendencias: [
+    { no_id: "s2", numero: "1.1", tipo: "sem_premissa_de_necessidade" },
+    { no_id: "s2", numero: "1.1", tipo: "sem_premissa_de_suficiencia" },
+    { no_id: "s5", numero: "1.2", tipo: "sem_tatica" },
+  ],
+};
+
+export const TABELA_DA_SNT: TabelaDaSnT = {
+  linhas: PASSOS_DA_SNT.map((passo) => ({
+    no_id: passo.id,
+    numero: passo.numero,
+    nivel: passo.nivel,
+    pai_id: passo.pai_id,
+    estrategia: passo.estrategia,
+    tatica: passo.tatica,
+    categoria: passo.categoria,
+    status: passo.status,
+    filhos: passo.filhos.length,
+    tem_premissa_paralela: false,
+    tem_premissa_de_necessidade: false,
+    tem_premissa_de_suficiencia: false,
+  })),
+};
+
+
 export function clienteFalso(sobrescritas: Record<string, unknown> = {}): Cliente {
   const base = {
     pedir: async () => ({}),
@@ -428,6 +840,102 @@ export function clienteFalso(sobrescritas: Record<string, unknown> = {}): Client
         sugestoes: [],
         aviso: "",
       }),
+    },
+    arf: {
+      criarProjeto: async () => ARF,
+      abrir: async () => ARF,
+      adicionarNo: async () => ARF.nos[1]!,
+      editarNo: async () => ARF.nos[1]!,
+      moverNo: async () => ARF.nos[1]!,
+      mudarPapel: async () => ARF.nos[1]!,
+      excluirNo: async () => undefined,
+      ligar: async () => ARF.elos[0]!,
+      excluirAresta: async () => undefined,
+      examinarElo: async () => ARF.elos[0]!,
+      formarConector: async () => ARF,
+      desfazerConector: async () => undefined,
+      espelhar: async () => ARF.espelhos[0]!,
+      desfazerEspelho: async () => undefined,
+      marcarRamo: async () => ARF.ramos[0]!,
+      mudarRamo: async () => ARF.ramos[0]!,
+      verificar: async () => ARF.verificacao,
+    },
+    apr: {
+      criarProjeto: async () => APR,
+      abrir: async () => APR,
+      adicionarNo: async () => APR.nos[1]!,
+      editarNo: async () => APR.nos[1]!,
+      moverNo: async () => APR.nos[1]!,
+      mudarPapel: async () => APR.nos[1]!,
+      excluirNo: async () => undefined,
+      verbalizacao: async () => ({
+        papel: "obstaculo" as const,
+        veredito: "atende" as const,
+        avisos: [],
+        versao_do_lexico: "pt-1",
+      }),
+      depender: async () => APR.dependencias[0]!,
+      excluirDependencia: async () => undefined,
+      parear: async () => APR.pares[0]!,
+      desfazerPar: async () => undefined,
+      julgar: async () => APR.pares[0]!,
+      formarElipse: async () => ({ id: "el1", destino_id: "oi1", dependencias: ["d1"], leitura: "" }),
+      desfazerElipse: async () => undefined,
+      sequenciar: async () => APR.sequenciamento,
+      resumo: async () => RESUMO_DA_APR,
+    },
+    at: {
+      criarProjeto: async () => AT,
+      abrir: async () => AT,
+      registrarPasso: async () => AT.passos[0]!,
+      editarPasso: async () => AT.passos[0]!,
+      excluirPasso: async () => undefined,
+      mudarStatus: async () => AT.passos[1]!,
+      preceder: async () => AT.precedencias[0]!,
+      excluirPrecedencia: async () => undefined,
+    },
+    /**
+     * M5 — a árvore de Estratégia & Táticas. Nenhum método aceita número de passo: o
+     * número é calculado no servidor e chega pronto (RN-01).
+     */
+    snt: {
+      criarProjeto: async () => SNT,
+      abrir: async () => SNT,
+      editarMetaGlobal: async () => SNT,
+      adicionarPasso: async () => PASSOS_DA_SNT[4]!,
+      abrirPasso: async () => FICHA_DO_PASSO,
+      editarPasso: async () => FICHA_DO_PASSO,
+      editarPremissas: async () => FICHA_DO_PASSO,
+      previaDeMover: async () => ({
+        mudancas: [{ no_id: "s2", numero_atual: "1.1", numero_novo: "2" }],
+      }),
+      mover: async () => SNT,
+      previaDeExclusao: async () => ({
+        no_id: "s2",
+        numero: "1.1",
+        passos: 3,
+        primeiro_nivel: PASSOS_DA_SNT.filter((p) => p.pai_id === "s2"),
+      }),
+      excluirSubarvore: async () => SNT,
+      mudarStatus: async () => FICHA_DO_PASSO,
+      acompanhamento: async () => ACOMPANHAMENTO_DA_SNT,
+      tabela: async () => TABELA_DA_SNT,
+    },
+    cadeia: {
+      promover: async () => NUVEM,
+      semear: async () => ARF,
+      derivarApr: async () => APR,
+      derivarAt: async () => AT,
+      abrir: async () => CADEIA,
+      referencias: async () =>
+        CADEIA.elos.map((e) => ({
+          id: e.referencia_id,
+          tipo: e.tipo,
+          origem: e.origem,
+          destino: e.destino,
+          estado: e.estado,
+          motivo: e.motivo,
+        })),
     },
     foco: {
       criarAnalise: async () => ANALISE_DE_FOCALIZACAO,

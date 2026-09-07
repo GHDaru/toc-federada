@@ -34,6 +34,7 @@ import { PreviaDaGeracao } from "../componentes/nuvem/PreviaDaGeracao";
 import { SuperficieDeConfirmacao } from "../componentes/federacao/SuperficieDeConfirmacao";
 import { VisaoDeSolucao } from "../componentes/nuvem/VisaoDeSolucao";
 import { useRecurso } from "../estado/useRecurso";
+import { BotaoDeAjuda } from "../componentes/documentacao/BotaoDeAjuda";
 import { useI18n } from "../i18n";
 
 export const CHAVE_DA_VISAO = "toc.nuvem.visao";
@@ -56,6 +57,12 @@ export interface TelaDaNuvemProps {
   cliente: Cliente;
   projetoId: string;
   aoVoltar(): void;
+  /**
+   * F8.4.2 — abre a documentação embutida no trecho ancorado, sem descarregar o trabalho
+   * em andamento (RF-19, RF-20). Opcional: a tela funciona sem ajuda contextual, e é a
+   * casca da aplicação que sabe onde o painel mora.
+   */
+  aoAbrirAjuda?(ferramenta: string, ancora: string): void;
 }
 
 interface Conteudo {
@@ -65,7 +72,7 @@ interface Conteudo {
   matriz: Matriz;
 }
 
-export function TelaDaNuvem({ cliente, projetoId, aoVoltar }: TelaDaNuvemProps) {
+export function TelaDaNuvem({ cliente, projetoId, aoVoltar, aoAbrirAjuda }: TelaDaNuvemProps) {
   const { t } = useI18n();
   const buscar = useCallback(async (): Promise<Conteudo> => {
     // Quatro leituras, uma tela: a nuvem, a completude, o espelho da solução e a matriz.
@@ -181,6 +188,11 @@ export function TelaDaNuvem({ cliente, projetoId, aoVoltar }: TelaDaNuvemProps) 
         >
           {t("nuvem.pendentes")} ({pendentes.length})
         </button>
+        {/* US-11: "o que faz uma premissa ser sustentada" ao lado da contagem de
+            premissas pendentes — que é onde a dúvida aparece. */}
+        {aoAbrirAjuda ? (
+          <BotaoDeAjuda ferramenta="nc" ancora="premissa-sustentada" aoAbrir={aoAbrirAjuda} />
+        ) : null}
 
         <div className="seletor-de-visao" role="radiogroup" aria-label={t("nuvem.visao")}>
           {(["conflito", "solucao", "lado_a_lado", "tabela"] as const).map((valor) => (

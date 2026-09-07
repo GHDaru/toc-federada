@@ -101,6 +101,20 @@ SO_LEITURA = {
     "listar_analises_de_focalizacao",
     "resolver_vinculos",
     "referencias_da_ferramenta",
+    # M5 — Estratégia & Táticas (spec 010). Quatro leituras, e a quarta merece nota:
+    # `prever_renumeracao` calcula os números que um mover PRODUZIRIA e **não grava
+    # evento nenhum** (RI-05). É a irmã de `validar_texto_de_ude` e `validar_nuvem`, e é
+    # o que permite mostrar a renumeração antes de confirmar sem escrever um fato que
+    # ninguém pediu.
+    "abrir_projeto_snt",
+    "pendencias_da_snt",
+    "exportar_snt",
+    "prever_renumeracao",
+    # M8 — Fundações da Aplicação (spec 011), E1.4. Exportar a análise consolidada é
+    # leitura de várias ferramentas de uma vez: o arquivo sai com o que o inquilino já
+    # podia ler, e nada além. Importar NÃO está nesta lista — é escrita, e a lista é
+    # justamente o contraexemplo que separa as duas.
+    "exportar_consolidado",
 }
 
 
@@ -122,6 +136,13 @@ MODULOS_DO_NUCLEO = (
     # M6 — Focalização (spec 009). Mesmo motivo: os casos de uso da jornada dos cinco
     # passos entram aqui no commit em que nascem.
     "toc_api.aplicacao.focalizacao",
+    # M5 — Estratégia & Táticas (spec 010). Mesmo motivo: os casos de uso da árvore de
+    # passos numerados entram aqui no commit em que nascem.
+    "toc_api.aplicacao.snt",
+    # M8 — Fundações da Aplicação (spec 011), E1.4. Mesmo motivo, e com um agravante
+    # próprio: a importação é o único caso de uso que recebe um ARQUIVO de fora, e é o
+    # último lugar onde um ponto de verificação pode ficar sem ninguém o exercitando.
+    "toc_api.aplicacao.portabilidade",
 )
 
 

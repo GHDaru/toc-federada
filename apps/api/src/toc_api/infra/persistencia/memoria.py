@@ -40,6 +40,8 @@ class RepositorioDeProjetosEmMemoria:
         # M6 — Focalização (spec 009). Mesmo motivo dos anteriores: um backend que só
         # atende parte das portas falharia em produção e passaria em desenvolvimento.
         self._focalizacoes: dict[UUID, object] = {}
+        # M5 — Estratégia & Táticas (spec 010). Mesmo motivo, mesma trava.
+        self._snts: dict[UUID, object] = {}
 
     def _exigir_versao_lida(self, projeto: Projeto) -> None:
         """A trava otimista do duplo — a mesma regra do `WHERE versao =` do adaptador SQL."""
@@ -65,7 +67,9 @@ class RepositorioDeProjetosEmMemoria:
         ara = self._aras.get(projeto.id)
         if ara is not None:
             ara.projeto = self._itens[projeto.id]
-        for guardados in (self._nuvens, self._arfs, self._aprs, self._ats, self._focalizacoes):
+        for guardados in (
+            self._nuvens, self._arfs, self._aprs, self._ats, self._focalizacoes, self._snts
+        ):
             agregado = guardados.get(projeto.id)
             if agregado is not None:
                 agregado.projeto = self._itens[projeto.id]
@@ -181,6 +185,25 @@ class RepositorioDeProjetosEmMemoria:
 
     def obter_focalizacao(self, inquilino_id: str, projeto_id: UUID):
         achada = self._focalizacoes.get(projeto_id)
+        if achada is None or achada.projeto.dono.inquilino_id != inquilino_id:
+            return None
+        return deepcopy(achada)
+
+    # -- M5 · Estratégia & Táticas (spec 010) ------------------------------------------
+    #
+    # A trava otimista é a MESMA dos anteriores. O caso próprio deste módulo é a reunião de
+    # facilitação: duas pessoas movendo passos da mesma árvore a partir da mesma versão é o
+    # cenário normal, e a renumeração de uma sobre a estrutura da outra é exatamente o
+    # dado que sumiria em silêncio.
+
+    def salvar_snt(self, arvore) -> None:
+        self._exigir_versao_lida(arvore.projeto)
+        arvore.projeto.confirmar_gravacao()
+        self._snts[arvore.projeto.id] = deepcopy(arvore)
+        self._itens[arvore.projeto.id] = self._snts[arvore.projeto.id].projeto
+
+    def obter_snt(self, inquilino_id: str, projeto_id: UUID):
+        achada = self._snts.get(projeto_id)
         if achada is None or achada.projeto.dono.inquilino_id != inquilino_id:
             return None
         return deepcopy(achada)

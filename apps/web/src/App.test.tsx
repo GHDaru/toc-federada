@@ -8,7 +8,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { act, render } from "@testing-library/react";
 import { App } from "./App";
-import { clienteFalso } from "./testes/apoio";
+import { PROJETO, PROJETO_RESUMO, clienteFalso } from "./testes/apoio";
 
 const ADMISSAO = {
   VITE_GHD_HOST_ORIGIN: "https://fundacao.exemplo",
@@ -57,6 +57,57 @@ describe("modo autônomo", () => {
     montar();
     await userEvent.click(await screen.findByRole("button", { name: /Abrir/ }));
     expect(await screen.findByRole("button", { name: /Prazos são perdidos/ })).toBeInTheDocument();
+  });
+
+  // M4 (spec 008): as três árvores de futuro e a cadeia entram no roteamento da casca.
+  // Enquanto não entravam, abrir um projeto `arf` da lista caía na Árvore da Realidade
+  // Atual — a tela errada para o dado certo, que é a forma mais silenciosa de um
+  // roteamento estar quebrado.
+  it("abre a ferramenta do projeto: Árvore da Realidade Futura para projeto `arf`", async () => {
+    const cliente = clienteFalso({
+      projetos: {
+        listar: async () => [
+          {
+            ...PROJETO_RESUMO,
+            id: "p-arf",
+            nome: "Futuro da conferência documental",
+            ferramenta: "arf" as const,
+          },
+        ],
+        lixeira: async () => [],
+        abrir: async () => PROJETO,
+        criar: async () => PROJETO,
+        excluir: async () => PROJETO_RESUMO,
+        restaurar: async () => PROJETO_RESUMO,
+      },
+    });
+    montar({ cliente });
+    await userEvent.click(await screen.findByRole("button", { name: /Abrir/ }));
+    expect(
+      await screen.findByRole("region", { name: /Ramos negativos/ }),
+    ).toBeInTheDocument();
+  });
+
+  // A cadeia SEMPRE parte de um elemento encadeado — é a travessia de uma análise, não uma
+  // seção do menu. Por isso ela se abre de dentro de uma ferramenta, e não da casca: um
+  // item de menu teria de inventar de qual projeto a cadeia é.
+  it("da ferramenta aberta se chega à cadeia da análise", async () => {
+    const cliente = clienteFalso({
+      projetos: {
+        listar: async () => [
+          { ...PROJETO_RESUMO, id: "p-arf", nome: "Futuro", ferramenta: "arf" as const },
+        ],
+        lixeira: async () => [],
+        abrir: async () => PROJETO,
+        criar: async () => PROJETO,
+        excluir: async () => PROJETO_RESUMO,
+        restaurar: async () => PROJETO_RESUMO,
+      },
+    });
+    montar({ cliente });
+    await userEvent.click(await screen.findByRole("button", { name: /Abrir/ }));
+    await userEvent.click(await screen.findByRole("button", { name: "A cadeia" }));
+    expect(await screen.findByRole("region", { name: /Percurso da análise/ })).toBeInTheDocument();
   });
 
   it("aplica o tema próprio como variáveis CSS, mesmo sem hospedeiro", async () => {

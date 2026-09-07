@@ -541,6 +541,132 @@ fecharem: hoje a maioria apontaria para a matriz vazia da Dv-3. O que existe de 
 está nas 17 linhas do §2, cada uma com o comando que a verifica ou a razão de não ter sido
 executada.)*
 
+## 11 · Apêndice de 2026-09-06 — o lote de fechamento documental (T-07 e o site)
+
+> Este apêndice é **acrescentado**, não é reescrita: o corpo acima é o registro datado da
+> execução anterior e fica como está. O que segue é o que um lote posterior executou, com o
+> comando e a saída colados.
+
+### 11.1 · T-07 — a matriz de aderência ao APH deixou de ser um campo de `○ planejado`
+
+A dívida **Dv-3** do §9 está **fechada**. A matriz
+[`../../docs/integracao/aderencia-aph.md`](../../docs/integracao/aderencia-aph.md) foi
+preenchida linha a linha contra o código, com `arquivo:linha` e o teste ao lado de cada
+`● atendido`, e com o que continua planejado escrito como planejado:
+
+```text
+$ scripts/contar-aderencia-aph.py
+Nível 1   linhas=17  ● atendido=13  ◑ parcial=1  ✦ delegado=2  ✗ fora do alvo=1
+Nível 2   linhas=23  ● atendido=15  ◑ parcial=1  ○ planejado=2  ✦ delegado=2  ✗ fora do alvo=3
+Anexo B   linhas=20  ● atendido=18  ○ planejado=1  ○ não emitido=1
+TOTAL     linhas=60  ● atendido=46  ◑ parcial=2  ○ planejado=3  ○ não emitido=1  ✦ delegado=4  ✗ fora do alvo=4
+tabelas examinadas: 3  ·  arquivo: docs/integracao/aderencia-aph.md
+$ echo $?
+0
+```
+
+O contador nasceu neste lote e existe por um motivo concreto: contar as marcas com
+`grep -o` sobre o arquivo inteiro devolve **52** `● atendido`, porque a legenda, a prosa e o
+registro de revisões também as contêm. O portão está em
+[`../../scripts/contar-aderencia-aph.py`](../../scripts/contar-aderencia-aph.py) e conta só
+as linhas de requisito das três tabelas.
+
+**A dívida Dv-4 continua aberta**: não existe ADR de autodeclaração. Ela dependia da Dv-3,
+que fechou — logo a autodeclaração é agora possível, e é gate humano: é o documento que
+circula para fora do repositório.
+
+### 11.2 · O achado que o preenchimento produziu
+
+Uma matriz que só confirma o que se esperava dela não estava medindo nada. Esta produziu um
+achado, e ele está **na matriz** (linha APH-3.1, que por causa dele é `◑ parcial` e não
+`● atendido`):
+
+| # | Achado | Como foi medido | Estado |
+|---|---|---|---|
+| **A-01** | **Interface, serviço e manifesto declaram números diferentes de telas — 17, 16 e 12 —, e a tela da Nuvem de Conflito (`toc.nuvem`) não existe no registro do serviço.** A consequência é silenciosa: o snapshot dessa tela é **aceito** e chega ao modelo com **zero campos**, porque a terceira camada da sanitização descarta o que não está declarado. A paridade que o teste cobra é entre o manifesto publicado e as telas marcadas `declaradaNoManifesto`, e cinco telas estão fora dessa marca por bandeira | reproduzido no domínio puro, sem rede: `sanitizar_snapshot` com o mesmo campo em duas telas devolve `campos: ()` para `toc.nuvem` e `campos: (('projeto_id', 'text', 1, ''),)` para `toc.ara`. As contagens: `grep -oE 'id: "toc\.[a-z_.]+"' apps/web/src/telas/registro.ts \| wc -l` → 17; `len(REGISTRO_DE_TELAS.telas)` no serviço → 16; `len(manifesto["screens"])` → 12 | **relatado, não corrigido.** Corrigir toca o manifesto, que é contrato que circula e que o ciclo 006 pôs sob gate humano ação a ação — e exige teste que falhe antes (P4). Dono: o ciclo que fechar a paridade das telas do M3 e do M5 |
+
+### 11.3 · O site de produto foi regerado sobre um repositório que tem código
+
+O site em `docs/product-site/` tinha sido gerado quando não havia uma linha de código de
+produção, e afirmava isso em três lugares — inclusive uma métrica `Linhas de código de
+produção: 0` que era **constante no gerador**, não medição. O gerador foi adaptado para
+enxergar `apps/api` e `apps/web` (adaptação 17 do
+[`../../tools/product-site/README.md`](../../tools/product-site/README.md)) e o site foi
+regerado. O que ele conta agora está na saída do próprio comando, colada em
+[`../../tools/product-site/README.md`](../../tools/product-site/README.md).
+
+### 11.4 · A bateria inteira, reexecutada no fechamento documental
+
+Colado sem edição da saída de `scripts/evidencia.sh` em 2026-09-06 — este é o bloco a que os
+`qa-report.md` dos ciclos 010 e 011 apontam quando dizem "a tabela completa está no ciclo
+012". O agregador saiu `0`.
+
+> **Este bloco conta a si mesmo, e é por isso que ele nunca fica exatamente igual.** Três
+> portões varrem o corpus inteiro — `check-caminhos.sh`, `check-links.sh` e
+> `check-vazamento.sh` — e **este arquivo está dentro do que eles varrem**. Reexecutar a
+> bateria depois de colar isto aqui devolve números maiores nesses três, e menores em
+> nenhum. É o comportamento que a regra R2 pede: o denominador acompanha o corpus. O que
+> **não** se move com o texto é o código de saída de cada portão, e é ele que decide o
+> veredito — 19 de 19 em `0`.
+
+Portões executados: **19** · verdes: **19** · vermelhos: **0**.
+Cada linha traz o código de saída e o denominador que o próprio portão imprimiu
+(regra R2: verde sem "quanto examinou?" não é evidência; regra R1: as linhas abaixo
+são coladas da execução, não transcritas).
+
+| Portão | Comando | Saída | Veredito | Denominador (linha do próprio portão) |
+|---|---|---|---|---|
+| `check-caminhos.sh` | `scripts/check-caminhos.sh` | `0` | ✓ verde | arquivos varridos: 139 caminhos conferidos: 1393 · isentos declarados: 600 · entregas futuras declaradas: 105 · moldes ignorados: 21 <br>· saída completa: 5 linhas (contadas por este script) |
+| `check-adrs-sucessao.sh` | `scripts/check-adrs-sucessao.sh` | `0` | ✓ verde | ADRs examinados: 14 · linhas de tabela no índice: 15 · linhas em docs/records/decisoes.jsonl: 15 verificações executadas: 56 · sucessões declaradas: 0 · sucedidos declarados: 0 · linhas adr-* conferidas: 14 <br>· saída completa: 7 linhas (contadas por este script) |
+| `check-rounds.sh` | `scripts/check-rounds.sh` | `0` | ✓ verde | rounds examinados: 11 (002, 003, 004, 005, 006, 007, 008, 009, 010, 011, 012) campos obrigatórios por round: 7 · conferências de campo: 77 defeitos medidos em docs/produto/visao.md: 12 · alocados a round: 10 · declarados sem round: 2 <br>· saída completa: 8 linhas (contadas por este script) |
+| `check-specs.sh` | `scripts/check-specs.sh` | `0` | ✓ verde | ciclos examinados: 12 (001, 002, 003, 004, 005, 006, 007, 008, 009, 010, 011, 012) verificações: artefatos 48 · seções e status 185 · tipos de requisito 71 · linhas de Constitution Check 204 · tokens ART 60 · tokens TAIL 48 · specs pontuadas 12 = 628 <br>· saída completa: 38 linhas (contadas por este script) |
+| `check-links.sh` | `scripts/check-links.sh` | `0` | ✓ verde | checked: 657 <br>· saída completa: 3 linhas (contadas por este script) |
+| `check-install.sh` | `scripts/check-install.sh` | `0` | ✓ verde | ok: skills (skills) ok: cycle script (scripts/new-cycle.sh) ok: promotion script (scripts/promote-main.sh) ok: spec-driven templates (.specify/templates) ok: constitution (docs/governance/principles.md) ok: operating model (docs/governance/operating-model.md)  <br>· saída completa: 24 linhas (contadas por este script) |
+| `check-vazamento.sh` | `scripts/check-vazamento.sh` | `0` | ✓ verde | arquivos varridos: 689 · linhas varridas: 167118 · registros JSON inspecionados: 3673 sinais aplicados: 3 (V1 nome próprio em campo de pessoa · V2 registro no formato da base da irmã · V3 base real lida por código) campos de pessoa vigiados: 21 · chaves do esq <br>· saída completa: 8 linhas (contadas por este script) |
+| `check-jornadas.sh` | `scripts/check-jornadas.sh` | `0` | ✓ verde | jornadas examinadas: 7 (001-chegada-e-embarque.md, 002-primeiro-projeto-e-ara.md, 003-nuvem-de-conflito.md, 007-a-travessia.md, 009-cinco-passos-de-focalizacao.md, 010-as-tres-arvores-e-a-cadeia.md, 011-estrategia-e-taticas.md) capturas em disco: 81 · citações <br>· saída completa: 8 linhas (contadas por este script) |
+| `check-arquitetura.sh` | `scripts/check-arquitetura.sh` | `0` | ✓ verde | contratos declarados no pyproject.toml: 3 Analyzed 124 files, 741 dependencies. <br>· saída completa: 12 linhas (contadas por este script) |
+| `check-raiz-do-agregado.sh` | `scripts/check-raiz-do-agregado.sh` | `0` | ✓ verde | arquivos Python varridos: 222 guardas `_exigir_raiz` encontradas: 8 de 8 mutações de grafo raízes de ferramenta registradas: 7 <br>· saída completa: 14 linhas (contadas por este script) |
+| `check-trava-otimista.sh` | `scripts/check-trava-otimista.sh` | `0` | ✓ verde | arquivos varridos: 5 (adaptador SQL, duplo em memória, agregado, registro §A.7, borda HTTP) caminhos de escrita conferidos: 9 declarados · 9 encontrados no adaptador guardas `_gravar_projeto` encontradas: 9 de 9 caminhos de escrita ✓ trava otimista íntegra: 9  <br>· saída completa: 15 linhas (contadas por este script) |
+| `check-trava-da-proposta.sh` | `scripts/check-trava-da-proposta.sh` | `0` | ✓ verde | arquivos varridos: 7 (agregado, registro §A.7, adaptador SQL, duplo em caminhos de escrita classificados: 12 com 12 caminho(s) de escrita persistente classificado(s) e a reserva <br>· saída completa: 36 linhas (contadas por este script) |
+| `check-evidencia-colada.sh` | `scripts/check-evidencia-colada.sh` | `0` | ✓ verde | afirmações registradas: 33 · comandos executados com sucesso: 33/33 ocorrências conferidas: 37 · arquivos alcançados: 9 <br>· saída completa: 7 linhas (contadas por este script) |
+| `check-i18n.sh` | `scripts/check-i18n.sh` | `0` | ✓ verde | arquivos .tsx varridos: 48 cadeias examinadas: 64 candidatas a literal solto cadeias pelo dicionário: 656 chamadas a t()/tc() chaves em pt (língua-fonte): 614 chaves em en (tradução): 614 pendências de tradução (só em pt): 0 ✓ i18n conforme: 48 arquivos, 64 ca <br>· saída completa: 14 linhas (contadas por este script) |
+| `check-documentacao.sh` | `scripts/check-documentacao.sh` | `0` | ✓ verde | ferramentas registradas pelo serviço: 7 (apr ara arf at focalizacao nc snt) verbetes no acervo: 7 (apr ara arf at focalizacao nc snt) caminhos de procedência conferidos: 12 âncoras declaradas pela interface: 1 ✓ documentação conforme: 7 ferramentas registradas <br>· saída completa: 8 linhas (contadas por este script) |
+| `check-manifesto.sh` | `scripts/check-manifesto.sh` | `0` | ✓ verde | telas declaradas: 12 ações declaradas: 16 sabotagens aplicadas: 7; repelidas: 7 <br>· saída completa: 16 linhas (contadas por este script) |
+| `check-politica.sh` | `scripts/check-politica.sh` | `0` | ✓ verde | arquivos de produção varridos: 106 arquivos que compõem PoliticaPorCapability: 3 <br>· saída completa: 4 linhas (contadas por este script) |
+| `check-canal.sh` | `scripts/check-canal.sh` | `0` | ✓ verde | arquivos de teste encontrados: 1 # tests 21 # pass 21 # fail 0 <br>· saída completa: 7 linhas (contadas por este script) |
+| `check-conformidade-aph.sh` | `scripts/check-conformidade-aph.sh` | `0` | ✓ verde | · persistência ......... postgres (exigida: postgres) · migração (alembic) ... 0009 · natureza do turno .... ENLATADO E DETERMINÍSTICO — não há provedor de modelo Veredito: APTO nos itens verificáveis — 11/11 verificados; 12 itens a autodeclarar. <br>· saída completa: 62 linhas (contadas por este script) |
+
+E a prova de que os portões **sabem reprovar**, mais as duas suítes:
+
+```text
+$ scripts/tests/run-sabotagem.sh
+  portões cobertos: 12  ·  bases válidas aceitas: 12/12
+  sabotagens declaradas: 76  ·  reprovadas pelo motivo certo: 76/76
+  sabotagens de ambiente: 2  ·  recusadas pelo motivo certo: 2/2
+✓ os 12 portões aceitam a base válida e reprovam as 76 sabotagens,
+  cada uma pelo motivo que a tabela declara.
+$ echo $?
+0
+```
+
+```text
+$ cd apps/api && pytest -q -p no:cacheprovider     # DATABASE_URL apontando para o PostgreSQL local
+1485 passed, 13 warnings in 168.89s (0:02:48)
+$ echo $?
+0
+
+$ cd apps/web && npx vitest run
+ Test Files  27 passed (27)
+      Tests  307 passed (307)
+$ echo $?
+0
+```
+
+> **O que estes números não dizem.** Verde de portão diz que o portão rodou; quem prova que
+> ele **sabe reprovar** é a suíte de sabotagem, e ela está logo acima. E nenhum dos dois diz
+> que o ciclo fechou: `TAIL:gate` continua em branco em todos os ciclos, porque a promoção é
+> gate humano.
+
 ## Veredito
 
 **Parcialmente executado, provado no que fez e honesto no que não fez — aguardando o gate

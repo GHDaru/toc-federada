@@ -20,6 +20,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { criarCliente, type Cliente } from "./api/cliente";
+import { PainelDeDocumentacao } from "./componentes/documentacao/PainelDeDocumentacao";
 import { Carregando } from "./componentes/Estados";
 import {
   deveRenderizarCasca,
@@ -28,11 +29,16 @@ import {
 } from "./federacao/embarque";
 import { variaveisCss, type Esquema } from "./federacao/tema";
 import { ProvedorDeIdioma, useI18n, type Idioma } from "./i18n";
+import { TelaDaApr } from "./telas/TelaDaApr";
 import { TelaDaAra } from "./telas/TelaDaAra";
+import { TelaDaArf } from "./telas/TelaDaArf";
+import { TelaDaAt } from "./telas/TelaDaAt";
+import { TelaDaCadeia } from "./telas/TelaDaCadeia";
 import { TelaDaFocalizacao } from "./telas/TelaDaFocalizacao";
 import { TelaDeAnalisesDeFocalizacao } from "./telas/TelaDeAnalisesDeFocalizacao";
 import { TelaDaLixeira } from "./telas/TelaDaLixeira";
 import { TelaDaNuvem } from "./telas/TelaDaNuvem";
+import { TelaDaSnT } from "./telas/TelaDaSnT";
 import { TelaDeProjetos } from "./telas/TelaDeProjetos";
 import type { ProjetoResumo } from "./dominio/tipos";
 
@@ -51,9 +57,20 @@ type Rota =
   | { tela: "lixeira" }
   | { tela: "ara"; projetoId: string }
   | { tela: "nuvem"; projetoId: string }
+  // M4 (spec 008) — as três árvores de futuro e a travessia que as costura. A cadeia
+  // carrega o projeto de PARTIDA porque a travessia é de uma análise, e não uma seção do
+  // menu: um item de casca teria de inventar de qual projeto a cadeia é.
+  | { tela: "arf"; projetoId: string }
+  | { tela: "apr"; projetoId: string }
+  | { tela: "at"; projetoId: string }
+  | { tela: "cadeia"; projetoId: string }
   // M6 — a jornada dos cinco passos (spec 009). Rota própria e não uma aba do canvas: a
   // análise de focalização não é diagrama, e a superfície dela é trilha e linha do tempo.
   | { tela: "focalizacao"; projetoId: string }
+  // M5 — Estratégia & Táticas (spec 010). A ferramenta que a linhagem DESLIGOU
+  // (`tocbuilderv3/components/Sidebar.tsx:58`, `disabled: true`) volta com rota própria:
+  // a S&T é árvore estrita, com layout calculado da hierarquia, e não cabe no canvas.
+  | { tela: "snt"; projetoId: string }
   | { tela: "analises_de_focalizacao" };
 
 export function idiomaDaUrl(url: string, padrao: Idioma = "pt"): Idioma {
@@ -78,6 +95,10 @@ function Aplicacao({ ambiente, url, pai, enviar, cliente, esquemaPreferido = "cl
   const sessao = useRef<string | null>(null);
   const [rota, setRota] = useState<Rota>({ tela: "projetos" });
   const [federacao, setFederacao] = useState<EstadoDaFederacao | null>(null);
+  // E8.4 — a documentação embutida abre SOBRE a ferramenta, e o trabalho em andamento
+  // continua montado atrás (RF-19, RI-04): o painel é irmão do `<main>`, nunca um
+  // substituto dele. `null` = fechado.
+  const [ajuda, setAjuda] = useState<{ ferramenta: string; ancora?: string } | null>(null);
 
   // O cliente é criado UMA vez e lê o token a cada chamada: o embarque troca o grant por
   // sessão depois da primeira renderização, e um cliente que capturasse o token no
@@ -130,16 +151,32 @@ function Aplicacao({ ambiente, url, pai, enviar, cliente, esquemaPreferido = "cl
     );
   }
 
+  /** A ferramenta da tela aberta — é o verbete que a documentação embutida mostra primeiro. */
+  const ferramentaDaRota =
+    rota.tela === "nuvem"
+      ? "nc"
+      : rota.tela === "focalizacao" || rota.tela === "analises_de_focalizacao"
+        ? "focalizacao"
+        : rota.tela === "arf" || rota.tela === "apr" || rota.tela === "at" || rota.tela === "snt"
+          ? rota.tela
+          : "ara";
+
+  /** A ferramenta do projeto decide a tela: dado certo na tela errada é defeito silencioso. */
+  function abrirFerramenta(ferramenta: string, projetoId: string) {
+    if (ferramenta === "nc") return setRota({ tela: "nuvem", projetoId });
+    if (ferramenta === "arf") return setRota({ tela: "arf", projetoId });
+    if (ferramenta === "apr") return setRota({ tela: "apr", projetoId });
+    if (ferramenta === "at") return setRota({ tela: "at", projetoId });
+    if (ferramenta === "focalizacao") return setRota({ tela: "focalizacao", projetoId });
+    // M5 — a árvore de Estratégia & Táticas (spec 010). Sem esta linha, um projeto `snt`
+    // caía no ramo genérico e abria como Árvore da Realidade Atual, que recusa a
+    // ferramenta errada com `MUTATION_REFUSED` — medido na bancada da jornada J-011.
+    if (ferramenta === "snt") return setRota({ tela: "snt", projetoId });
+    return setRota({ tela: "ara", projetoId });
+  }
+
   function abrirProjeto(projeto: ProjetoResumo) {
-    if (projeto.ferramenta === "nc") {
-      setRota({ tela: "nuvem", projetoId: projeto.id });
-      return;
-    }
-    if (projeto.ferramenta === "focalizacao") {
-      setRota({ tela: "focalizacao", projetoId: projeto.id });
-      return;
-    }
-    setRota({ tela: "ara", projetoId: projeto.id });
+    abrirFerramenta(projeto.ferramenta, projeto.id);
   }
 
   return (
@@ -165,6 +202,14 @@ function Aplicacao({ ambiente, url, pai, enviar, cliente, esquemaPreferido = "cl
               {t("navegacao.lixeira")}
             </button>
           </nav>
+          <button
+            type="button"
+            className="casca-documentacao"
+            aria-expanded={ajuda !== null}
+            onClick={() => setAjuda({ ferramenta: ferramentaDaRota })}
+          >
+            {t("documentacao.abrir")}
+          </button>
           <div className="casca-idioma" role="group" aria-label={t("navegacao.idioma")}>
             <button type="button" aria-pressed={idioma === "pt"} onClick={() => trocarIdioma("pt")}>
               Português
@@ -212,6 +257,46 @@ function Aplicacao({ ambiente, url, pai, enviar, cliente, esquemaPreferido = "cl
             cliente={clienteEmUso}
             projetoId={rota.projetoId}
             aoVoltar={() => setRota({ tela: "projetos" })}
+            aoAbrirAjuda={(ferramenta, ancora) => setAjuda({ ferramenta, ancora })}
+          />
+        ) : null}
+        {rota.tela === "arf" ? (
+          <TelaDaArf
+            cliente={clienteEmUso}
+            projetoId={rota.projetoId}
+            aoVoltar={() => setRota({ tela: "projetos" })}
+            aoAbrirCadeia={(projeto) => setRota({ tela: "cadeia", projetoId: projeto })}
+          />
+        ) : null}
+        {rota.tela === "apr" ? (
+          <TelaDaApr
+            cliente={clienteEmUso}
+            projetoId={rota.projetoId}
+            aoVoltar={() => setRota({ tela: "projetos" })}
+            aoAbrirCadeia={(projeto) => setRota({ tela: "cadeia", projetoId: projeto })}
+          />
+        ) : null}
+        {rota.tela === "at" ? (
+          <TelaDaAt
+            cliente={clienteEmUso}
+            projetoId={rota.projetoId}
+            aoVoltar={() => setRota({ tela: "projetos" })}
+            aoAbrirCadeia={(projeto) => setRota({ tela: "cadeia", projetoId: projeto })}
+          />
+        ) : null}
+        {rota.tela === "cadeia" ? (
+          <TelaDaCadeia
+            cliente={clienteEmUso}
+            projetoId={rota.projetoId}
+            aoVoltar={() => setRota({ tela: "projetos" })}
+            aoAbrirProjeto={(destino) => abrirFerramenta(destino.ferramenta, destino.projetoId)}
+          />
+        ) : null}
+        {rota.tela === "snt" ? (
+          <TelaDaSnT
+            cliente={clienteEmUso}
+            projetoId={rota.projetoId}
+            aoVoltar={() => setRota({ tela: "projetos" })}
           />
         ) : null}
         {rota.tela === "focalizacao" ? (
@@ -224,15 +309,20 @@ function Aplicacao({ ambiente, url, pai, enviar, cliente, esquemaPreferido = "cl
             autor={federacao.sessao?.usuario.nome ?? t("federacao.modo_autonomo")}
             aoVoltar={() => setRota({ tela: "projetos" })}
             aoAbrirFerramenta={(destino) =>
-              setRota(
-                destino.ferramenta === "nc"
-                  ? { tela: "nuvem", projetoId: destino.projetoId }
-                  : { tela: "ara", projetoId: destino.projetoId },
-              )
+              abrirFerramenta(destino.ferramenta, destino.projetoId)
             }
           />
         ) : null}
       </main>
+
+      {ajuda ? (
+        <PainelDeDocumentacao
+          ferramenta={ajuda.ferramenta}
+          ancora={ajuda.ancora}
+          aoFechar={() => setAjuda(null)}
+          aoIrParaFerramenta={() => setAjuda(null)}
+        />
+      ) : null}
 
       {comCasca ? (
         <footer className="casca-rodape" role="contentinfo">

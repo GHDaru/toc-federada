@@ -34,8 +34,10 @@ from .roteadores import arvores as roteadores_do_m4
 from .roteadores import cadeia as roteador_da_cadeia
 from .roteadores import focalizacao as roteador_da_focalizacao
 from .roteadores import projetos as roteador_de_projetos
+from .roteadores import snt as roteador_da_snt
 from .roteadores import ara as roteador_da_ara
 from .roteadores import nuvem as roteador_da_nuvem
+from .roteadores import portabilidade as roteador_da_portabilidade
 from .roteadores import propostas as roteador_de_propostas
 
 
@@ -145,6 +147,15 @@ def criar_app(ambiente: dict[str, str] | None = None) -> FastAPI:
     # a análise de focalização não é diagrama, e as operações dela — registrar restrição,
     # concluir passo, julgar herança, recomeçar — não têm par no núcleo.
     app.include_router(roteador_da_focalizacao.roteador)
+    # M5 — Estratégia & Táticas (spec 010). Roteador próprio pelo mesmo motivo dos três do
+    # M4: a S&T é árvore ESTRITA, sem aresta como dado, e as operações dela — adicionar
+    # filho, mover subárvore com renumeração, excluir subárvore com contagem — não têm par
+    # no núcleo nem nas outras ferramentas.
+    app.include_router(roteador_da_snt.roteador)
+    # M8 — a portabilidade (spec 011, E1.4). Roteador próprio e não uma rota do M1: a
+    # exportação consolidada atravessa TODAS as ferramentas de uma vez, e pendurá-la em
+    # `/toc/projetos/{id}` diria que ela é do núcleo — quando o que ela exporta é a cadeia.
+    app.include_router(roteador_da_portabilidade.roteador)
     # O gate humano visto pela própria interface: a proposta de ação nasce e é
     # decidida aqui, pelos MESMOS casos de uso que o fio usa (spec 006, RI-01).
     app.include_router(roteador_de_propostas.roteador)

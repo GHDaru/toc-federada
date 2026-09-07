@@ -45,6 +45,8 @@ _ICONS = {
     "principles": '<svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 7h14"/><path d="M5 7l-3 7a4 4 0 0 0 6 0z"/><path d="M19 7l3 7a4 4 0 0 1-6 0z"/><path d="M8 21h8"/></svg>',
     "metrics": '<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M7 21V13"/><path d="M13 21V8"/><path d="M19 21V4"/></svg>',
     "artifacts": '<svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg>',
+    # Entrou com a adaptação 17, quando o repositório deixou de ser só specs.
+    "code": '<svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/></svg>',
 }
 
 _MOON_SVG = '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
@@ -204,6 +206,7 @@ def _sidebar(active: str, project: dict, data: dict) -> str:
     {route("adrs", "ADRs", "adrs", str(n_adrs))}
     {route("principles", "Princípios", "principios")}
     {route("artifacts", "Artefatos", "artifacts")}
+    {route("code", "Código", "codigo", str(data.get("counts", {}).get("modulos_com_codigo", 0)) + " mód.")}
   </div>
   <div class="nav-group">
     <div class="label">Métricas</div>
@@ -310,6 +313,16 @@ _INDEX_CSS = """
 .kv-wide{display:grid;grid-template-columns:230px 1fr;gap:6px 14px;font-size:13.5px}
 .kv-wide dt{color:var(--faint);font-weight:600}
 .kv-wide dd{margin:0}
+/* Página "Código" (adaptação 17). Tabela larga rola dentro do próprio contêiner: o corpo
+   da página nunca rola na horizontal, nem num iframe estreito. */
+.tblwrap{overflow-x:auto;border:1px solid var(--border);border-radius:9px;background:var(--surface);margin:0 0 22px}
+.tbl{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th{text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.tbl tr:last-child td{border-bottom:none}
+.tbl .num{text-align:right;font-family:var(--font-mono);white-space:nowrap}
+.tbl th.num{text-align:right}
+.mono{font-family:var(--font-mono);font-size:12px}
 """
 
 
@@ -331,6 +344,7 @@ def _render_index(data: dict, project: dict) -> str:
         "journeys": data.get("journeys", []),
         "journeys_note": data.get("journeys_note", ""),
         "counts": data.get("counts", {}),
+        "codebase": data.get("codebase", {}),
         "generated_from": project.get("generated_from", ""),
     }
     payload_json = json.dumps(payload, ensure_ascii=False)
@@ -338,7 +352,7 @@ def _render_index(data: dict, project: dict) -> str:
     script = """<script>
 const D = __PAYLOAD__;
 const el = document.getElementById("content");
-const routes = {overview:renderOverview,taxonomy:renderTaxonomy,workflow:renderWorkflow,adrs:renderAdrs,principios:renderPrinciples,artifacts:renderArtifacts,metrics:renderMetrics};
+const routes = {overview:renderOverview,taxonomy:renderTaxonomy,workflow:renderWorkflow,adrs:renderAdrs,principios:renderPrinciples,artifacts:renderArtifacts,codigo:renderCodigo,metrics:renderMetrics};
 function go(route){
   const fn = routes[route] || renderOverview;
   el.innerHTML = "";
@@ -406,9 +420,58 @@ function renderArtifacts(c){
   c.innerHTML = html;
 }
 
+function renderCodigo(c){
+  const cb = D.codebase || {};
+  const n = D.counts || {};
+  const prod = cb.producao || {}, tst = cb.testes || {};
+  const cel = (v,k,s)=>`<div class="mcell"><div class="mv">${v}</div><div class="mk">${k}</div><div class="faint" style="font-size:10px;margin-top:2px">${s||""}</div></div>`;
+  const topo = `<div class="mgrid" style="grid-template-columns:repeat(5,1fr)">
+    ${cel(prod.linhas||0,"linhas de produção",(prod.arquivos||0)+" arquivos")}
+    ${cel(tst.casos||0,"casos de teste escritos",(tst.arquivos||0)+" arquivos")}
+    ${cel((cb.rotas||[]).length,"rotas HTTP","= operações do OpenAPI")}
+    ${cel((cb.migracoes||[]).length,"migrações Alembic",(cb.tabelas||0)+" tabelas")}
+    ${cel((n.modulos_com_codigo||0)+"/"+(n.modules||0),"módulos com código","mapa declarado")}
+  </div>`;
+
+  const linhaCamada = x=>`<tr><td><b>${x.nome}</b><div class="faint" style="font-size:11.5px">${x.papel}</div></td><td class="mono">${x.prefixo}</td><td class="num">${x.arquivos}</td><td class="num">${x.linhas}</td></tr>`;
+  const tabela = (titulo, linhas, cabecalho) => `<h3>${titulo}</h3><div class="tblwrap"><table class="tbl"><thead><tr>${cabecalho}</tr></thead><tbody>${linhas}</tbody></table></div>`;
+
+  const camadas = tabela("Serviço — <code>apps/api</code>", (cb.camadas_api||[]).map(linhaCamada).join(""),
+    "<th>Camada</th><th>Caminho</th><th class='num'>Arquivos</th><th class='num'>Linhas</th>");
+  const web = tabela("Interface — <code>apps/web</code>", (cb.camadas_web||[]).map(linhaCamada).join(""),
+    "<th>Pasta</th><th>Caminho</th><th class='num'>Arquivos</th><th class='num'>Linhas</th>");
+
+  const suites = tabela("Suítes de teste", (cb.suites||[]).map(s=>`<tr><td><b>${s.nome}</b><div class="faint" style="font-size:11.5px">${s.papel}</div></td><td class="mono">${s.prefixo}</td><td class="num">${s.arquivos}</td><td class="num">${s.casos}</td></tr>`).join(""),
+    "<th>Suíte</th><th>Caminho</th><th class='num'>Arquivos</th><th class='num'>Casos escritos</th>");
+
+  const mods = tabela("Código por módulo (M1–M8)", Object.keys(cb.modulos||{}).sort().map(k=>{
+      const m = cb.modulos[k];
+      return `<tr><td><b>${k}</b></td><td class="num">${m.arquivos}</td><td class="num">${m.linhas}</td><td class="num">${m.api}</td><td class="num">${m.web}</td></tr>`;
+    }).join(""),
+    "<th>Módulo</th><th class='num'>Arquivos</th><th class='num'>Linhas</th><th class='num'>apps/api</th><th class='num'>apps/web</th>");
+
+  const migr = tabela("Migrações (nunca <code>create_all</code>)", (cb.migracoes||[]).map(m=>`<tr><td class="mono">${m.id}</td><td>${m.nome}</td><td class="mono">${m.anterior||"—"}</td></tr>`).join(""),
+    "<th>Revisão</th><th>Arquivo</th><th>Anterior</th>");
+
+  const porMetodo = cb.rotas_por_metodo||{};
+  const rotasResumo = Object.keys(porMetodo).map(k=>`<span class="pill muted">${k} ${porMetodo[k]}</span>`).join(" ");
+  const rotas = tabela(`Rotas publicadas (${(cb.rotas||[]).length}) ${rotasResumo}`,
+    (cb.rotas||[]).map(r=>`<tr><td class="mono"><b>${r.metodo}</b></td><td class="mono">${r.caminho}</td><td class="faint mono" style="font-size:11px">${r.arquivo}</td></tr>`).join(""),
+    "<th>Método</th><th>Caminho</th><th>Arquivo</th>");
+
+  const naoAtrib = (cb.nao_atribuidos||[]);
+  const sobra = naoAtrib.length ? `<div class="callout warn" style="margin-top:18px"><b>Não atribuídos a módulo nenhum: ${naoAtrib.length}.</b> São os arquivos de amarração que não pertencem a uma ferramenta — <code>__init__.py</code> de pacote, declaração de ambiente do Vite, configuração de teste. Estão aqui em vez de sumirem no arredondamento: ${naoAtrib.map(x=>`<code>${x}</code>`).join(" · ")}</div>` : "";
+
+  c.innerHTML = `<p class="eyebrow">Engenharia</p><h1>Código</h1>
+  <p class="lede">O que existe hoje em <code>apps/api</code> e <code>apps/web</code>, contado pelo gerador ao ler os arquivos — nenhum número digitado. A atribuição de arquivo a módulo é um <b>mapa declarado</b> em <code>tools/product-site/generate.py</code> (<code>_MAPA_DE_CODIGO</code>); o que não casa nenhum padrão aparece ao pé da página, em vez de sumir.</p>
+  <div class="callout"><b>Barra:</b> o gerador conta o que está <b>escrito</b>, nunca o que passou. "1514 casos escritos" não é "1514 testes verdes": quem prova execução é o <code>qa-report.md</code> do ciclo, com a saída colada e o código de saída (regra R1). E <code>it.each</code> conta como <b>uma</b> declaração aqui e vira N casos na execução — por isso o número do site e o do relatório do executor não têm de bater.</div>
+  ${topo}${camadas}${web}${suites}${mods}${migr}${rotas}${sobra}
+  <p class="faint" style="font-size:12px;margin-top:18px">${cb.nota||""}</p>`;
+}
+
 function renderMetrics(c){
   const rows = D.metrics.map(([k,v])=>`<dt>${k}</dt><dd><strong>${v}</strong></dd>`).join("");
-  c.innerHTML = `<p class="eyebrow">Métricas</p><h1>Estado quantificado</h1><p class="lede">Todos os números desta página são <b>contados pelo gerador</b> ao ler o repositório — nenhum é digitado à mão. Reexecutar <code>tools/product-site/generate.py</code> reproduz esta tabela ou o site diverge do commitado, que é o portão do ciclo 012.</p><div class="callout"><b>Barra:</b> regra R1 do projeto — número só entra em documento depois de executado, com a saída colada. A última linha desta tabela é a que mais importa hoje.</div><div class="card"><dl class="kv-wide">${rows}</dl></div>`;
+  c.innerHTML = `<p class="eyebrow">Métricas</p><h1>Estado quantificado</h1><p class="lede">Todos os números desta página são <b>contados pelo gerador</b> ao ler o repositório — nenhum é digitado à mão. Reexecutar <code>tools/product-site/generate.py</code> reproduz esta tabela ou o site diverge do commitado, que é o portão do ciclo 012.</p><div class="callout"><b>Barra:</b> regra R1 do projeto — número só entra em documento depois de executado, com a saída colada. As linhas de código, teste, rota e migração vêm da varredura de <code>apps/api</code> e <code>apps/web</code>; o detalhe por camada está em <a href="#codigo">Código</a>.</div><div class="card"><dl class="kv-wide">${rows}</dl></div>`;
 }
 
 go(location.hash.slice(1)||"overview");
@@ -473,11 +536,11 @@ def _render_modules(data: dict, project: dict) -> str:
 
     summary = [
         ("Módulos", counts.get("modules", 0)),
+        ("Com código", counts.get("modulos_com_codigo", 0)),
         ("Épicos", sum(len(m.get("epics", [])) for m in modules)),
         ("Specs", counts.get("specs", 0)),
-        ("RF", counts.get("rf", 0)),
-        ("RI", counts.get("ri", 0)),
-        ("RNF", counts.get("rnf", 0)),
+        ("Arquivos de produção", counts.get("arquivos_producao", 0)),
+        ("Rotas HTTP", counts.get("rotas", 0)),
     ]
     summary_html = '<div class="summary">' + "".join(
         f'<div class="stat"><div class="v">{v}</div><div class="k">{_e(k)}</div></div>'
@@ -511,7 +574,9 @@ def _render_modules(data: dict, project: dict) -> str:
         <p class="mod-title">{_e(m["id"])} — {_md(m["name"])}</p>
         <p class="mod-sub"><i>Bounded context</i>: {_md(m.get("context",""))}<span class="sep">·</span>ciclo(s) {_e(cycles)}</p>
       </div>
-      <span class="mod-status wip">planejado</span>
+      <span class="mod-status {"wip" if m.get("code", {}).get("arquivos") else "tv"}">{
+        (str(m["code"]["arquivos"]) + " arquivos de código") if m.get("code", {}).get("arquivos") else "sem código"
+      }</span>
     </div>
     <p class="vision">{_md(m.get("job",""))}</p>
     <p class="deps"><b>Depende de:</b> {_md(m.get("deps","—"))}<br><b>Origem:</b> {_md(m.get("origin",""))}</p>
@@ -530,6 +595,12 @@ def _render_modules(data: dict, project: dict) -> str:
           <div class="mcell"><div class="mv">{m.get("int",0)}</div><div class="mk">INT</div></div>
         </div>
         {shared_note}
+        <p class="slabel">Código deste módulo (mapa declarado no gerador)</p>
+        <div class="mgrid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="mcell"><div class="mv">{m.get("code", {}).get("arquivos", 0)}</div><div class="mk">arquivos</div></div>
+          <div class="mcell"><div class="mv">{m.get("code", {}).get("linhas", 0)}</div><div class="mk">linhas</div></div>
+          <div class="mcell"><div class="mv">{m.get("code", {}).get("api", 0)}/{m.get("code", {}).get("web", 0)}</div><div class="mk">api / web</div></div>
+        </div>
         <p class="slabel">Links</p>
         <div class="links">{spec_links}<a href="{_up("docs/produto/modulos.md")}">🗺️ modulos.md</a></div>
       </div>
@@ -1024,28 +1095,55 @@ def _render_roadmap(data: dict, project: dict) -> str:
     phases = data.get("workflow", {}).get("phases", [])
 
     em_curso = [c for c in cycles if c["state"] == "em curso"]
+    construidos = [c for c in cycles if c["state"] in ("construído", "parcial")]
+    promovidos = [c for c in cycles if c["state"] == "promovido"]
     infra = [c for c in cycles if c["raia"] == "infra"]
     metrics = [
-        ("amber", str(len(em_curso)), "Ciclos em curso", "nenhum promovido ainda"),
+        ("amber", str(len(construidos) + len(em_curso)),
+         "Ciclos com trabalho executado", f"{len(promovidos)} promovido(s) — o gate é humano"),
         ("", str(len(cycles)), "Ciclos propostos", "001 a 012"),
         ("accent", str(counts.get("requisitos", 0)), "Requisitos planejados", "RF + RI + RNF"),
-        ("green", "0", "Linhas de código", "nada antes do ciclo 003"),
+        ("green", str(counts.get("linhas_producao", 0)), "Linhas de código",
+         f"{counts.get('arquivos_producao', 0)} arquivos · contados, não digitados"),
     ]
     metrics_html = '<div class="metrics">' + "".join(
         f'<div class="metric"><div class="v {c}">{_e(v)}</div><div class="k">{_e(k)}</div>'
         f'<div class="sub">{_e(sub)}</div></div>' for c, v, k, sub in metrics) + "</div>"
 
+    # Os três horizontes saem do ESTADO que cada cabeçalho do roadmap declara — não de
+    # uma lista fixa. Era uma tira digitada ("Ciclo 001 — em curso") que continuou dizendo
+    # isso enquanto doze ciclos construíam; agora ela é derivada e envelhece com o texto.
+    def _faixa(lista):
+        """Comprime em intervalos SEM mentir: 001, 003, 004, …, 012 vira "001, 003–012" —
+        e nunca "001–012", que incluiria o 002, que não foi executado."""
+        nums = sorted(int(c["num"]) for c in lista)
+        if not nums:
+            return "—"
+        grupos, inicio, anterior = [], nums[0], nums[0]
+        for n in nums[1:]:
+            if n == anterior + 1:
+                anterior = n
+                continue
+            grupos.append((inicio, anterior))
+            inicio = anterior = n
+        grupos.append((inicio, anterior))
+        return ", ".join(f"{a:03d}" if a == b else f"{a:03d}–{b:03d}" for a, b in grupos)
+
+    pendentes = [c for c in cycles if c["state"] == "planejado"]
     horizons = [
-        ("now", "🔸 Agora", "Ciclo 001 — em curso",
-         ["Corpus de planejamento (specs, ADRs, roadmap, site)",
-          "Aguarda o gate humano do Product Steward"]),
-        ("later", "🔜 A seguir", "Ciclos 002–003",
-         ["002 · protótipo descartável de interfaces",
-          "003 · esqueleto federado — a junta fecha contra a ghdaru real (raia infra)"]),
-        ("done", "🧭 Depois", "Ciclos 004–012",
-         ["004–005 · núcleo de diagramas e Árvore da Realidade Atual",
-          "006–008 · ações governadas, Nuvem de Conflito, árvores de futuro",
-          "009–012 · focalização, Estratégia & Táticas, fundações, autodeclaração APH"]),
+        ("now", "🔸 Agora", f"Gate humano — {len(construidos) + len(em_curso)} ciclos aguardando",
+         [f"Construção fechada do lado do agente nos ciclos {_faixa(construidos + em_curso)}",
+          "Promoção é indelegável: nenhum ciclo foi promovido",
+          f"{counts.get('linhas_producao', 0)} linhas de produção e "
+          f"{counts.get('casos_de_teste', 0)} casos de teste escritos esperam a assinatura"]),
+        ("later", "🔜 A seguir", "O que a cauda de cada ciclo ainda pede",
+         ["TAIL:review e TAIL:security em contexto fresco (quem executou não verifica)",
+          "As dúvidas do `## Clarify` respondidas no gate",
+          "As dívidas nomeadas nos `qa-report.md`, com dono"]),
+        ("done", "🧭 Depois",
+         (f"Ciclos ainda planejados ({len(pendentes)})" if pendentes else "Nada em aberto no roadmap"),
+         ([f"{c['num']} · {c['title']}" for c in pendentes] or
+          ["Os doze ciclos do roadmap têm artefato e código; o que falta é gate, não escopo"])),
     ]
     horizons_html = '<div class="horizons">' + "".join(
         f'<div class="horizon {cls}"><div class="h-label">{_e(lbl)}</div>'
@@ -1060,15 +1158,18 @@ def _render_roadmap(data: dict, project: dict) -> str:
 
     timeline = '<div class="timeline">'
     for c in cycles:
-        cls = "fix" if c["state"] == "em curso" else c.get("cls", "")
+        cls = "fix" if c["state"] in ("em curso", "construído", "parcial") else c.get("cls", "")
         arts = "".join(f'<a href="{_up(a["href"])}">{_e(a["text"])}</a>' for a in c.get("artifacts", []))
         gates = "".join(f"<li>{_md(g)}</li>" for g in c.get("portoes", []))
         entry = "".join(f"<li>{_md(g)}</li>" for g in c.get("entrada", []))
         mods = " ".join(c.get("modules", []))
         reqs = (f'<span class="pill muted">{c["rf"]} RF · {c["ri"]} RI · {c["rnf"]} RNF</span>'
                 if c.get("rf") or c.get("ri") or c.get("rnf") else "")
-        state_pill = ('<span class="pill wip">em curso</span>' if c["state"] == "em curso"
-                      else '<span class="pill muted">planejado</span>')
+        rotulos = {"em curso": '<span class="pill wip">em curso</span>',
+                   "construído": '<span class="pill wip">construção fechada · gate aberto</span>',
+                   "parcial": '<span class="pill wip">execução parcial · gate aberto</span>',
+                   "promovido": '<span class="pill ok">promovido</span>'}
+        state_pill = rotulos.get(c["state"], '<span class="pill muted">planejado</span>')
         timeline += f"""
       <div class="tl-item {cls}">
         <div class="tl-card">
@@ -1089,14 +1190,20 @@ def _render_roadmap(data: dict, project: dict) -> str:
 
     honesty = (
         "<b>Nota de honestidade.</b> Este roadmap é uma <b>sequência proposta</b>, não uma promessa "
-        "de data — e o estado real, em 2026-09-03, é este: o <b>ciclo 001 está em curso</b> e ainda "
-        "não passou pelo gate humano; <b>nenhum ciclo foi promovido</b>; existem <b>zero linhas de "
-        "código de produção</b> no repositório (nenhuma nasce antes do ciclo 003, por decisão); os "
-        "doze <code>qa-report.md</code> estão deliberadamente vazios, dizendo “ciclo planejado no "
-        "001; execução ainda não iniciada”, porque caixa marcada não é testemunha; e <b>não há "
-        "nenhuma jornada viva</b> — <code>docs/jornadas/</code> traz só a convenção, já que jornada "
-        "sem captura de build real é ficção (princípio P6). Todo requisito das 12 specs nasce com "
-        "selo 🟡 PLANEJADO; o selo 🟢 pertence às fontes medidas na linhagem, com "
+        "de data — e o estado real é este: "
+        f"<b>{len(construidos) + len(em_curso)} dos {len(cycles)} ciclos</b> têm trabalho executado e "
+        f"fechado do lado do agente, e <b>{len(promovidos)} foi promovido</b>, porque a promoção é gate "
+        "humano e indelegável. O repositório tem hoje "
+        f"<b>{counts.get('linhas_producao', 0)} linhas de código de produção</b> em "
+        f"{counts.get('arquivos_producao', 0)} arquivos, {counts.get('casos_de_teste', 0)} casos de "
+        f"teste escritos, {counts.get('rotas', 0)} rotas publicadas e "
+        f"{counts.get('migracoes', 0)} migrações — números contados nos arquivos por "
+        "<code>tools/product-site/generate.py</code>, não digitados aqui, e que dizem o que está "
+        "<b>escrito</b>, nunca o que passou: execução se prova no <code>qa-report.md</code> do "
+        "ciclo, com a saída colada. "
+        f"Há <b>{counts.get('journeys', 0)} jornadas vivas</b> com captura gerada do build real por "
+        "script versionado (princípio P6) — jornada sem captura continua sendo ficção. E o selo "
+        "🟡 PLANEJADO continua em todo requisito que ninguém mediu: 🟢 só com "
         "<code>arquivo:linha</code>.")
 
     footer = (f'Gerado por <code>tools/product-site/generate.py</code> + '

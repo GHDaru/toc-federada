@@ -42,16 +42,21 @@ Python 3.11.15
 
 $ python3 tools/product-site/generate.py . --output docs/product-site/data.json
 JSON escrito em docs/product-site/data.json
-  módulos=8 specs=12 adrs=13 RF=359 RI=114 RNF=105 RN=71 INT=61 fontes=176 lacunas=58 ciclos=12
+  módulos=8 specs=12 adrs=14 RF=359 RI=114 RNF=105 RN=71 INT=61 fontes=176 lacunas=58 ciclos=12
+  código: arquivos=181 linhas=48958 testes=125 casos=1514 rotas=144 migrações=9 tabelas=36 portões=26 sabotagens=76 módulos com código=8/8 não atribuídos=9
 
 $ python3 tools/product-site/render.py docs/product-site/data.json --output docs/product-site
   docs/product-site/styles.css (6209 bytes)
-  docs/product-site/index.html (54204 bytes)
-  docs/product-site/modules.html (91357 bytes)
-  docs/product-site/traceability.html (392819 bytes)
-  docs/product-site/roadmap.html (40101 bytes)
+  docs/product-site/index.html (97033 bytes)
+  docs/product-site/modules.html (95413 bytes)
+  docs/product-site/traceability.html (393461 bytes)
+  docs/product-site/roadmap.html (41464 bytes)
 Site renderizado em docs/product-site/
 ```
+
+A **segunda linha** de contagem é a adaptação 17, de 2026-09-06: o gerador nasceu num
+repositório que era só specs e hoje enxerga `apps/api` e `apps/web`. Ela existe pelo motivo
+da regra R2 — um comando que não diz quanto examinou não é evidência.
 
 Regerar duas vezes seguidas produz bytes idênticos (`diff -r` vazio sobre os seis
 arquivos) — é o que torna verificável o portão do ciclo 012: *"o site regenerado não diverge
@@ -125,8 +130,14 @@ afirma o que não leu. As adaptações, todas na cópia — nunca no original:
     perde `<repo>` no navegador (achado A5). Link markdown vira o caminho resolvido, em vez de
     chegar como `[texto](destino)` cru na página.
 11. **Chamada "Barra:" em cada página**, dizendo contra o que aquela página está sendo medida.
-12. **Nota de honestidade no rodapé do roadmap**, com o estado real: ciclo 001 em curso, zero
-    linha de código de produção, nenhuma jornada viva.
+12. **Nota de honestidade no rodapé do roadmap**, com o estado real — e ela é **derivada**,
+    não digitada. Nasceu dizendo "ciclo 001 em curso, zero linha de código de produção,
+    nenhuma jornada viva", o que era verdade em 2026-09-03 e virou falso sem ninguém mexer
+    nela. Hoje o texto é montado das contagens (linhas, arquivos, casos de teste, rotas,
+    migrações, jornadas) e do **estado que cada cabeçalho de ciclo declara** em
+    `docs/roadmap.md`: `construção concluída`, `execução parcial`, `não executado`,
+    `promovido`. Um parágrafo de honestidade que envelhece sozinho é a pior espécie de
+    parágrafo de honestidade.
 13. **Marca "TOC Federada"** na casca (nome, sigla, subtítulo, títulos das páginas).
 14. **Os cinco tipos de requisito na rastreabilidade, não três.** A página iterava só
     `rfs`, `ris` e `rnfs` — e jogava fora, na renderização, o que o próprio `data.json` já
@@ -161,6 +172,49 @@ afirma o que não leu. As adaptações, todas na cópia — nunca no original:
     (`— risco m`, `referencian`). Junto, `generate.py` passou a imprimir `lacunas=` na
     linha de contagem, para o verde dizer quanto examinou (R2).
 
+17. **O gerador enxerga o código** (2026-09-06). Ele nasceu para um repositório de specs e
+    escrevia `["Linhas de código de produção", "0"]` como **constante** — uma afirmação que
+    virou falsa no dia em que `apps/api` nasceu, e que continuava vestida de medição.
+    `discover_codebase()` varre `apps/api` e `apps/web` e conta: arquivos e linhas de
+    produção por camada (`dominio`, `aplicacao`, `infra`, `http`, `alembic`; `telas`,
+    `componentes`, `federacao`, `i18n`, `documentacao`, `api`), casos de teste **escritos**
+    por suíte, rotas publicadas com o prefixo do próprio `APIRouter`, migrações Alembic,
+    tabelas do esquema, portões `check-*.sh` e sabotagens declaradas. Disso saem: uma página
+    **Código** nova, o bloco de código por módulo na página de módulos, as métricas, os
+    cartões da visão geral e a nota de honestidade do roadmap.
+
+    Três decisões que valem estar escritas:
+
+    - **A atribuição de arquivo a módulo é um mapa declarado** (`_MAPA_DE_CODIGO`), não
+      adivinhação. Tentar deduzir pelo texto foi medido e reprovado: `grep -rl "\bM4\b"`
+      devolve **47** arquivos para um módulo que tem 21, porque quase todo arquivo cita o
+      módulo de que depende. O primeiro padrão que casa leva o arquivo; o M1 vem por último
+      porque é o núcleo compartilhado. O que não casa padrão nenhum entra em "não
+      atribuídos" e **aparece na página** — hoje 9 arquivos de amarração (`__init__.py`,
+      `vite-env.d.ts`, configuração de teste).
+    - **A contagem de rotas foi conferida contra o serviço real.** O gerador é de biblioteca
+      padrão e não sobe FastAPI: ele conta decoradores e resolve o prefixo pela variável do
+      `APIRouter`. O resultado bate com o OpenAPI publicado:
+
+      ```
+      $ python -c "from toc_api.http.app import criar_app; ..."
+      operações no OpenAPI: 144 caminhos: 128
+      ```
+
+      contra `rotas=144` na linha de contagem do gerador.
+    - **A contagem de sabotagens é a da própria suíte** (76, as cabeças de tupla do array
+      `SABOTAGENS`), e não a do `grep` do registro de evidência colada (67) — que perde as
+      nove do `check-i18n.sh` porque o padrão `check-[a-z-]+\.sh` não casa dígito. Os dois
+      números estão certos sobre coisas diferentes, e o do site é o que responde "quantas
+      sabotagens existem".
+
+18. **Passo de jornada contado pela convenção daqui** (2026-09-06). A origem procurava
+    `## Passo N`; as jornadas deste repositório escrevem `### N · título` sob `## O
+    percurso`. O efeito era a página de artefatos anunciar **"0 passos"** para uma jornada
+    de treze — um número errado é pior que nenhum número. Agora o padrão daqui vem
+    primeiro e o da origem fica como reserva; as sete jornadas contam 5, 13, 10, 4, 6, 7
+    e 7 passos.
+
 ## O que **não** foi adaptado — e a divergência que isso deixa
 
 `templates/styles.css` é mantido **byte a byte idêntico** ao da origem: é a régua de design
@@ -193,7 +247,8 @@ tools/product-site/
 ```
 
 Saída, em `docs/product-site/`: `index.html` (visão geral, taxonomia, workflow, ADRs,
-princípios, artefatos, métricas), `modules.html` (M1–M8 e as doze specs),
+princípios, artefatos, **código** e métricas), `modules.html` (M1–M8 e as doze specs, cada
+módulo com o que existe dele em código),
 `traceability.html` (RF, RI, RNF, RN e INT com fontes e cadeia, mais as lacunas
 declaradas), `roadmap.html` (os doze ciclos),
 `styles.css` e `data.json` (o insumo intermediário, versionado para que o site seja
@@ -205,9 +260,16 @@ auditável sem rodar nada).
   total é digitado. O comando imprime o que contou.
 - **R2 — verde diz quanto examinou**: `generate.py` imprime módulos, specs, ADRs, requisitos
   por tipo, fontes e ciclos; `render.py` imprime cada arquivo escrito e o seu tamanho.
-- **P6 — jornada viva**: o site **não** inventa jornada. Enquanto `docs/jornadas/` tiver
-  apenas a convenção, a página de artefatos diz "zero — e é decisão, não atraso", com o
-  motivo.
+- **P6 — jornada viva**: o site **não** inventa jornada. Ele lista as que existem em
+  `docs/jornadas/` (hoje sete, com os passos de cada uma contados do próprio documento); se
+  um dia não houver nenhuma, a página de artefatos volta a dizer "zero — e é decisão, não
+  atraso", com o motivo.
+- **O gerador conta o que está escrito, nunca o que passou** (adaptação 17). Ele lê `def
+  test_` e `it(`/`test(` e chama isso de *casos de teste escritos*; ele **não roda a
+  suíte**. Quem prova execução é o `qa-report.md` do ciclo, com a saída colada e o código de
+  saída. `it.each` conta como **uma** declaração aqui e vira N casos na execução, e a página
+  Código diz isso — números que não têm de bater precisam explicar por quê, em vez de serem
+  aproximados até baterem.
 - **P1 — fronteira de escrita**: o gerador só lê este repositório. Caminho de fonte externa
   (linhagem, norma, fundação) aparece como dica de contexto, nunca como link que o navegador
   tentaria abrir.

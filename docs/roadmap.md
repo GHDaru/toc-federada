@@ -31,6 +31,31 @@
 | **011** | Fundações da aplicação | E8.3 consolidada, E8.4, E1.4 avançado | plena |
 | **012** | Jornadas e autodeclaração | jornadas consolidadas, matriz de aderência APH, autodeclaração Nível 2 em ADR, site atualizado | plena |
 
+## Onde o roadmap está, medido em 2026-09-06
+
+A tabela acima é a **proposta** do ciclo 001. Isto é o **estado**, e ele foi medido, não
+lembrado — cada número abaixo saiu de um comando cuja saída está colada no `qa-report.md`
+do ciclo correspondente e, para os portões, em
+[`../specs/012-jornadas-e-autodeclaracao/qa-report.md`](../specs/012-jornadas-e-autodeclaracao/qa-report.md):
+
+| O que | Quanto | De onde veio |
+|---|---|---|
+| Ciclos com trabalho executado e fechado do lado do agente | **11 de 12** (o 002 não foi executado, e é decisão) | os cabeçalhos deste arquivo, ciclo a ciclo |
+| Ciclos **promovidos** | **0** — a promoção é gate humano e indelegável | nenhum `TAIL:gate` marcado em `specs/*/tasks.md` |
+| Módulos com código | **8 de 8** (M1–M8) | `python3 tools/product-site/generate.py .` → `módulos com código=8/8` |
+| Linhas de código de produção | **48 958** em 181 arquivos | idem, linha `código:` da mesma saída |
+| Suíte do serviço | **1485 testes, 0 falhas** em 168,07 s, contra o PostgreSQL real | `pytest -q` em `apps/api` |
+| Suíte da interface | **307 testes em 27 arquivos** (vitest) + **21** do canal (`node --test`) | `npx vitest run` em `apps/web`; [`../scripts/check-canal.sh`](../scripts/check-canal.sh) |
+| Portões executáveis | **19 verdes, 0 vermelhos** | [`../scripts/evidencia.sh`](../scripts/evidencia.sh) |
+| Sabotagens | **76 declaradas, 76 reprovadas pelo motivo certo** + 2 de ambiente | [`../scripts/tests/run-sabotagem.sh`](../scripts/tests/run-sabotagem.sh) |
+| Conformidade APH Nível 1 | **11/11 verificados**, 12 itens a autodeclarar | [`../scripts/check-conformidade-aph.sh`](../scripts/check-conformidade-aph.sh) |
+| Jornadas vivas | **7**, com 81 capturas geradas do build real | [`../scripts/check-jornadas.sh`](../scripts/check-jornadas.sh) |
+
+**O que estes números não dizem**: nenhum deles é aprovação. Onze ciclos com construção
+fechada e zero promovidos é o estado normal de um repositório que leva o Princípio II a
+sério — quem executou não aprova o que executou. As caudas `TAIL:review`, `TAIL:security` e
+`TAIL:gate` da maioria dos ciclos continuam **abertas**, e cada `qa-report.md` diz quais.
+
 ## Ciclo 001 — Fundação e planejamento (fechado do lado do agente — aguardando o gate humano)
 
 Acertar a herança antes de qualquer outra coisa: a linhagem lida e **medida** (não
@@ -97,13 +122,23 @@ está fechado do lado do agente, não aprovado — e nada do ciclo 002 começa.
 - A linhagem inteira legível na sessão (as quatro gerações e os cinco natimortos) —
   **feito**, contagem colada na [`produto/visao.md`](produto/visao.md) §3.
 
-## Ciclo 002 — Protótipo de interfaces
+## Ciclo 002 — Protótipo de interfaces (não executado — decisão, não atraso)
 
 Prototipar as telas de M1–M3 com prova visual: papel semântico e `ai_visible` campo a
 campo **antes** de componente, jornada com captura gerada do build por script versionado
 e avaliação heurística datada (princípio P6). O protótipo é descartável — reduz risco de
 interface, não vira produção.
 
+
+**Estado em 2026-09-06: não executado — e a decisão está escrita, não escondida.** O
+protótipo descartável nunca foi construído: o
+[`../specs/002-prototipo-de-interfaces/qa-report.md`](../specs/002-prototipo-de-interfaces/qa-report.md)
+continua com a estrutura vazia que o ciclo 001 deixou ("ciclo ainda não aberto"). As telas
+nasceram direto na aplicação, ciclo a ciclo, cada uma com jornada viva e captura do build
+real — são **7 jornadas** e **81 capturas** hoje. A consequência que ninguém deve ler como
+cumprida: **o `ux-design.md` do 002 não existe**, e por isso o ciclo 010 declarou
+`ART:ux-design=no` com a dívida nomeada no relatório dele. O único `ux-design.md` do
+repositório é o do ciclo 009.
 - Portão humano: o Product Steward aprova o corte de telas (o que da densidade do canvas
   + vista tabular sobrevive num iframe estreito).
 - Portão executável: capturas regeneram byte-idênticas ao rodar o script de novo;
@@ -122,12 +157,21 @@ interface, não vira produção.
 - As specs dos módulos M1–M3 aprovadas ao menos em rascunho ratificado (os requisitos de
   interface saem delas).
 
-## Ciclo 003 — Esqueleto federado
+## Ciclo 003 — Esqueleto federado (construção concluída — aguardando o gate humano)
 
 O primeiro corte: a aplicação existe, embarcada, com identidade real e banco próprio —
 ainda sem ferramenta TOC. Raia **infra**: reversibilidade explícita (migração com
 downgrade, deploy com rollback documentado) é parte da entrega.
 
+
+**Estado em 2026-09-06: construção concluída; a metade operacional da raia infra, não.**
+O esqueleto federado existe, atravessa o PostgreSQL real, recusa subir sem os quatro
+parâmetros de admissão nomeando o que faltou, nunca confia no handshake e verifica fonte
+**e** origem; a suíte de conformidade do Nível 1 do `GHDaru/protocolos` devolve **11/11
+verificados** contra ele. O que **não** rodou está vermelho, com dono, no
+[`../specs/003-esqueleto-federado/qa-report.md`](../specs/003-esqueleto-federado/qa-report.md):
+CI, deploy, endereço publicado e rollback — ou seja, o portão humano do eTLD+1 continua
+inalcançável porque não há endereço a aprovar.
 - Portão executável (a aptidão mais importante do roadmap): **"a junta fecha contra a
   `ghdaru` real"** — manifesto aceito pela rota de administração real, grant trocado por
   identidade em `POST /auth/introspect` servidor a servidor, `ev.source` e `origin`
@@ -149,11 +193,21 @@ downgrade, deploy com rollback documentado) é parte da entrega.
   referenciando a da irmã.
 - ADR 0002 (stack) e ADR 0003 (federação) ratificados — o ciclo é a execução deles.
 
-## Ciclo 004 — Núcleo de diagramas
+## Ciclo 004 — Núcleo de diagramas (construção concluída — aguardando o gate humano)
 
 M1 completo com TDD: projetos com *soft delete*, canvas, vista tabular equivalente,
 exportação/importação não destrutiva. Primeira funcionalidade atravessando a junta.
 
+
+**Estado em 2026-09-06: construção concluída; aguardando o gate humano.** O núcleo existe,
+é domínio puro provado por `Contracts: 3 kept, 0 broken.`, tem exclusão suave reversível e
+traço em toda mutação. Dois achados de **revisão independente** custaram caro e viraram
+classe: um agregado com porta dos fundos e uma perda de atualização silenciosa entre duas
+pessoas na mesma análise. Cada um saiu com portão e sabotagem próprios —
+[`../scripts/check-raiz-do-agregado.sh`](../scripts/check-raiz-do-agregado.sh) e
+[`../scripts/check-trava-otimista.sh`](../scripts/check-trava-otimista.sh) —, que é a razão
+de eles não voltarem. Detalhe e o que ficou vermelho:
+[`../specs/004-nucleo-de-diagramas/qa-report.md`](../specs/004-nucleo-de-diagramas/qa-report.md).
 - Portão executável: suíte de domínio verde e sem rede; contrato de `import-linter` que
   falha o build se o domínio importar framework (P3).
 - Portão executável: exportar → reimportar devolve JSON idêntico; importação inválida
@@ -165,11 +219,18 @@ exportação/importação não destrutiva. Primeira funcionalidade atravessando 
 - O ciclo 003 promovido — sem junta, o M1 seria a 5ª geração standalone.
 - A spec do M1 (`specs/004-nucleo-de-diagramas/`) com o `## Clarify` respondido.
 
-## Ciclo 005 — Árvore da Realidade Atual
+## Ciclo 005 — Árvore da Realidade Atual (construção concluída — aguardando o gate humano)
 
 M2 sem assistência: validação formal de UDE como regra de domínio pura (correção do
 D-08), construção da árvore com análise de suficiência.
 
+
+**Estado em 2026-09-06: construção concluída; aguardando o gate humano.** Os critérios de
+UDE que quatro gerações da linhagem carregaram como texto de prompt hoje **decidem offline**,
+como regra de domínio pura, e o falso negativo que um conjunto de controle externo achou
+neles está fechado pelo teste que nasceu vermelho. A análise estrutural que a linhagem pedia
+a um modelo é função pura. O que ficou vermelho está no
+[`../specs/005-arvore-da-realidade-atual/qa-report.md`](../specs/005-arvore-da-realidade-atual/qa-report.md).
 - Portão executável: os critérios decidíveis de UDE avaliados por teste **sem rede e sem
   modelo**.
 - Portão de jornada: construção de uma ARA sintética completa, com captura do build.
@@ -183,12 +244,21 @@ D-08), construção da árvore com análise de suficiência.
   (`tocbuilderv3/constants.ts:109-137`) para a spec do M2, com a separação
   decidível × julgamento marcada requisito a requisito.
 
-## Ciclo 006 — Ações governadas e snapshot
+## Ciclo 006 — Ações governadas e snapshot (construção concluída — aguardando o gate humano)
 
 O catálogo `toc.*`, a FSM de proposta no servidor, tela como dado (registro + snapshot
 sanitizado), wire APH Nível 1 (SSE, `seq`, replay, cancelamento). Primeiro consumidor:
 a assistência da ARA (E2.3).
 
+
+**Estado em 2026-09-06: construção concluída; aguardando o gate humano — e com vermelho
+vivo declarado.** Verbo mutador nasce `action_proposal`, a matriz inteira de transições
+inválidas falha com `INVALID_TRANSITION`, o catálogo encolhe com a capability e some no
+anônimo, o snapshot é sanitizado no servidor com esquema fechado, e **uma aprovação humana
+executa exatamente uma vez** contra o PostgreSQL real — o que só é verdade porque um crítico
+hostil provou o contrário primeiro (ADR 0011, migração `0007`). O fio passa nos 11/11 checks
+da suíte do `GHDaru/protocolos`. O portão humano deste ciclo — aprovar o catálogo `toc.*`
+ação a ação — **continua aberto**, e agora são 16 ações.
 - Portão executável: sem capability de escrita, as ações mutadoras **somem do catálogo**
   (teste, com a contagem antes/depois na saída).
 - Portão executável: nenhuma mutação proposta por modelo aplica fora da FSM; snapshot
@@ -205,11 +275,19 @@ a assistência da ARA (E2.3).
   e grant sem interseção com o usuário. A nossa borda nasce recusando chamada não
   autenticada; o que fica limitado é a execução disparada do harness, não a FSM.
 
-## Ciclo 007 — Nuvem de Conflito
+## Ciclo 007 — Nuvem de Conflito (construção concluída — aguardando o gate humano)
 
 M3 completo: 5 entidades, 7 premissas, injeções, geração assistida pela fundação, visão
 conflito+solução.
 
+
+**Estado em 2026-09-06: construção concluída; aguardando o gate humano.** A Nuvem de
+Conflito existe com a topologia que o método manda e que a linhagem nunca soube guardar:
+cinco entidades e sete arestas criadas na origem e sem caminho para excluir, premissa como
+entidade de primeira classe, injeção que não nasce sem premissa viva, e a visão de solução
+com as **sete** posições — o defeito do v3, que renderizava cinco, virou caso de teste. A
+geração assistida entra por contrato validado, e recusar deixa o projeto byte a byte
+intacto.
 - Portão executável: invariantes da nuvem por teste de domínio (5 entidades, 7 arestas,
   injeção referencia premissa).
 - Portão executável: a geração a partir de narrativa entra como `action_proposal`;
@@ -223,15 +301,30 @@ conflito+solução.
 - A spec do M3 com as 7 premissas modeladas (a skill `toc-evaporating-cloud` é a fonte
   técnica; a spec é a norma).
 
-## Ciclo 008 — Árvores de futuro e implementação
+## Ciclo 008 — Árvores de futuro e implementação (construção concluída — aguardando o gate humano)
 
 M4 completo: ARF, APR (obstáculos → objetivos intermediários), AT — e o encadeamento
 UDE → NC → injeção → ARF → obstáculos → APR, que nenhuma geração modelou (D-11).
 
+
+**Estado em 2026-09-06: construção concluída em dois lotes; a cauda do ciclo continua
+aberta.** O serviço (domínio, aplicação, persistência, rotas e catálogo) fechou num lote; as
+quatro telas do módulo vieram no lote seguinte, com a jornada
+[J-10](jornadas/010-as-tres-arvores-e-a-cadeia.md) e capturas do build real — árvore sem
+tela é metade do trabalho. O
+[`../specs/008-arvores-de-futuro-e-implementacao/qa-report.md`](../specs/008-arvores-de-futuro-e-implementacao/qa-report.md)
+ainda traz o veredito em branco, de propósito: as pré-condições de abertura e a cauda não
+foram preenchidas. **É dívida com dono, e está declarada lá** — não vale ler este ciclo como
+fechado.
 - Portão executável: teste de domínio percorre a cadeia inteira e prova a referência de
   origem em cada elo.
 - Portão executável: as três árvores exportáveis/importáveis pelo E1.4.
-- Portão de jornada: da injeção à APR sequenciada, com captura.
+- Portão de jornada: da injeção à APR sequenciada, com captura. **Cumprido** — jornada
+  [J-10](jornadas/010-as-tres-arvores-e-a-cadeia.md), com as quatro telas do módulo
+  (`TelaDaArf`, `TelaDaApr`, `TelaDaAt`, `TelaDaCadeia`) e capturas do build real. A
+  interface do M4 veio num lote posterior ao domínio: o ciclo 008 entregou as regras e as
+  rotas, e as telas ficaram para o lote que fecha o módulo — porque árvore sem tela é
+  metade do trabalho.
 
 ### O que o ciclo 008 não pode começar sem
 
@@ -239,11 +332,19 @@ UDE → NC → injeção → ARF → obstáculos → APR, que nenhuma geração 
 - Decisão registrada sobre o corte de ramos negativos da ARF (fica manual nesta v1 —
   proposta no round 008).
 
-## Ciclo 009 — Focalização
+## Ciclo 009 — Focalização (construção concluída — aguardando o gate humano)
 
 M6 completo: registro da restrição e jornada guiada pelos cinco passos, costurando as
 ferramentas.
 
+
+**Estado em 2026-09-06: construção concluída; aguardando o gate humano.** As 16 linhas da
+DoD (Definição de Pronto) têm comando executado e saída colada, e o ciclo registrou **oito
+achados numerados** — dois deles encontrados e corrigidos durante a própria construção, pela
+corrida de captura, que nenhum teste de unidade pegara. A pré-condição "ciclo 008 promovido"
+**não** foi cumprida (construção em paralelo), e o M6 se protegeu combinando pela porta e
+pelo tipo de ligação, nunca pela implementação do M4. Está tudo em
+[`../specs/009-focalizacao/qa-report.md`](../specs/009-focalizacao/qa-report.md).
 - Portão executável: teste percorre os cinco passos com estado herdado entre eles;
   "recomeçar" reabre sem apagar histórico.
 - Portão de jornada: uma análise sintética atravessa identificar → explorar → subordinar
@@ -254,7 +355,7 @@ ferramentas.
 - O ciclo 008 promovido (a jornada aponta para ferramentas que precisam existir).
 - ADR 0005 (escopo v1) inalterado — se DBR entrar, é decisão nova antes, não durante.
 
-## Ciclo 010 — Estratégia & Táticas
+## Ciclo 010 — Estratégia & Táticas (construção concluída — aguardando o gate humano)
 
 M5 completo: a ferramenta que regrediu na 3ª geração (D-05), de volta — hierarquia
 numerada e as três premissas lógicas por nó.
@@ -262,16 +363,36 @@ numerada e as três premissas lógicas por nó.
 - Portão executável: teste de renumeração da subárvore; as três premissas persistidas.
 - Portão de jornada: uma S&T sintética de três níveis, com captura.
 
+**Estado em 2026-09-06: entregue do lado do agente; a aprovação humana não existe ainda.**
+Os dois portões executáveis e o de jornada estão cumpridos com a saída colada em
+[`../specs/010-estrategia-e-taticas/qa-report.md`](../specs/010-estrategia-e-taticas/qa-report.md):
+a renumeração tem propriedade `local == total` sobre 200 árvores geradas, as três premissas
+fazem ida e volta contra o PostgreSQL real, e a jornada
+[J-011](jornadas/011-estrategia-e-taticas.md) traz 12 capturas de uma S&T de **três
+níveis** gerada do build real. A decisão que a linhagem não registrou está no
+[ADR 0014](adr/0014-categoria-portada-e-transicao-de-status-livre-na-snt.md).
+
 ### O que o ciclo 010 não pode começar sem
 
 - O ciclo 004 promovido (é a única dependência técnica; a posição tardia é escolha de
   valor registrada em [`produto/rounds.md`](produto/rounds.md)).
 
-## Ciclo 011 — Fundações da aplicação
+## Ciclo 011 — Fundações da aplicação (execução parcial — aguardando o gate humano)
 
 M8 restante: i18n pt/en consolidada, documentação embutida por ferramenta, importação
 dos exports da 4ª geração (E1.4 avançado).
 
+
+**Estado em 2026-09-06: execução parcial, com o que ficou de fora escrito linha a linha.**
+Entraram o portão de internacionalização (E8.3), a documentação embutida com cobertura por
+ferramenta (E8.4), a exportação e importação consolidadas com o adaptador do formato legado
+(E1.4) e o ensaio de restauração. **Não** entraram — e as linhas da DoD correspondentes
+seguem com `—`, não com "parcialmente": a preferência de idioma persistida no servidor
+(RF-13), a formatação localizada de data, número e colação (RF-16) e a jornada viva nos dois
+idiomas. Os dois portões novos deste ciclo,
+[`../scripts/check-i18n.sh`](../scripts/check-i18n.sh) e
+[`../scripts/check-documentacao.sh`](../scripts/check-documentacao.sh), entraram no agregador
+com 15 sabotagens próprias.
 - Portão executável: nenhuma string de interface fora do dicionário de i18n (grep em CI,
   contagem na saída — regra R2).
 - Portão executável: importar um export sintético do `tocbuilderv3` cria o projeto ou
@@ -282,12 +403,22 @@ dos exports da 4ª geração (E1.4 avançado).
 
 - O ciclo 008 promovido (a documentação embutida cobre as ferramentas existentes).
 
-## Ciclo 012 — Jornadas e autodeclaração
+## Ciclo 012 — Jornadas e autodeclaração (execução parcial — aguardando o gate humano)
 
 Fechamento: jornadas consolidadas de ponta a ponta, matriz de aderência ao APH
 re-verificada, **autodeclaração de Nível 2 (Operador) em ADR** com evidência por
 requisito, site de produto atualizado pelo gerador.
 
+
+**Estado em 2026-09-06: execução parcial; a autodeclaração em ADR continua aberta.** A
+suíte de conformidade do Nível 1 roda por portão versionado
+([`../scripts/check-conformidade-aph.sh`](../scripts/check-conformidade-aph.sh)) e devolve
+**11/11 verificados com 12 itens a autodeclarar**, contra alvo com `persistencia=postgres`;
+a matriz [`integracao/aderencia-aph.md`](integracao/aderencia-aph.md) **deixou de ser um
+campo de `○ planejado`** e hoje traz 46 linhas `● atendido` com caminho e teste, de 60; e o
+site de produto foi regerado por `tools/product-site/generate.py` sobre o repositório com
+código. O que falta é o que o ciclo tem de mais irreversível: **o ADR de autodeclaração de
+Nível 2, assinado**, que é o documento que circula para fora — e ele é gate humano.
 - Portão executável: todas as capturas regeneram do build atual; o site regenerado não
   diverge do commitado (diff vazio em CI).
 - Portão de revisão: a matriz de aderência com um veredito por requisito APH, cada um

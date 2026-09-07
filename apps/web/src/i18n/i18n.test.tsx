@@ -77,8 +77,12 @@ describe("dicionários", () => {
     expect(traduzirCom(pt, "canvas.raio_da_exclusao", { n: 3 })).toContain("3");
   });
 
-  it("devolve a própria chave quando ela não existe — nunca `undefined` na tela", () => {
-    expect(traduzirCom(pt, "nao.existe" as never)).toBe("nao.existe");
+  it("chave inexistente LANÇA em desenvolvimento — nunca aparece crua na tela", () => {
+    // Esta asserção mudou no ciclo 011, e a mudança é o requisito RF-09 da spec 011: a
+    // chave crua na tela é o defeito medido em `tocbuilderv3/i18n/I18nProvider.tsx:41`
+    // (`let result = translation || key;`). Em produção o comportamento é outro e está
+    // testado em `idioma-efetivo.test.ts`: cai para a língua-fonte e registra (RF-10).
+    expect(() => traduzirCom(pt, "nao.existe" as never)).toThrow(/nao\.existe/);
   });
 });
 

@@ -63,6 +63,13 @@ class RepositorioDeProjetosSQL:
             self._reconciliar_focalizacao(s, analise)
         analise.projeto.confirmar_gravacao()
 
+    def salvar_snt(self, arvore) -> None:
+        """M5 — a árvore de Estratégia & Táticas (spec 010): a mesma trava, o mesmo caminho."""
+        with self._sessao.begin() as s:
+            self._gravar_projeto(s, arvore.projeto)
+            self._reconciliar_grafo(s, arvore.projeto)
+        arvore.projeto.confirmar_gravacao()
+
     def salvar_referencia(self, referencia) -> None:
         with self._sessao.begin() as s:
             self._gravar_referencia(s, referencia)

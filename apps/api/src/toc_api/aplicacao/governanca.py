@@ -161,6 +161,21 @@ from .nuvem import (
     SugerirPremissas,
     ValidarNuvem,
 )
+from .portabilidade import ExportarConsolidado, ImportarConsolidado
+from .snt import (
+    AbrirProjetoSnT,
+    AdicionarPassoDaSnT,
+    CriarProjetoSnT,
+    EditarMetaGlobal,
+    EditarPassoDaSnT,
+    EditarPremissasDoPasso,
+    ExcluirSubarvore,
+    ExportarSnT,
+    MoverPassoDaSnT,
+    MudarStatusDoPassoDaSnT,
+    PendenciasDaSnT,
+    PreverRenumeracao,
+)
 from .grafo import (
     AdicionarNo,
     EditarAresta,
@@ -398,6 +413,36 @@ POLITICA: dict[type[CasoDeUso], str] = {
     # só-leitura o poder de acionar o catálogo assistido — a mesma decisão já tomada para
     # `GerarNuvemPorNarrativa` no M3, e é ela que faz a RF-21 valer.
     SugerirRestricao: TOC_ESCRITA,
+    # M5 — Estratégia & Táticas (spec 010)
+    #
+    # As leituras: abrir a árvore, as pendências, a exportação canônica e a **prévia da
+    # renumeração**. Esta última é leitura por um motivo que vale escrever: prever o que o
+    # mover faria é função pura sobre a estrutura e **não grava evento nenhum** — é a
+    # irmã de `ValidarTextoDeUde` (M2) e `ValidarNuvem` (M3), e é o que permite mostrar a
+    # renumeração antes de confirmar sem escrever um fato que ninguém pediu (RI-05).
+    AbrirProjetoSnT: TOC_LEITURA,
+    PendenciasDaSnT: TOC_LEITURA,
+    ExportarSnT: TOC_LEITURA,
+    PreverRenumeracao: TOC_LEITURA,
+    # As escritas da S&T. Todas são manipulação direta do titular sob o item 8 da
+    # constituição — alvo nomeado pelo gesto, valor no controle, reversível (exclusão de
+    # subárvore avisa a contagem antes e segue coberta pelo desfazer de sessão do M1).
+    CriarProjetoSnT: TOC_ESCRITA,
+    EditarMetaGlobal: TOC_ESCRITA,
+    AdicionarPassoDaSnT: TOC_ESCRITA,
+    EditarPassoDaSnT: TOC_ESCRITA,
+    EditarPremissasDoPasso: TOC_ESCRITA,
+    MoverPassoDaSnT: TOC_ESCRITA,
+    ExcluirSubarvore: TOC_ESCRITA,
+    MudarStatusDoPassoDaSnT: TOC_ESCRITA,
+    # M8 — Fundações da Aplicação (spec 011), E1.4: a portabilidade.
+    #
+    # Exportar é LEITURA, e leitura de várias ferramentas de uma vez: o arquivo sai com o
+    # que o inquilino já podia ler, e nada além. Importar é ESCRITA e nasce projeto NOVO
+    # (RN-05) — não existe caminho em que ela substitua projeto existente, e é por isso
+    # que ela não precisa de um verbo mais forte que a criação.
+    ExportarConsolidado: TOC_LEITURA,
+    ImportarConsolidado: TOC_ESCRITA,
 }
 
 

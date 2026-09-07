@@ -92,6 +92,14 @@ from ...dominio.focalizacao import (
     reidratar_analise,
 )
 from ...dominio.grafo import ArestaCausal, No
+from ...dominio.snt import (
+    ArvoreSnT,
+    CategoriaDoPasso,
+    FichaDoPasso,
+    PremissasDoPasso,
+    StatusDoPasso as StatusDoPassoSnT,
+    reidratar_snt,
+)
 from ...dominio.referencia import (
     EstadoDaReferencia,
     Ponta,
@@ -143,6 +151,8 @@ from .tabelas import nc_injecao as tabela_injecao
 from .tabelas import nc_nuvem as tabela_nuvem
 from .tabelas import nc_premissa as tabela_premissa
 from .tabelas import no as tabela_no
+from .tabelas import snt_arvore as tabela_snt
+from .tabelas import snt_passo as tabela_snt_passo
 from .tabelas import projeto as tabela_projeto
 from .tabelas import tenant_ref as tabela_tenant
 from .tabelas import ude as tabela_ude
@@ -366,6 +376,15 @@ def _para_ciclo(
             for h in herancas
         ),
     )
+
+
+#: Quanto a ordem dos passos da S&T é afastada antes de ser regravada. Existe porque a
+#: unicidade de `(projeto_id, pai_id, ordem)` é imposta pelo banco (migração 0009): numa
+#: reordenação, o passo que vai para a posição 0 encontraria a posição 0 ainda ocupada
+#: pelo vizinho que só sai depois. Afastar tudo primeiro tira a colisão do caminho dentro
+#: da MESMA transação; o valor é positivo e alto porque `ordem` tem restrição de não
+#: negatividade, e é maior que qualquer irmandade que uma árvore de plano real tenha.
+AFASTAMENTO_DE_ORDEM = 1_000_000
 
 
 class RepositorioDeProjetosSQL:
@@ -1718,6 +1737,112 @@ class RepositorioDeProjetosSQL:
                 nome=cabecalho.sistema_nome, descricao=cabecalho.sistema_descricao or ""
             ),
             ciclos=ciclos,
+        )
+
+    # -- M5 · Estratégia & Táticas: a árvore de passos numerados (spec 010) ------------
+    #
+    # A diferença desta seção para as anteriores é o que ela **não** grava: número de
+    # passo. O que vai ao banco é `(pai_id, ordem)`, e a numeração 1/1.1/1.1.2 é
+    # recalculada por `reidratar_snt` na volta (RN-01). É a razão de a leitura montar a
+    # estrutura e não um mapa de números.
+
+    def salvar_snt(self, arvore: ArvoreSnT) -> None:
+        projeto = arvore.projeto
+        with self._sessao.begin() as s:
+            self._gravar_projeto(s, projeto)
+            self._reconciliar_grafo(s, projeto)
+            self._reconciliar_snt(s, arvore)
+        projeto.confirmar_gravacao()
+
+    def _reconciliar_snt(self, s, arvore: ArvoreSnT) -> None:
+        projeto_id = arvore.projeto.id
+        cabecalho = {"projeto_id": projeto_id, "meta_global": arvore.meta_global}
+        s.execute(
+            insert_pg(tabela_snt)
+            .values(**cabecalho)
+            .on_conflict_do_update(
+                index_elements=[tabela_snt.c.projeto_id],
+                set_={"meta_global": arvore.meta_global},
+            )
+        )
+        fichas = dict(arvore.fichas())
+        s.execute(
+            delete(tabela_snt_passo).where(
+                tabela_snt_passo.c.projeto_id == projeto_id,
+                tabela_snt_passo.c.no_id.notin_(list(fichas)) if fichas else true(),
+            )
+        )
+        # A ordem única entre irmãos é imposta pelo banco (0009). Uma reordenação move
+        # duas linhas para posições que a outra ainda ocupa, então as posições saem do
+        # caminho antes de entrarem no lugar novo: `ordem` negativa não passa pelo
+        # `ck_snt_passo_ordem_nao_negativa`, e por isso o afastamento é POSITIVO e alto.
+        s.execute(
+            update(tabela_snt_passo)
+            .where(tabela_snt_passo.c.projeto_id == projeto_id)
+            .values(ordem=tabela_snt_passo.c.ordem + AFASTAMENTO_DE_ORDEM)
+        )
+        for no_id, ficha in fichas.items():
+            pai_id = arvore.pai(no_id)
+            linha = {
+                "no_id": no_id,
+                "projeto_id": projeto_id,
+                "pai_id": pai_id,
+                "ordem": list(arvore.filhos(pai_id)).index(no_id),
+                "estrategia": ficha.estrategia,
+                "tatica": ficha.tatica,
+                "categoria": ficha.categoria.value,
+                "status": ficha.status.value,
+                "premissa_paralela": ficha.premissas.paralela,
+                "premissa_necessidade_ao_pai": ficha.premissas.necessidade_ao_pai,
+                "premissa_suficiencia_dos_filhos": ficha.premissas.suficiencia_dos_filhos,
+            }
+            s.execute(
+                insert_pg(tabela_snt_passo)
+                .values(**linha)
+                .on_conflict_do_update(
+                    index_elements=[tabela_snt_passo.c.no_id],
+                    set_={k: v for k, v in linha.items() if k != "no_id"},
+                )
+            )
+
+    def obter_snt(self, inquilino_id: str, projeto_id: UUID) -> ArvoreSnT | None:
+        projeto = self.obter(inquilino_id, projeto_id)
+        if projeto is None:
+            return None
+        with self._sessao() as s:
+            cabecalho = s.execute(
+                select(tabela_snt).where(tabela_snt.c.projeto_id == projeto_id)
+            ).first()
+            if cabecalho is None:
+                return None
+            linhas = s.execute(
+                select(tabela_snt_passo)
+                .where(tabela_snt_passo.c.projeto_id == projeto_id)
+                .order_by(tabela_snt_passo.c.ordem, tabela_snt_passo.c.no_id)
+            ).all()
+        fichas = {
+            linha.no_id: FichaDoPasso(
+                estrategia=linha.estrategia,
+                tatica=linha.tatica,
+                categoria=CategoriaDoPasso(linha.categoria),
+                status=StatusDoPassoSnT(linha.status),
+                premissas=PremissasDoPasso(
+                    paralela=linha.premissa_paralela,
+                    necessidade_ao_pai=linha.premissa_necessidade_ao_pai,
+                    suficiencia_dos_filhos=linha.premissa_suficiencia_dos_filhos,
+                ),
+            )
+            for linha in linhas
+        }
+        estrutura: dict[UUID | None, tuple[UUID, ...]] = {None: ()}
+        for linha in sorted(linhas, key=lambda l: l.ordem):
+            estrutura[linha.pai_id] = estrutura.get(linha.pai_id, ()) + (linha.no_id,)
+            estrutura.setdefault(linha.no_id, ())
+        return reidratar_snt(
+            projeto,
+            meta_global=cabecalho.meta_global,
+            fichas=fichas,
+            estrutura=estrutura,
         )
 
     # -- referência cruzada: agregado PRÓPRIO, com trava própria (RF-33) ---------------

@@ -5,6 +5,294 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Documentação — o corpo documental alcançou a aplicação: site regerado, matriz do APH preenchida, relatórios de ciclo fechados (lote de fechamento documental, 2026-09-06)
+
+Este lote não escreveu código de produção. Ele fechou a distância entre o que o repositório
+**é** e o que os documentos **diziam que ele era** — que é uma dívida de honestidade, e por
+isso paga com evidência colada, não com adjetivo.
+
+- **O site de produto voltou a descrever este repositório.** `docs/product-site/` tinha sido
+  gerado quando não havia uma linha de código de produção, e afirmava isso em três lugares —
+  o pior deles uma métrica `Linhas de código de produção: 0` que era **constante escrita no
+  gerador**, não medição. O gerador vendorizado ganhou a **adaptação 17**
+  (`tools/product-site/README.md`): ele agora varre `apps/api` e `apps/web` e **conta** —
+  arquivos e linhas de produção por camada, casos de teste escritos por suíte, rotas
+  publicadas com o prefixo do próprio `APIRouter`, migrações, tabelas, portões e sabotagens.
+  O site ganhou uma página **Código**, os módulos M1–M8 passaram a mostrar o que existe de
+  cada um, e a "nota de honestidade" do roadmap deixou de ser um parágrafo digitado para ser
+  derivada dos números.
+  - A contagem estática de rotas foi **conferida contra o serviço de verdade**: o gerador diz
+    `rotas=144` e `app.openapi()` devolve `operações no OpenAPI: 144 caminhos: 128`.
+  - O que o gerador **não** faz está escrito na página: ele conta o que está **escrito**, não
+    o que passou. `it.each` conta como uma declaração e vira N casos na execução — por isso
+    o número do site (`casos=1514`) e o do executor (`1485 passed` no serviço,
+    `307 passed` na interface) não têm de bater, e o site diz isso em vez de esconder.
+  - Nada foi digitado: a atribuição de arquivo a módulo é um **mapa declarado**
+    (`_MAPA_DE_CODIGO`), e os 9 arquivos que não casam padrão nenhum aparecem ao pé da
+    página em vez de sumirem no arredondamento.
+  - De quebra, a **adaptação 18**: a página de artefatos anunciava "0 passos" em jornadas
+    de até treze passos, porque contava `## Passo N` (a convenção da origem) e não
+    `### N · título` (a daqui). Um número errado é pior que nenhum número.
+- **A matriz de aderência ao Padrão APH (Aplicação ↔ Harness) foi preenchida linha a linha**
+  — a tarefa T-07 do ciclo 012, que estava declarada como dívida **Dv-3** e agora está
+  fechada. Das 60 linhas: **46 `● atendido`** com `arquivo:linha` e teste, 2 `◑ parcial`,
+  4 `○ planejado / não emitido`, 4 `✦ delegado à fundação` (ADR 0007) e 4 `✗ fora do alvo
+  v1`. Três linhas mudaram de natureza, não só de status: §B.3.1 (modo anônimo saiu de
+  "decisão adiada" para implementado), APH-5.3 (a deduplicação deixou de ser por estado da
+  máquina de estados e virou unicidade no banco, migração `0007`) e APH-3.4 (o
+  `context_hash` passou a ser calculado no servidor e comparado na confirmação). O
+  contador `scripts/contar-aderencia-aph.py` nasceu junto, porque contar as marcas com
+  `grep -o` sobre o arquivo inteiro devolve **52** onde as tabelas têm 46 — a legenda e a
+  prosa também têm as marcas.
+- **O preenchimento encontrou um defeito, e ele não foi arredondado.** Interface, serviço e
+  manifesto declaram **17, 16 e 12 telas**, e a tela da Nuvem de Conflito (`toc.nuvem`)
+  **não existe no registro do serviço**. A consequência é silenciosa e foi reproduzida no
+  domínio puro: o snapshot dessa tela é **aceito** e chega ao modelo com **zero campos**,
+  porque a terceira camada da sanitização descarta o que não está declarado
+  (`campos: ()` contra `campos: (('projeto_id', 'text', 1, ''),)` na Árvore da Realidade
+  Atual). Por isso a linha APH-3.1 é `◑ parcial`, e não `● atendido`. **Relatado, não
+  corrigido**: consertar toca o manifesto, que é contrato sob gate humano ação a ação, e
+  exige teste que falhe antes (P4). Está no §11.2 do `qa-report.md` do ciclo 012, com dono.
+- **Os relatórios dos ciclos 010 e 011 deixaram de ter célula ambígua.** No 011, seis
+  pré-condições de abertura estavam com `—`, que tanto pode dizer "não verificado" quanto
+  "não cumprido": preenchidas, **cinco não foram cumpridas** — inclusive "ciclo 008
+  promovido" e as cinco `[DÚVIDA]` do `## Clarify` —, e o ciclo foi executado assim mesmo.
+  As duas linhas de matriz APH que o ciclo declarava tocar foram resolvidas (uma avançou,
+  a outra continua fora do alvo). Os dois relatórios ganharam **achados numerados** (sete
+  no 010, quatro no 011) e **pendências com dono** (sete no 011), e os quatro `TAIL:gate`
+  continuam **em branco**.
+- **Um defeito de prosa que o portão não pega, corrigido onde nasceu.**
+  `scripts/tests/sabotagem/README.md` explicava a diferença entre as 67 sabotagens que o
+  `grep` do registro conta e as **76** que a suíte declara dizendo que as do `check-i18n.sh`
+  e do `check-documentacao.sh` "são escritas em forma de várias linhas". As duas metades
+  estavam erradas: as nove que ficam de fora são **todas** do `check-i18n.sh`, são de uma
+  linha só, e o motivo é o padrão `check-[a-z-]+\.sh`, que não casa o dígito de `i18n`.
+  O `check-evidencia-colada.sh` continuou verde nos dois momentos — ele confere que o
+  número bate com o comando, **não** que a prosa ao lado esteja certa, e o achado é a
+  demonstração desse limite.
+- **`docs/roadmap.md` passou a declarar o estado de cada ciclo no próprio cabeçalho** —
+  `construção concluída`, `execução parcial`, `não executado` —, e o gerador do site lê
+  esse estado em vez de uma lista fixa. A tabela nova "Onde o roadmap está, medido em
+  2026-09-06" traz o estado com a origem de cada número ao lado: **11 de 12 ciclos** com
+  trabalho executado, **0 promovidos** (a promoção é gate humano), 8 de 8 módulos com
+  código, `1485 passed` no serviço, `307 passed (307)` na interface, 19 portões verdes,
+  76 sabotagens reprovando pelo motivo certo e 11/11 na suíte de conformidade do Nível 1.
+  O ciclo **002 nunca foi executado**, e agora isso está escrito no lugar onde se procura:
+  o protótipo descartável não existiu, as telas nasceram direto na aplicação com jornada
+  viva, e o `ux-design.md` que ele produziria não existe — que é a razão de o ciclo 010
+  carregar `ART:ux-design=no` como dívida.
+
+### Adição — M8: internacionalização com portão, documentação embutida, portabilidade e a restauração ENSAIADA (spec 011, ciclo 011)
+
+- **O que este lote fecha, e o preço que a linhagem pagou por não ter feito.** Duas das
+  **cinco** especificações de funcionalidade da quarta geração foram retrofit de
+  internacionalização (`tocbuilderv3/specs/feat_internationalization_full.md` e
+  `feat_internationalization_final_steps.md`, ambas de 2024-08-02) — e mesmo assim ela
+  ficou com literais em português vivos no código de produção
+  (`tocbuilderv3/components/SnTView.tsx:182`, `SnTStepEditorModal.tsx:92,95`) e com a
+  **chave crua indo para a tela** quando a tradução faltava
+  (`tocbuilderv3/i18n/I18nProvider.tsx:41`: `let result = translation || key;`). O que
+  faltava não era disciplina: era portão.
+- **`scripts/check-i18n.sh` — o portão de internacionalização** (RF-07, RF-08, RF-09).
+  Três medidas numa: nenhuma cadeia visível fora do dicionário (varrida com o **próprio
+  compilador do TypeScript**, nó de texto JSX e atributo visível — zero falso positivo por
+  *generic*, zero falso negativo por atributo), paridade entre `pt` e `en` (chave sem
+  tradução é pendência que reprova; chave só na tradução é erro), e a conferência de que
+  o mecanismo **falha alto** em chave ausente. A lista de exceções exige **motivo escrito
+  por linha**, e exceção que não corresponde a literal nenhum também derruba — a lacuna
+  L-05 da spec diz por quê: "uma lista de exceções sem motivo é exatamente como um portão
+  passa a mentir". Nove sabotagens declaradas.
+- **A chave ausente deixou de virar texto de tela** (RF-09, RF-10). Em desenvolvimento e
+  em teste, `traduzirCom` **lança** `ChaveDeTraducaoAusente` nomeando a chave e a tela; em
+  produção, cai para a cadeia da língua-fonte e registra em log estruturado. A tradução de
+  **código do servidor** (`tc`) continua tolerante, e a diferença é declarada: chave de
+  tela é vocabulário fechado e tipado, código de servidor é vocabulário aberto.
+- **O idioma efetivo virou função pura** (RF-12, RF-14): `preferência da pessoa → idioma do
+  embarque → língua-fonte`, com o **motivo** da escolha junto e a queda para o padrão
+  registrada. Na linhagem a mesma decisão lia `localStorage` por dentro do provedor
+  (`I18nProvider.tsx:15`), e por isso a escolha morria com o dispositivo.
+- **Documentação embutida com portão de cobertura** (E8.4). Sete verbetes — um por
+  ferramenta registrada mais a jornada de focalização —, bilíngues onde há tradução e com
+  **pendência declarada** onde não há (nunca uma tela vazia). O painel é lateral e não
+  modal, abre **na âncora** do campo que pediu ajuda, devolve o foco ao fechar e carrega o
+  corpo sob demanda. `scripts/check-documentacao.sh` deriva a lista de ferramentas do
+  **registro do serviço** (`registrar_raiz_de_ferramenta`), e não de uma segunda lista:
+  ferramenta nova sem verbete derruba o portão sem ninguém precisar lembrar. O precedente
+  é `tocbuilderv3/components/DocsView.tsx:21-26` — quatro tópicos para seis ferramentas, e
+  a frase `"Esta ferramenta ainda não foi implementada."` para as outras quatro. Seis
+  sabotagens declaradas.
+- **Exportação consolidada e ida e volta provada** (E1.4, RF-31, RF-32). Um projeto que
+  atravessou ARA → NC → ARF → APR → AT sai num **arquivo único**, com seção por ferramenta
+  e os vínculos entre elas, e volta criando **projetos novos** — sem tocar no que já
+  existe (RN-05). A garantia não é disciplina: **todo identificador do documento é
+  reescrito** antes de qualquer construção, o que mantém as referências internas
+  consistentes e torna a colisão impossível. A ida e volta é medida contra o PostgreSQL
+  real, e foi ela que encontrou um defeito de ordenação: o adaptador devolve os nós por
+  `(criado_em, id)` e os cinco nós de uma Nuvem de Conflito nascem no mesmo instante — logo
+  o desempate era por identificador, que muda na importação. A exportação passou a ordenar
+  por **conteúdo**, com refinamento iterativo das chaves.
+- **Adaptador do formato da quarta geração** (RF-25..RF-30), reconhecido por **assinatura
+  de conteúdo** e nunca pelo nome do arquivo. Ele fecha os três defeitos medidos em
+  `tocbuilderv3/components/NodeZoneView.tsx`: validação de três campos (`:314`), `alert()`
+  genérico (`:315`) e o `chatHistory: data.chatHistory || []` que reintroduzia o diálogo
+  com o modelo dentro do projeto criado (`:317`). Aqui o relato é **campo a campo** (dois
+  problemas → dois itens, nada criado) e todo descarte é **declarado com contagem** —
+  histórico de conversa, saída de modelo guardada no nó, identidade de origem.
+- **A restauração deixou de ser hipótese** (F8.1.3, RF-01..RF-03). `scripts/ensaio-de-restauracao.sh`
+  semeia uma base sintética por comando explícito, despeja, restaura **num banco novo**,
+  compara tabela a tabela e por resumo `md5` do conteúdo, e **sobe a aplicação de verdade**
+  (com a admissão do §B.4 completa) contra o destino restaurado. O procedimento, os
+  objetivos de ponto e de tempo de recuperação e **o que não volta com o banco** estão em
+  `docs/integracao/restauracao.md`. É a frase do Princípio XII da fundação executada:
+  "backup é o que já foi restaurado com sucesso em outro lugar".
+- **Números deste lote** (colados de execução, regra R1): a suíte do serviço saiu de
+  `1394 passed` para `1485 passed` contra o PostgreSQL real (+91 testes) e a da interface
+  de `280 passed (280)` para `307 passed (307)` (+27); os portões locais foram de 10 para
+  **12** e as sabotagens de 61 para **76**. Desempenho da RNF-08 (teto de 5 s): converter
+  200 nós e 200 arestas tem mediana de **2,3 ms** e percentil 95 entre **3,1 e 11,2 ms**
+  em duas execuções de vinte repetições — a variação é da máquina, e está dita aqui em vez
+  de escondida num número só; importar 200 nós e 199 arestas fica em **96,4 ms** de
+  percentil 95. Cobertura do domínio novo (RNF-12, pede ≥ 85%): **87%**
+  (`exportacao.py` 87%, `legado.py` 87%, `serializacao.py` 85%).
+- **Carregamento sob demanda medido, não prometido** (RNF-09): `vite build` produz um
+  pedaço por verbete (`ara-*.js` 5,34 kB, `nc-*.js` 4,86 kB, os outros cinco entre 1,65 e
+  2,30 kB) fora do pacote inicial de 348,49 kB — abrir a documentação não engorda o
+  primeiro carregamento em byte nenhum.
+
+### Adição — M5: a árvore de **Estratégia & Táticas** volta (spec 010, ciclo 010)
+
+- **O que este lote desfaz.** A árvore de Estratégia & Táticas (S&T) é a **única ferramenta
+  que regrediu** na linhagem TOC-Builder: habilitada na 1ª geração
+  (`TOC-Builder/components/Sidebar.tsx:44`, sem `disabled`) e na 2ª
+  (`TOC-Builder-APP/components/Sidebar.tsx:44`), foi desligada na 3ª
+  (`TOC-Builder-V2/components/Sidebar.tsx:56`) e na 4ª
+  (`tocbuilderv3/components/Sidebar.tsx:58`), as duas com `disabled: true` e **sem uma
+  linha de decisão registrada**. O modelo de dados ficou parado no código o tempo todo
+  (`tocbuilderv3/types.ts:270-311`). Este ciclo desfaz a regressão — com a decisão
+  registrada, que é o que faltou lá ([ADR 0014](docs/adr/0014-categoria-portada-e-transicao-de-status-livre-na-snt.md)).
+- **Numeração derivada, nunca digitada** (RN-01). O número `1`/`1.1`/`1.1.2` é função pura
+  da posição na árvore: não existe campo em formulário nenhum, não existe parâmetro em
+  operação nenhuma, não existe coluna no banco e a exportação não o carrega. Na quarta
+  geração ele era `stepNumber: string` obrigatório, texto livre, com o comentário
+  `// Optionally, add validation for stepNumber format or uniqueness` logo abaixo
+  (`tocbuilderv3/components/SnTStepEditorModal.tsx:56-57`) — e nenhuma das dez funções de
+  serviço o conferia. A ausência do campo é **medida** no OpenAPI publicado, não prometida.
+- **Renumeração local, com a propriedade que a torna confiável.** Inserir, mover e excluir
+  renumeram só a subárvore afetada; um teste baseado em propriedade compara o resultado
+  local com o recálculo total sobre **200 árvores geradas com semente fixa** e exige
+  igualdade. Sem essa propriedade, a otimização seria uma segunda fonte de verdade — o
+  defeito de que o módulo nasceu para se livrar.
+- **As três premissas lógicas ganham papel** (RN-02). Os três campos existem desde a 1ª
+  geração (`TOC-Builder/types.ts:243-245`) e a 4ª os oferecia em três áreas de texto
+  empilhadas, sem contexto (`SnTStepEditorModal.tsx:137-159`). Aqui cada uma tem posição de
+  leitura e **frase montada no servidor**: "Para alcançar `<1>` …, é necessário `<1.1>` …
+  porque …" e "`<1.1.1>` e `<1.1.2>` bastam para `<1.1>` … porque …". Ausência é
+  **pendência**, nunca trava de gravação (RN-06).
+- **Árvore estrita, sem entidade de aresta** (RN-04). Pai único e ordem ordinal substituem
+  o `edges: AraEdge[] // Reusing AraEdge for simplicity` da linhagem: multi-pai e ciclo
+  ficam irrepresentáveis, e a única recusa necessária é mover um passo para dentro da
+  própria subárvore.
+- **A exclusão avisa quantos passos caem — e não toca no resto** (RN-05). O contraexemplo é
+  o defeito de uma linha da quarta geração
+  (`tocbuilderv3/services/mockApiService.ts:521`: `filter(n => n.id === nodeId)` mantinha
+  **só** o nó excluído e descartava a árvore inteira). Ele entrou na suíte como caso de
+  teste, comparando os passos de fora campo a campo antes e depois.
+- **Status com autor e data** (RN-03): os quatro valores da linhagem, com transição livre
+  entre eles e três recusas nomeadas (`sem_mudanca`, `autor_obrigatorio`, valor fora do
+  vocabulário). O autor vem do principal da introspecção — o caso de uso **não tem**
+  parâmetro `autor`, e um teste confere a assinatura.
+- **Superfície completa**: domínio puro (`apps/api/src/toc_api/dominio/snt.py`), casos de uso
+  (`apps/api/src/toc_api/aplicacao/snt.py`), migração `0009` com `downgrade`, adaptador SQL
+  com a mesma trava otimista dos outros seis agregados, 13 rotas sob `/toc/snt`, quatro
+  telas no registro do lado do serviço e da interface, e a tela React
+  (`apps/web/src/telas/TelaDaSnT.tsx`) com árvore, ficha, vista tabular e painel de
+  acompanhamento, em português e inglês.
+- **Nenhuma ação de catálogo `toc.*`** nasce neste módulo (INT-04 da spec 010) — e a
+  ausência é **provada**, não afirmada: `test_nenhuma_acao_do_catalogo_pertence_a_snt`.
+- **Jornada viva J-011** — [`docs/jornadas/011-estrategia-e-taticas.md`](docs/jornadas/011-estrategia-e-taticas.md),
+  com 12 capturas geradas do build real por script versionado, avaliação heurística datada e
+  o desempenho da RNF-04 **medido** contra o serviço (abrir 100 passos em 5 níveis: p95 de
+  10,7 ms; mover subárvore de 20 passos: 176,0 ms). A corrida completa de 2026-09-06, medida
+  pelo `manifesto.json` que ela própria escreveu, levou o repositório a
+  **81 capturas, 13 311 234 bytes, 0 falhas** — conferido por
+  `scripts/check-evidencia-colada.sh`, que é o portão que impede este parágrafo de
+  envelhecer em silêncio. **O tempo de parede não entra aqui**: ele muda a cada execução, e
+  o manifesto não o grava.
+- **TAIL:mutation**: `scripts/tests/mutacao-m5.sh` aplica 8 mutações às quatro funções cuja
+  falha silenciosa reintroduziria os defeitos da linhagem e exige que a suíte fique
+  vermelha em todas. A primeira execução encontrou **uma sobrevivente** — `renumerar`
+  mantinha no mapa o número de passos já excluídos —, e o teste que faltava entrou junto.
+
+### Correção — dois defeitos que a construção do M5 desenterrou
+
+- **Projeto `snt` abria como Árvore da Realidade Atual.** `abrirFerramenta`
+  (`apps/web/src/App.tsx`) caía no ramo genérico para toda ferramenta desconhecida, e o
+  resultado era a tela da ARA recusando o projeto com `MUTATION_REFUSED`. Medido na bancada
+  da jornada J-011, no build real — não em teste de unidade.
+- **O portão `check-trava-otimista.sh` não conhecia o sétimo caminho de escrita.** Ele
+  declara a lista à mão de propósito ("caminho de escrita novo entra AQUI no mesmo commit
+  em que nasce"); `salvar_snt` entrou na lista junto com o adaptador, e o portão passou a
+  conferir 9 de 9 caminhos em vez de 8 de 8.
+
+
+### Adição — M4 ganha tela: as três árvores de futuro e a **cadeia** (spec 008, lado interface)
+
+- **O buraco que este lote fecha.** O ciclo 008 escreveu o domínio da Árvore da Realidade
+  Futura (ARF), da Árvore de Pré-Requisitos (APR), da Árvore de Transição (AT) e do
+  encadeamento entre elas — e **nenhuma delas tinha interface**. Domínio sem tela é metade
+  do trabalho: era exatamente a crítica que fazemos às quatro gerações do TOC-Builder, onde
+  a ARF era um botão cinza (`tocbuilderv3/components/Sidebar.tsx:55`, `disabled: true`) e
+  APR e AT nem botão tinham.
+- **Quatro telas novas** — `TelaDaArf`, `TelaDaApr`, `TelaDaAt` e `TelaDaCadeia` —, cada uma
+  com teste de fluxo feliz **e** de fluxo de erro, e as cinco entradas correspondentes no
+  registro de telas (`toc.arf_canvas`, `toc.apr_canvas`, `toc.apr_sequencia`,
+  `toc.at_canvas`, `toc.cadeia`). O registro do lado da interface estava **atrás** do
+  manifesto publicado desde o ciclo 006: o serviço já declarava as cinco telas
+  (`apps/api/src/toc_api/dominio/federacao/telas.py`) e a interface não, e o teste de paridade
+  `registro.test.ts` estava vermelho por isso.
+- **O ramo negativo tem superfície própria**, e não é mais um nó da lista. Ele ganha selo
+  ("Efeito indevido"), moldura tracejada com faixa lateral, região dedicada com estado por
+  extenso e as duas saídas lado a lado: **podar** (com a injeção que corta — e o seletor só
+  oferece injeção, RN-04) ou **aceitar** (com justificativa obrigatória; o autor vem do
+  principal, nunca do corpo). É o que separa uma árvore de futuro séria de uma lista de
+  desejos, e agora aparece na tela como tal.
+- **A cadeia** (`/toc/cadeia`) mostra o percurso completo numa tela só — Efeito Indesejável
+  → conflito → injeção → árvore de futuro → obstáculos → transição —, com cada costura
+  nomeada por extenso, as duas pontas navegáveis e o **elo pendente à vista** (RF-35): o
+  vínculo que perdeu uma ponta não é escondido, porque é ele que a pessoa precisa
+  consertar.
+- **Internacionalização de nascença**: português e inglês para os quatro espaços de nome
+  novos (`arf`, `apr`, `at`, `cadeia`) e para os sete vocabulários fechados que o servidor
+  publica (`papel_na_arf`, `estado_do_ramo`, `papel_na_apr`, `status_do_passo`,
+  `tipo_de_referencia`, `estado_da_referencia`, `aviso_de_verbalizacao`). O teste de
+  paridade das tabelas continua verde.
+- **Jornada viva J-10** — [`docs/jornadas/010-as-tres-arvores-e-a-cadeia.md`](docs/jornadas/010-as-tres-arvores-e-a-cadeia.md),
+  com capturas geradas do build real pelo script versionado e avaliação heurística datada.
+
+### Correção — três defeitos que a construção da interface do M4 desenterrou
+
+- **Não havia rota para mover um nó da ARF nem da APR.** Os casos de uso `MoverNoDaARF` e
+  `MoverNoDaAPR` existiam desde o ciclo 008 e estavam **importados pelo roteador sem
+  nenhuma rota que os chamasse**: o canvas oferecia o gesto de arrastar e o gesto não tinha
+  onde gravar. `PATCH /toc/{arf,apr}/projetos/{id}/nos/{no}` passa a aceitar `posicao`,
+  pela raiz do agregado (a rota genérica do M1 recusa com `AGGREGATE_ROOT_REQUIRED`), e o
+  `PATCH` sem campo algum é **recusa** e não sucesso vazio.
+- **Duas classes de esquema com o mesmo nome no mesmo módulo.** `PendenciaOut` foi definida
+  para a pendência de um passo da jornada de focalização (M6) e **de novo** para a
+  pendência do plano de Estratégia & Táticas (M5); a segunda apagava a primeira, e a
+  jornada inteira do M6 caía em tempo de resposta com "6 validation errors for
+  PendenciaOut". A do M5 passa a chamar-se `PendenciaDoPlanoOut`; a segunda `LigarIn`, que
+  era cópia exata da primeira, deixou de existir.
+- **Um nome importado duas vezes em `erros.py` escondia uma classe de exceção inteira.**
+  `TransicaoDeStatusRecusada` era importada de `dominio.ara` **e** de `dominio.snt`, e
+  `@app.exception_handler(...)` registrava a mesma classe duas vezes: a recusa da Árvore da
+  Realidade Atual perdia o `details.motivo` e chegava ao cliente como `MUTATION_REFUSED`
+  seco. Os dois nomes ganharam apelido (`TransicaoDeStatusDaAra`, `TransicaoDeStatusDaSnT`).
+- **Duas funções de aptidão novas** (`apps/api/tests/contrato/test_portas.py`) impedem a volta das
+  duas últimas: nenhum esquema HTTP com nome repetido, nenhum nome importado duas vezes em
+  `erros.py`. As três correções somadas devolvem a suíte inteira ao verde.
+
+
 ### Adição — M6: a jornada dos cinco passos de focalização, e a primeira vez que a aplicação diz **qual é a restrição** (spec 009)
 
 - **O buraco que este módulo fecha.** Até aqui a aplicação sabia desenhar as ferramentas
@@ -53,9 +341,11 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
   [`docs/jornadas/009-cinco-passos-de-focalizacao.md`](docs/jornadas/009-cinco-passos-de-focalizacao.md),
   com captura por passo gerada pelo script versionado a partir do build real. A corrida de
   2026-09-06 que a produziu, medida pelo `manifesto.json` que ela própria escreveu, levou o
-  repositório a **52 capturas,
-  8 481 359 bytes, 0 falhas** (`find docs/jornadas/capturas -name '*.png' | wc -l` → `52`,
-  conferido pelo portão `scripts/check-evidencia-colada.sh`). **O tempo de parede não entra
+  repositório a **69 capturas,
+  10 599 868 bytes, 0 falhas** (`find docs/jornadas/capturas -name '*.png' | wc -l` → `69`,
+  conferido pelo portão `scripts/check-evidencia-colada.sh`; o número cresceu com a J-10,
+  que entrou depois — o portão é justamente o que impede este parágrafo de envelhecer em
+  silêncio). **O tempo de parede não entra
   aqui**: ele muda a cada execução, e o manifesto não o grava.
 - **Portões** — `scripts/check-trava-otimista.sh` passou a conhecer **oito** caminhos de
   escrita e `scripts/check-trava-da-proposta.sh` **nove** métodos `salvar*` (entrou

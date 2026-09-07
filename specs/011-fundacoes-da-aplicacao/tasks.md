@@ -10,11 +10,17 @@
 > **RPO/RTO** — Recovery Point / Time Objective (objetivo de ponto / tempo de
 > recuperação) · **IA** — inteligência artificial.
 >
-> **Ciclo planejado no 001, não executado.** Nenhuma caixa se marca antes do fato: as
-> marcações abaixo estão vazias de propósito. Ordem TDD em toda tarefa de código — o teste
-> vermelho antes da implementação —, e a evidência de cada aceite vai para o
-> [`qa-report.md`](qa-report.md) com a saída colada (regra R1) e o tamanho examinado
-> (regra R2).
+> **Execução parcial (lote M8, 2026-09-06).** As caixas marcadas abaixo — e só elas — têm
+> a saída colada no [`qa-report.md`](qa-report.md); as demais continuam vazias porque o
+> trabalho delas não foi feito, não porque falta anotar. Ordem TDD em toda tarefa de
+> código — o teste vermelho antes da implementação —, com a evidência de cada aceite
+> carregando a saída (regra R1) e o tamanho examinado (regra R2).
+>
+> **O que ficou de fora, dito por extenso**: a persistência da preferência de idioma no
+> servidor (T-08, RF-13 — exige migração, tabela e rota novas), a formatação e a colação
+> localizadas (T-08, RF-16), as telas de importação e de exportação consolidada (parte do
+> T-11, RI-07..RI-09), o adendo de `ux-design` (T-04), a jornada viva (T-13) e a cauda
+> inteira. `TAIL:gate` é do humano e fica em branco por definição.
 
 ## Verificação primeiro
 
@@ -48,17 +54,17 @@
 
 ## Internacionalização (E8.3) — TDD e portões
 
-- [ ] T-05 — Resolução do **idioma efetivo** como função pura: preferência da pessoa →
+- [x] T-05 — Resolução do **idioma efetivo** como função pura: preferência da pessoa →
   idioma do embarque → língua-fonte, com o motivo anexado ao resultado. Teste dos três
   caminhos escrito **antes** do resolvedor, visto falhar. · Dep: T-01 · Ref: RF-12, RF-14 ·
   Aceite: DoD 5 — os três caminhos verdes com o motivo verificado; queda ao padrão aparece
   em log estruturado.
-- [ ] T-06 — Função de aptidão de **literal órfão**, nascida por sabotagem: planta-se
+- [x] T-06 — Função de aptidão de **literal órfão**, nascida por sabotagem: planta-se
   `"Salvar"` num componente, o portão tem de pegá-lo nomeando arquivo e linha; a lista de
   exceções exige **motivo escrito por linha**. · Dep: T-05 · Ref: RF-07; spec L-05; plan
   risco GATE-excecao-sem-motivo · Aceite: DoD 2 — código 0 no repositório limpo, código ≠ 0
   com o literal plantado, e a saída imprime "N arquivos, M cadeias examinadas" (R2).
-- [ ] T-07 — Função de aptidão de **paridade de dicionários** `pt` × `en`: chave só na
+- [x] T-07 — Função de aptidão de **paridade de dicionários** `pt` × `en`: chave só na
   língua-fonte é pendência listada; chave só na tradução é erro. · Dep: T-05 · Ref: RF-08 ·
   Aceite: DoD 3 — as duas contagens impressas; remover uma chave da tradução aparece como
   pendência, acrescentar uma chave órfã derruba o portão.
@@ -72,7 +78,7 @@
 
 ## Documentação embutida (E8.4)
 
-- [ ] T-09 — Acervo de verbetes (um por ferramenta registrada + o da focalização),
+- [x] T-09 — Acervo de verbetes (um por ferramenta registrada + o da focalização),
   bilíngue, com âncoras nomeadas e procedência citada; painel lateral com índice, foco
   devolvido ao fechar e carregamento sob demanda; portão de cobertura ferramenta ×
   verbete derivado do **registro de ferramentas**. · Dep: T-04, T-08 · Ref:
@@ -82,7 +88,7 @@
 
 ## Exportação e importação consolidadas (E1.4)
 
-- [ ] T-10 — `PlanoDeConversao` e `RelatoDeImportacao` como domínio puro, TDD estrito: o
+- [x] T-10 — `PlanoDeConversao` e `RelatoDeImportacao` como domínio puro, TDD estrito: o
   teste com o arquivo sintético no formato da quarta geração — incluindo `chatHistory`
   preenchido e uma aresta órfã — é escrito **antes** do serviço e visto falhar. · Dep: T-01
   · Ref: RF-26, RF-27, RF-29; spec F-08, F-09 · Aceite: DoD 10, 11 e 12 — conversão correta;
@@ -93,11 +99,15 @@
   projeto multi-ferramenta com os vínculos de encadeamento. · Dep: T-10 · Ref: RF-25,
   RF-28, RF-30..RF-32; RI-07..RI-09 · Aceite: DoD 13 — ida e volta com vínculos recriados e
   contados; medição da RNF-08 (200 nós, 300 arestas, percentil 95) colada. **Primeira
-  tarefa a sair se o apetite estourar** (round 011).
+  tarefa a sair se o apetite estourar** (round 011). · **Estado (lote M8)**: o adaptador,
+  a exportação consolidada e a ida e volta **contra o PostgreSQL real** estão entregues,
+  com as duas rotas (`GET /toc/portabilidade/projetos/{id}` e
+  `POST /toc/portabilidade/importacoes`) e a medição da RNF-08 colada; as **telas**
+  (RI-07..RI-09) não — por isso a caixa continua vazia.
 
 ## Unidade de restauração (F8.1.3)
 
-- [ ] T-12 — **Ensaio de restauração**, cedo e independente: restaurar a cópia do provedor
+- [x] T-12 — **Ensaio de restauração**, cedo e independente: restaurar a cópia do provedor
   para um destino separado, subir a aplicação contra o destino, verificar a base sintética
   íntegra e escrever o relatório com instante alvo, duração, objetivo de ponto e de tempo de
   recuperação, e **o que não voltou** (arquivos fora do banco, índices reconstruídos). ·

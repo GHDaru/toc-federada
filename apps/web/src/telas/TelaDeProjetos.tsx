@@ -11,6 +11,9 @@
 import { useCallback, useState } from "react";
 import type { Cliente } from "../api/cliente";
 import type { ProjetoResumo } from "../dominio/tipos";
+
+/** As ferramentas que a lista sabe criar. Uma a mais aqui é uma linha a mais em `criar`. */
+type Ferramenta = "generico" | "ara" | "nc" | "snt";
 import { Carregando, EstadoDeErro, EstadoVazio } from "../componentes/Estados";
 import { mensagemDeErro } from "../componentes/mensagemDeErro";
 import { useRecurso } from "../estado/useRecurso";
@@ -27,7 +30,11 @@ export function TelaDeProjetos({ cliente, aoAbrir }: TelaDeProjetosProps) {
   const { dado, carregando, erro, recarregar } = useRecurso<ProjetoResumo[]>(buscar, [cliente]);
   const [nome, setNome] = useState("");
   const [problema, setProblema] = useState("");
-  const [ferramenta, setFerramenta] = useState<"generico" | "ara" | "nc">("ara");
+  const [ferramenta, setFerramenta] = useState<Ferramenta>("ara");
+  // RF-01 do M5: a árvore de Estratégia & Táticas **não nasce sem meta global**. O campo
+  // aparece só quando a ferramenta é a S&T — pedir meta global para uma Nuvem de
+  // Conflito seria campo órfão, e campo órfão é o que ensina a preencher qualquer coisa.
+  const [metaGlobal, setMetaGlobal] = useState("");
   const [excluindo, setExcluindo] = useState<ProjetoResumo | null>(null);
   const [erroDeAcao, setErroDeAcao] = useState<unknown>(null);
   const [ocupado, setOcupado] = useState(false);
@@ -40,9 +47,12 @@ export function TelaDeProjetos({ cliente, aoAbrir }: TelaDeProjetosProps) {
     try {
       if (ferramenta === "ara") await cliente.ara.criarProjeto(nome.trim(), problema.trim());
       else if (ferramenta === "nc") await cliente.nc.criarProjeto(nome.trim(), problema.trim());
+      else if (ferramenta === "snt")
+        await cliente.snt.criarProjeto(nome.trim(), metaGlobal.trim(), problema.trim());
       else await cliente.projetos.criar(nome.trim(), problema.trim());
       setNome("");
       setProblema("");
+      setMetaGlobal("");
       await recarregar();
     } catch (falha) {
       setErroDeAcao(falha);
@@ -92,13 +102,28 @@ export function TelaDeProjetos({ cliente, aoAbrir }: TelaDeProjetosProps) {
         <select
           id="ferramenta-do-projeto"
           value={ferramenta}
-          onChange={(e) => setFerramenta(e.target.value as "generico" | "ara" | "nc")}
+          onChange={(e) => setFerramenta(e.target.value as Ferramenta)}
         >
           <option value="ara">{t("ferramenta.ara")}</option>
           <option value="nc">{t("ferramenta.nc")}</option>
+          <option value="snt">{t("ferramenta.snt")}</option>
           <option value="generico">{t("ferramenta.generico")}</option>
         </select>
-        <button type="submit" disabled={ocupado || !nome.trim()}>
+        {ferramenta === "snt" ? (
+          <>
+            <label htmlFor="meta-global-do-projeto">{t("snt.meta_global")}</label>
+            <input
+              id="meta-global-do-projeto"
+              value={metaGlobal}
+              placeholder={t("snt.meta_global_placeholder")}
+              onChange={(e) => setMetaGlobal(e.target.value)}
+            />
+          </>
+        ) : null}
+        <button
+          type="submit"
+          disabled={ocupado || !nome.trim() || (ferramenta === "snt" && !metaGlobal.trim())}
+        >
           {ocupado ? t("projetos.criando") : t("projetos.criar")}
         </button>
       </form>

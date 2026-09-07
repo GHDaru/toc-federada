@@ -10,6 +10,8 @@ class RepositorioDeProjetosEmMemoria:
         self._arfs = {}
         self._aprs = {}
         self._ats = {}
+        self._focalizacoes = {}
+        self._snts = {}
         self._referencias = {}
 
     def _exigir_versao_lida(self, projeto) -> None:
@@ -57,6 +59,11 @@ class RepositorioDeProjetosEmMemoria:
         self._exigir_versao_lida(analise.projeto)
         analise.projeto.confirmar_gravacao()
         self._focalizacoes[analise.projeto.id] = deepcopy(analise)
+
+    def salvar_snt(self, arvore) -> None:
+        self._exigir_versao_lida(arvore.projeto)
+        arvore.projeto.confirmar_gravacao()
+        self._snts[arvore.projeto.id] = deepcopy(arvore)
 
     def _exigir_versao_lida_da_referencia(self, referencia) -> None:
         guardada = self._referencias.get(referencia.id)

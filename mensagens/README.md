@@ -51,6 +51,7 @@ e nenhum dono.
 | [004](004-para-protocolos-rodar-a-suite-sem-escrever-no-repo.md) | `GHDaru/protocolos` | a suíte de conformidade não roda a partir de um clone somente-leitura | aberta |
 | [005](005-para-protocolos-codigo-de-conflito-de-versao-no-a7.md) | `GHDaru/protocolos` | o registro mínimo do §A.7 não tem código para conflito de versão de agregado | aberta |
 | [006](006-para-maestro-colchete-anula-a-razao-do-artefato.md) | `GHDaru/maestro` | um `[` no texto faz o `check-conformance.sh` chamar de "sem razão" 401 caracteres de razão | aberta |
+| [007](007-para-protocolos-idioma-no-handshake.md) | `GHDaru/protocolos` | o `ghd.handshake` carrega tema e não carrega idioma: a aplicação embarcada não sabe em que língua abrir | aberta |
 
 > Toda mensagem nova entra no fim da tabela, com o próximo número livre. O estado muda
 > conforme o destino responde: aberta → respondida → resolvida, ou retirada.

@@ -8,7 +8,7 @@
 > o princípio "Jornada viva" da constituição do projeto · **ADR** — Registro de Decisão
 > Arquitetural · **API** — interface de programação de aplicações.
 
-- **Status**: quatro jornadas vivas · **Capturas geradas em**: 2026-09-06
+- **Status**: seis jornadas vivas · **Capturas geradas em**: 2026-09-06
 
 ## A regra que manda aqui
 
@@ -45,7 +45,7 @@ com o tamanho e o resumo criptográfico de cada uma, mais as medidas colhidas na
 Saída da corrida de 2026-09-06, últimas linhas, copiadas:
 
 ```text
-33 captura(s), 5144889 bytes, 0 falha(s), 44.3s
+69 captura(s), 10599868 bytes, 0 falha(s), 75.5s
 ```
 
 Se uma captura não sair, o script **sai diferente de zero** e a falha entra no manifesto.
@@ -67,10 +67,10 @@ invariantes e sai diferente de zero quando qualquer uma cai:
 ```text
 $ scripts/check-jornadas.sh
 ── Jornadas vivas: captura, citação e heurística datada (P6) ──
-  jornadas examinadas: 5 (001-chegada-e-embarque.md, 002-primeiro-projeto-e-ara.md, 003-nuvem-de-conflito.md, 007-a-travessia.md, 009-cinco-passos-de-focalizacao.md)
-  capturas em disco: 52  ·  citações de imagem: 52  ·  data das capturas (manifesto): 2026-09-06
+  jornadas examinadas: 7 (001-chegada-e-embarque.md, 002-primeiro-projeto-e-ara.md, 003-nuvem-de-conflito.md, 007-a-travessia.md, 009-cinco-passos-de-focalizacao.md, 010-as-tres-arvores-e-a-cadeia.md, 011-estrategia-e-taticas.md)
+  capturas em disco: 81  ·  citações de imagem: 81  ·  data das capturas (manifesto): 2026-09-06
   invariantes: J1 órfã/duplicada · J2 citada e inexistente · J3 heurística datada e >= captura · J4 comando de regeneração
-  verificações executadas: 114  ·  heurísticas datadas: 5/5  ·  comandos de regeneração: 5/5
+  verificações executadas: 176  ·  heurísticas datadas: 7/7  ·  comandos de regeneração: 7/7
 
 ✓ toda captura é citada por exatamente uma jornada, toda imagem citada existe,
   toda jornada traz heurística datada não anterior às capturas e o comando que as regenera.
@@ -88,32 +88,29 @@ de regeneração — e cada uma tem de derrubá-lo **pelo motivo declarado**.
 | J-01 | Chegada e embarque | [`001-chegada-e-embarque.md`](001-chegada-e-embarque.md) | 5 | 🟢 viva |
 | J-02 | Primeiro projeto e ARA | [`002-primeiro-projeto-e-ara.md`](002-primeiro-projeto-e-ara.md) | 16 | 🟢 viva |
 | J-03 | Nuvem de Conflito | [`003-nuvem-de-conflito.md`](003-nuvem-de-conflito.md) | 10 | 🟢 viva |
-| J-04 | Da injeção ao plano (ARF → APR → AT) | — | — | 🟡 planejada (ciclo 008) |
-| J-05 | Focalização | — | — | 🟡 planejada (ciclo 009) |
-| J-06 | Estratégia & Táticas | — | — | 🟡 planejada (ciclo 010) |
 | **J-07** | **A travessia — da ARA à Nuvem** | [`007-a-travessia.md`](007-a-travessia.md) | 5 | 🟢 viva |
+| J-09 | Os cinco passos de focalização | [`009-cinco-passos-de-focalizacao.md`](009-cinco-passos-de-focalizacao.md) | 16 | 🟢 viva |
+| **J-10** | **As três árvores de futuro e a cadeia** | [`010-as-tres-arvores-e-a-cadeia.md`](010-as-tres-arvores-e-a-cadeia.md) | 17 | 🟢 viva |
+| **J-011** | **A árvore de Estratégia & Táticas** | [`011-estrategia-e-taticas.md`](011-estrategia-e-taticas.md) | 12 | 🟢 viva |
 
-### Por que J-04, J-05 e J-06 continuam sem documento
+A J-10 **sucede a J-04** da lista antiga ("Da injeção ao plano"), e a J-09 sucede a J-05:
+as duas nasceram com as ferramentas delas, e o número da jornada passou a seguir o número
+do ciclo que a produziu — que é o que torna a lista rastreável sem uma tabela de conversão.
 
-**Porque as ferramentas delas não existem no build**, e escrever a jornada assim mesmo
-seria exatamente a ficção que a Iron Law proíbe. A evidência é uma listagem, não uma
+### A J-06 virou J-011, e a numeração explica por quê
+
+A lista antiga reservava "J-06" para a árvore de Estratégia & Táticas e a deixava sem
+documento, porque **jornada viva não é resumo de tela: é o percurso capturado do build
+real**, e ele nasce no ciclo da ferramenta. O ciclo chegou: a S&T foi percorrida por script
+versionado no **ciclo 010**, e por isso ela entra como **J-011** — o número da jornada segue
+o número do ciclo que a produziu, como já aconteceu com a J-09 (que sucedeu a J-05) e a J-10
+(que sucedeu a J-04). A pasta tem hoje sete documentos, e a lista abaixo é a listagem, não a
 lembrança:
 
 ```text
-$ ls apps/api/src/toc_api/dominio/ | tr '\n' ' '
-__init__.py __pycache__ analise.py ara.py criterios_ude.py erros.py eventos.py
-federacao formulacao.py geracao.py grafo.py identidade.py lexico.py nuvem.py
-portas.py projeto.py valores.py
-
-$ ls apps/web/src/telas/ | tr '\n' ' '
-TelaDaAra.test.tsx TelaDaAra.tsx TelaDaLixeira.tsx TelaDaNuvem.test.tsx
-TelaDaNuvem.tsx TelaDeProjetos.test.tsx TelaDeProjetos.tsx registro.test.ts
-registro.ts
+$ ls docs/jornadas/*.md | tr '\n' ' '
+docs/jornadas/001-chegada-e-embarque.md docs/jornadas/002-primeiro-projeto-e-ara.md docs/jornadas/003-nuvem-de-conflito.md docs/jornadas/007-a-travessia.md docs/jornadas/009-cinco-passos-de-focalizacao.md docs/jornadas/010-as-tres-arvores-e-a-cadeia.md docs/jornadas/011-estrategia-e-taticas.md docs/jornadas/README.md
 ```
-
-Há domínio para grafo (M1), ARA (M2) e Nuvem (M3), e quatro telas. Não há módulo de ARF,
-APR e AT (M4, ciclo 008), nem de focalização (M6, ciclo 009), nem de S&T (M5, ciclo 010).
-As três jornadas nascem nos ciclos delas, com as capturas delas.
 
 ### Por que J-07 entrou na lista
 

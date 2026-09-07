@@ -44,6 +44,8 @@ BASES=(
   "scripts/check-trava-otimista.sh"   "trava-otimista"
   "scripts/check-trava-da-proposta.sh" "trava-da-proposta"
   "scripts/check-evidencia-colada.sh" "evidencia-colada"
+  "scripts/check-i18n.sh"             "i18n"
+  "scripts/check-documentacao.sh"     "documentacao"
 )
 
 # ── as sabotagens ───────────────────────────────────────────────────────────────
@@ -335,6 +337,77 @@ SABOTAGENS=(
   "scripts/check-evidencia-colada.sh" "evidencia-colada" "documento-citado-e-inexistente"
   "rm docs/nota.md"
   "o arquivo citado não existe"
+
+  # --- check-i18n.sh (E8.3 da spec 011) ---
+  # Sete mutações, e cada uma reabre um pedaço EXATO do que a quarta geração da linhagem
+  # pagou: literal esquecido no componente (`SnTView.tsx:182`), dicionários que divergem
+  # em silêncio (`pt.ts` com 465 linhas e `en.ts` com 464) e a chave crua na tela
+  # (`I18nProvider.tsx:41`). As duas da lista de exceções vêm da lacuna L-05 da spec: uma
+  # lista de exceções sem motivo é exatamente como um portão passa a mentir.
+  "scripts/check-i18n.sh" "i18n" "literal-plantado-no-componente"
+  "sed -i 's|<span>×</span>|<span>Salvar</span>|' apps/web/src/componentes/Barra.tsx"
+  "literal(is) visível(is) fora do dicionário"
+
+  "scripts/check-i18n.sh" "i18n" "literal-plantado-em-atributo-visivel"
+  "sed -i 's|aria-label={t(\"app.titulo\")}|aria-label=\"Barra de projetos\"|' apps/web/src/componentes/Barra.tsx"
+  "atributo visível"
+
+  "scripts/check-i18n.sh" "i18n" "excecao-sem-motivo"
+  "sed -i 's| # endônimo.*||' scripts/i18n/excecoes.txt"
+  "exceção sem motivo"
+
+  "scripts/check-i18n.sh" "i18n" "excecao-que-nao-corresponde-a-nada"
+  "rm apps/web/src/componentes/Rodape.tsx"
+  "exceção que não corresponde a literal nenhum"
+
+  "scripts/check-i18n.sh" "i18n" "chave-sem-traducao"
+  "sed -i '/salvar: \"Save\",/d' apps/web/src/i18n/en.ts"
+  "chave da língua-fonte sem tradução"
+
+  "scripts/check-i18n.sh" "i18n" "chave-orfa-so-na-traducao"
+  "sed -i 's|salvar: \"Save\",|salvar: \"Save\", inventada: \"Orphan\",|' apps/web/src/i18n/en.ts"
+  "chave só na tradução"
+
+  "scripts/check-i18n.sh" "i18n" "traducao-vazia"
+  "sed -i 's|cancelar: \"Cancel\",|cancelar: \"\",|' apps/web/src/i18n/en.ts"
+  "tradução vazia"
+
+  "scripts/check-i18n.sh" "i18n" "chave-ausente-deixa-de-falhar-alto"
+  "sed -i 's|if ((opcoes.modo ?? \"estrito\") === \"estrito\") throw new ChaveDeTraducaoAusente(chave);||' apps/web/src/i18n/index.tsx"
+  "não LANÇA em chave ausente"
+
+  "scripts/check-i18n.sh" "i18n" "a-chave-crua-volta-para-a-tela"
+  "sed -i 's|const achado = buscar(dicionario, chave);|const achado = buscar(dicionario, chave); if (achado === undefined) return chave;|' apps/web/src/i18n/index.tsx"
+  "devolve a CHAVE CRUA"
+
+  # --- check-documentacao.sh (E8.4 da spec 011) ---
+  # Seis mutações. A primeira é o defeito medido da linhagem em pessoa: o `DocsView` da
+  # quarta geração documentava duas ferramentas de seis, e nada reprovava. As outras
+  # cobrem as maneiras de o acervo mentir sem ficar vazio — verbete de ferramenta que não
+  # existe, procedência que não resolve, âncora que abre no lugar errado.
+  "scripts/check-documentacao.sh" "documentacao" "ferramenta-registrada-sem-verbete"
+  "rm apps/web/src/documentacao/verbetes/nc.ts"
+  "ferramenta registrada SEM verbete: nc"
+
+  "scripts/check-documentacao.sh" "documentacao" "verbete-orfao-sem-ferramenta"
+  "cp apps/web/src/documentacao/verbetes/nc.ts apps/web/src/documentacao/verbetes/inventada.ts"
+  "verbete órfão, sem ferramenta registrada: inventada"
+
+  "scripts/check-documentacao.sh" "documentacao" "procedencia-que-nao-resolve"
+  "sed -i 's|specs/005-arvore-da-realidade-atual/spec.md|specs/999-inexistente/spec.md|' apps/web/src/documentacao/verbetes/ara.ts"
+  "procedência que não resolve"
+
+  "scripts/check-documentacao.sh" "documentacao" "verbete-sem-procedencia-nenhuma"
+  "sed -i '/procedencia: \[/d' apps/web/src/documentacao/verbetes/ara.ts"
+  "verbete sem campo"
+
+  "scripts/check-documentacao.sh" "documentacao" "ancora-de-ajuda-que-nao-existe"
+  "sed -i 's|ancora: \"premissa-sustentada\"|ancora: \"outra-coisa\"|' apps/web/src/documentacao/verbetes/nc.ts"
+  "não existe no verbete"
+
+  "scripts/check-documentacao.sh" "documentacao" "verbete-sem-exemplo-sintetico"
+  "sed -i '/exemplo:/d' apps/web/src/documentacao/verbetes/ara.ts"
+  "verbete sem exemplo sintético"
 )
 
 falhas=0
