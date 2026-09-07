@@ -49,6 +49,7 @@ temporário criado com `mktemp -d` e sabota a cópia.
 | `i18n/` | `scripts/check-i18n.sh` | dois dicionários em paridade, um componente com todo texto vindo de `t(...)`, um literal legítimo declarado com motivo e o mecanismo que lança em chave ausente (base do ciclo 011) |
 | `documentacao/` | `scripts/check-documentacao.sh` | um domínio sintético com **duas ferramentas registradas**, dois verbetes que as cobrem, duas procedências que resolvem e um componente que declara uma âncora existente — o denominador vem do registro do serviço, nunca do próprio acervo (base do ciclo 011) |
 | `acao-de-catalogo/` | `scripts/check-acao-de-catalogo.sh` | um catálogo sintético com três ações (uma da Árvore da Realidade Atual, uma do projeto genérico, uma sem ferramenta) e um executor com a tabela de despacho, o construtor e as mãos — a forma que o portão lê por árvore sintática abstrata, sem importar nem executar nada (base do ADR 0015) |
+| `versao-do-agregado/` | `scripts/check-versao-do-agregado.sh` | um núcleo sintético com `_avancar` e a chave da raiz, **duas ferramentas registradas** — uma que avança direto e outra pela mutação pública do núcleo — e um adaptador em que todo `salvar_*` anota o agregado que recebe e passa pela trava; é a base da metade de DOMÍNIO da trava do ADR 0010 |
 
 Base 100% sintética, por regra do ADR 0006: personas fictícias (**Facilitadora TOC**,
 "Instituição Horizonte"), nenhum nome, enunciado ou data de pessoa real. A regra vale aqui
@@ -58,19 +59,19 @@ como vale em spec e em captura — fixture é exatamente onde a dívida da irmã
 ## As sabotagens
 
 A tabela viva está em `scripts/tests/run-sabotagem.sh` (a mutação e o trecho exigido moram
-juntos, para não divergirem). São **73** mutações na forma de uma
-linha só, sobre **13** bases — número medido, não lembrado, e conferido pelo `scripts/check-evidencia-colada.sh`
+juntos, para não divergirem). São **78** mutações na forma de uma
+linha só, sobre **14** bases — número medido, não lembrado, e conferido pelo `scripts/check-evidencia-colada.sh`
 para não envelhecer como a redação anterior desta linha, que dizia 27 depois que a suíte já
 tinha crescido:
 
 ```text
 $ grep -cE '^  "scripts/check-[a-z-]+\.sh" +"[a-z-]+" "[a-z0-9-]+"$' scripts/tests/run-sabotagem.sh
-73
+78
 $ ls -d scripts/tests/sabotagem/*/ | wc -l
-13
+14
 ```
 
-A própria suíte declara **82**, e a diferença de nove tem uma causa exata — corrigida aqui
+A própria suíte declara **87**, e a diferença de nove tem uma causa exata — corrigida aqui
 em 2026-09-06, porque a redação anterior a explicava errado ("as sabotagens do
 `check-i18n.sh` e do `check-documentacao.sh` são escritas em forma de várias linhas", o que
 não é verdade: são de uma linha só, como as demais). **As nove que o `grep` não casa são
@@ -80,19 +81,19 @@ que lê o array `SABOTAGENS` do script:
 
 ```text
 $ python3 -c 'import re; t=open("scripts/tests/run-sabotagem.sh",encoding="utf-8").read(); b=re.search(r"^SABOTAGENS=\((.*?)^\)$",t,re.M|re.S).group(1); c=[l for l in b.splitlines() if l.strip().startswith(chr(34)+"scripts/check-")]; f=[l for l in c if not re.match(r"^\s*\"scripts/check-[a-z-]+\.sh\" +\"[^\"]+\" \"[^\"]+\"\s*$",l)]; print("cabecas de tupla:",len(c),"- fora do padrao do registro:",len(f)); print("portoes das que ficam de fora:",sorted({l.split(chr(34))[1] for l in f}))'
-cabecas de tupla: 82 - fora do padrao do registro: 9
+cabecas de tupla: 87 - fora do padrao do registro: 9
 portoes das que ficam de fora: ['scripts/check-i18n.sh']
 ```
 
-O número colado acima (**73**) continua sendo o que aquele `grep` devolve, e é isso que o
+O número colado acima (**78**) continua sendo o que aquele `grep` devolve, e é isso que o
 portão `check-evidencia-colada.sh` confere — ele garante que o número bate com o comando,
 **não** que a prosa ao lado esteja certa, e este parágrafo é a demonstração desse limite.
 Quem manda sobre **quantas sabotagens existem** é a saída da suíte:
 
 ```text
 $ scripts/tests/run-sabotagem.sh
-  portões cobertos: 13  ·  bases válidas aceitas: 13/13
-  sabotagens declaradas: 82  ·  reprovadas pelo motivo certo: 82/82
+  portões cobertos: 14  ·  bases válidas aceitas: 14/14
+  sabotagens declaradas: 87  ·  reprovadas pelo motivo certo: 87/87
   sabotagens de ambiente: 2  ·  recusadas pelo motivo certo: 2/2
 ```
 
@@ -165,6 +166,34 @@ Este portão nasceu de um defeito que **um conserto anterior criou**: fechada a 
 fundos do agregado, as quatro ações genéricas do catálogo continuaram apontadas para os
 casos de uso genéricos e passaram a falhar para sempre em todas as ferramentas. Nenhum
 portão olhava para a ligação entre a ação e o caso de uso — só para cada lado dela.
+
+## A metade de domínio da trava (`check-versao-do-agregado.sh`)
+
+As cinco sabotagens desta base cobrem as **duas direções** do mesmo defeito, e a razão de
+ela existir é que a trava otimista (ADR 0010) tem duas metades e só uma estava medida.
+
+A metade do adaptador — `UPDATE … WHERE versao = :versao_lida` — já tinha portão
+(`check-trava-otimista.sh`). A metade do domínio não tinha nenhum: **a versão só protege o
+que ela acompanha**. A Árvore da Realidade Atual (ARA) mudava marcação de Efeito
+Indesejável (UDE), ficha, parecer e status `validado` sem chamar `Projeto._avancar`, então
+duas gravações que leram a mesma versão casavam as duas no `WHERE`, e a reconciliação
+apagava o retrato de quem gravou primeiro. Medido contra o PostgreSQL real: **20 pareceres
+concorrentes · 20 aceitos · 1 no banco**.
+
+- `mutacao-propria-sem-avanco-de-versao` — o defeito da ARA em pessoa: estado próprio muda,
+  a versão não anda.
+- `escrita-de-agregado-sem-a-trava` — o inverso: o agregado avança a versão e o `salvar_*`
+  grava sem condição, passando por cima de quem chegou antes.
+- `raiz-registrada-sem-caminho-de-escrita` — raiz no registro do domínio e nenhum
+  `salvar_*` que a receba: ou ela não é persistida, ou grava por um caminho que ninguém vê.
+- `auxiliar-privado-perdoado-por-chamador-que-nao-avanca` — o preço da única indulgência do
+  portão: auxiliar privado só é perdoado se **todos** os chamadores dele avançarem.
+- `agregado-novo-nascido-fora-do-registro` — a que mata a classe: um `salvar_*` novo para um
+  agregado que não entrou no registro de raízes de ferramenta.
+
+O denominador deste portão **vem do registro do serviço** (`registrar_raiz_de_ferramenta`),
+nunca de uma lista escrita à mão dentro dele — que é exatamente como a ARA ficou de fora
+por várias ondas enquanto os outros seis agregados entravam um a um.
 
 ## Um achado que este diretório já pagou
 

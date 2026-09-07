@@ -17,6 +17,20 @@ O que este módulo corrige da linhagem, em uma frase por item:
 - o **status `Validado`** tem guarda de máquina de estados (RN-10): decidíveis verdes
   **e** parecer humano confirmado. Parecer de inteligência artificial (IA) nunca fecha
   status sozinho.
+
+**Toda mutação daqui avança a versão do `Projeto` contido** (`self.projeto._avancar(em)`),
+e isso é a metade de domínio da trava otimista do ADR 0010 — não um detalhe de estilo. A
+outra metade é do adaptador (`UPDATE … WHERE versao = :versao_lida`), e ela só protege o
+que a versão acompanha: enquanto marcar Efeito Indesejável, editar ficha, registrar
+parecer e mudar status não avançavam versão, duas gravações que leram a MESMA versão
+casavam as duas no `WHERE`, e `_reconciliar_ara` apagava do banco o retrato da primeira
+(`delete(tabela_ude … no_id.notin_(marcados))`, com `ude_parecer` em `ON DELETE CASCADE`).
+Medido contra o PostgreSQL real: **20 pareceres concorrentes · 20 aceitos · 1 no banco**.
+A ARA era o único agregado de ferramenta fora da trava, e passou despercebida porque as
+suas delegações ao núcleo (`adicionar_efeito`, `ligar`) avançam versão pelo M1 — o teste
+de concorrência da ferramenta ia verde sem tocar em uma linha de semântica da ARA. O
+portão que fecha a classe é `scripts/check-versao-do-agregado.sh`, cujo denominador é o
+registro de raízes de ferramenta, e não uma lista que alguém lembra de atualizar.
 """
 from __future__ import annotations
 
@@ -332,6 +346,7 @@ class ProjetoARA:
         self._udes[no_id] = ficha or FichaDeUde()
         self._pareceres.setdefault(no_id, [])
         self._status[no_id] = StatusDeValidacao.PENDENTE
+        self.projeto._avancar(em)
         self._emitir(UdeMarcado, em, no_id=no_id)
         self._revalidar(alvo, em=em, texto_anterior=None)
         return self._udes[no_id]
@@ -341,11 +356,13 @@ class ProjetoARA:
         self._udes.pop(no_id)
         self._validacoes.pop(no_id, None)
         self._status.pop(no_id, None)
+        self.projeto._avancar(em)
         self._emitir(UdeDesmarcado, em, no_id=no_id)
 
     def editar_ficha(self, no_id: UUID, ficha: FichaDeUde, *, em: datetime) -> FichaDeUde:
         self.ficha(no_id)
         self._udes[no_id] = ficha
+        self.projeto._avancar(em)
         self._emitir(FichaDeUdeEditada, em, no_id=no_id)
         return ficha
 
@@ -390,6 +407,7 @@ class ProjetoARA:
     ) -> None:
         self.ficha(no_id)
         self._pareceres.setdefault(no_id, []).append(parecer)
+        self.projeto._avancar(em)
         self._emitir(
             ParecerRegistrado,
             em,
@@ -430,6 +448,7 @@ class ProjetoARA:
                 "reabrir um UDE validado exige justificativa explícita (RF-17)",
             )
         self._status[no_id] = novo
+        self.projeto._avancar(em)
         self._emitir(
             StatusDeValidacaoMudou,
             em,
@@ -471,6 +490,7 @@ class ProjetoARA:
         # A regra da reserva obrigatória mora no pacote compartilhado: é a MESMA da ARF.
         novo = exame_de(estado, reserva)
         self._exames[aresta_id] = novo
+        self.projeto._avancar(em)
         self._emitir(
             EloExaminado, em, aresta_id=aresta_id, estado=estado, reserva=novo.reserva
         )
@@ -495,6 +515,7 @@ class ProjetoARA:
             conector_id=conector_id,
         )
         self._conectores[conector.id] = conector
+        self.projeto._avancar(em)
         self._emitir(
             ConectorEFormado,
             em,
@@ -508,6 +529,7 @@ class ProjetoARA:
         if conector_id not in self._conectores:
             raise NaoEncontrado(f"conector:{conector_id}")
         self._conectores.pop(conector_id)
+        self.projeto._avancar(em)
         self._emitir(ConectorEDesfeito, em, conector_id=conector_id)
 
     def leitura_do_conector(self, conector_id: UUID) -> str:

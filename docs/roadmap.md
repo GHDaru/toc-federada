@@ -206,7 +206,13 @@ classe: um agregado com porta dos fundos e uma perda de atualização silenciosa
 pessoas na mesma análise. Cada um saiu com portão e sabotagem próprios —
 [`../scripts/check-raiz-do-agregado.sh`](../scripts/check-raiz-do-agregado.sh) e
 [`../scripts/check-trava-otimista.sh`](../scripts/check-trava-otimista.sh) —, que é a razão
-de eles não voltarem. Detalhe e o que ficou vermelho:
+de eles não voltarem. Em 2026-09-07 um crítico hostil mostrou que a trava tinha uma
+**segunda metade** que nenhum portão media — a do domínio, "a versão só protege o que ela
+acompanha" — e que a Árvore da Realidade Atual era o único agregado de ferramenta fora
+dela: 20 pareceres concorrentes, 20 aceitos, 1 no banco. Terceiro portão da mesma família,
+e o primeiro cujo denominador vem do **registro** e não de uma lista escrita à mão:
+[`../scripts/check-versao-do-agregado.sh`](../scripts/check-versao-do-agregado.sh)
+(ADR 0016). Detalhe e o que ficou vermelho:
 [`../specs/004-nucleo-de-diagramas/qa-report.md`](../specs/004-nucleo-de-diagramas/qa-report.md).
 - Portão executável: suíte de domínio verde e sem rede; contrato de `import-linter` que
   falha o build se o domínio importar framework (P3).

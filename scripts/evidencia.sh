@@ -69,6 +69,14 @@ PORTOES=(
   # o agregador diria "todos os portões verdes" sobre um portão humano multiplicável por
   # uma corrida.
   "scripts/check-trava-da-proposta.sh|trava da proposta: uma aprovação humana, uma execução|arquivos varridos|caminhos de escrita classificados|verificações: |^  com "
+  # Entrou com o conserto do último agregado fora da trava. O portão acima mede a metade
+  # do ADAPTADOR da trava otimista (o `WHERE versao = :versao_lida`); a metade de DOMÍNIO
+  # — a versão só protege o que ela acompanha — não era medida por nada, e a Árvore da
+  # Realidade Atual atravessou várias ondas mudando marcação de Efeito Indesejável, ficha,
+  # parecer e status `validado` sem avançar versão nenhuma: 20 pareceres concorrentes, 20
+  # aceitos, 1 no banco. Sem esta linha o agregador diria "todos os portões verdes" sobre
+  # o módulo em que mais gente trabalha junto apagando o julgamento humano em silêncio.
+  "scripts/check-versao-do-agregado.sh|versão do agregado: mutação de estado próprio avança a versão|raízes de ferramenta lidas|métodos classificados|raízes casadas com caminho"
   # Entrou com a varredura de honestidade: nenhum portão media se a saída COLADA num
   # documento ainda é o que o comando devolve. Um número colado com honestidade em março é
   # uma afirmação falsa em setembro, vestida de prova. Sem esta linha o agregador diria

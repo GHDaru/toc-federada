@@ -34,6 +34,11 @@ from fastapi.testclient import TestClient
 from toc_api.aplicacao.ara import CriarProjetoARA
 from toc_api.aplicacao.nuvem import CriarProjetoNC
 from toc_api.aplicacao.projetos import CriarProjeto
+from toc_api.dominio.ara import (
+    OrigemDoParecer,
+    ParecerDeJulgamento,
+    StatusDeValidacao,
+)
 from toc_api.dominio.erros import ConflitoDeVersao
 from toc_api.dominio.identidade import DonoDoProjeto
 from toc_api.dominio.nuvem import ChaveDaAresta
@@ -49,6 +54,23 @@ HORIZONTE = DonoDoProjeto(inquilino_id="inq-horizonte", usuario_id="usr-facilita
 T0 = datetime(2026, 9, 6, 12, 0, tzinfo=timezone.utc)
 
 UDE = "A evasão de estudantes aumenta a cada semestre na Instituição Horizonte"
+
+#: Dois Efeitos Indesejáveis (UDEs) que **passam nos oito critérios decidíveis** da spec
+#: 005 — é o que permite chegar ao status `validado`, que é justamente o estado que o
+#: defeito reproduzido abaixo apagava. Base sintética (ADR 0006): Instituição Horizonte.
+UDE_DA_PRIMEIRA = "A taxa de conclusão dos cursos técnicos é de 54%."
+UDE_DA_SEGUNDA = "O prazo médio de resposta às famílias é de 12 dias."
+
+
+def parecer_humano(justificativa: str) -> ParecerDeJulgamento:
+    """O julgamento que nenhuma função pura decide — e que o defeito apagava em silêncio."""
+    return ParecerDeJulgamento(
+        autor="papel:facilitadora",
+        origem=OrigemDoParecer.HUMANO,
+        favoravel=True,
+        justificativa=justificativa,
+        instante=T0,
+    )
 
 TOKEN = "tok-concorrencia-facilitadora"
 IDENTIDADES = {
@@ -242,6 +264,118 @@ def test_a_ara_tem_a_mesma_trava_que_o_m1(url_postgres, esquema_migrado):
         f"recusadas {len(recusas)} · nós no banco {len(persistidos)}"
     )
     assert persistidos == aceitas
+
+
+# -- o buraco que a trava do grafo escondia: a semântica PRÓPRIA da ARA -----------------
+#
+# O teste acima disputa `adicionar_efeito`, que é uma delegação ao núcleo do M1 — e o
+# núcleo avança a versão. Ele passava, e passava **sem tocar em nada da ARA**: a versão
+# que ele viu subir foi a que `Projeto.adicionar_no` subiu. A semântica própria da
+# ferramenta — marcar Efeito Indesejável, editar a ficha, registrar parecer, mudar o
+# status, examinar o elo, formar conector — não passa pelo núcleo e não avançava versão
+# nenhuma. Duas escritas que leram a mesma versão gravavam as duas, e `_reconciliar_ara`
+# apaga do banco toda linha fora do retrato de quem gravou por último
+# (`delete(tabela_ude ... no_id.notin_(marcados))`, com `ude_parecer.no_id` em
+# `ON DELETE CASCADE`). O que some é exatamente o trabalho de julgamento humano.
+
+
+def test_o_parecer_e_o_status_validado_da_ara_nao_somem_para_editor_concorrente(pecas):
+    """O caso puro: duas facilitadoras leem a MESMA versão, as duas gravam.
+
+    A primeira marca um Efeito Indesejável, registra o parecer humano favorável e leva o
+    status a `validado`. A segunda leu antes disso e marca **outro** nó — nada que o
+    núcleo do M1 veja. Antes do conserto a segunda gravação era aceita, e a reconciliação
+    apagava a ficha, o status `validado` e o parecer da primeira: sem exceção, sem código
+    de erro, sem aviso para quem perdeu.
+    """
+    repositorio = pecas["repositorio"]
+    projeto = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
+
+    abertura = repositorio.obter_ara(HORIZONTE.inquilino_id, projeto.id)
+    da_primeira = abertura.adicionar_efeito(titulo=UDE_DA_PRIMEIRA, em=T0)
+    da_segunda = abertura.adicionar_efeito(titulo=UDE_DA_SEGUNDA, em=T0)
+    repositorio.salvar_ara(abertura)
+
+    primeira = repositorio.obter_ara(HORIZONTE.inquilino_id, projeto.id)
+    segunda = repositorio.obter_ara(HORIZONTE.inquilino_id, projeto.id)
+    assert primeira.projeto.versao == segunda.projeto.versao, "as duas leram a mesma versão"
+
+    primeira.marcar_ude(da_primeira.id, em=T0)
+    primeira.registrar_parecer(
+        da_primeira.id,
+        parecer_humano("a queixa é contínua e está na esfera da coordenação"),
+        em=T0,
+    )
+    primeira.mudar_status(da_primeira.id, StatusDeValidacao.VALIDADO, em=T0)
+    repositorio.salvar_ara(primeira)
+
+    segunda.marcar_ude(da_segunda.id, em=T0)
+    with pytest.raises(ConflitoDeVersao) as recusa:
+        repositorio.salvar_ara(segunda)
+    assert recusa.value.versao_lida < recusa.value.versao_atual
+
+    reaberta = repositorio.obter_ara(HORIZONTE.inquilino_id, projeto.id)
+    assert reaberta.e_ude(da_primeira.id), (
+        "a marcação de Efeito Indesejável da primeira foi apagada em silêncio"
+    )
+    assert reaberta.status(da_primeira.id) is StatusDeValidacao.VALIDADO, (
+        "o status `validado` — julgamento humano — foi apagado em silêncio"
+    )
+    assert len(reaberta.pareceres(da_primeira.id)) == 1, (
+        "o parecer humano foi apagado em silêncio (ude_parecer tem ON DELETE CASCADE)"
+    )
+    assert not reaberta.e_ude(da_segunda.id), "a escrita recusada não pode ter efeito parcial"
+
+
+def test_vinte_pareceres_concorrentes_no_mesmo_ude_nao_somem_em_silencio(
+    url_postgres, esquema_migrado
+):
+    """A reprodução em escala, no lugar onde mais gente trabalha junto.
+
+    Vinte pessoas leem a MESMA análise e cada uma registra o seu parecer sobre o MESMO
+    Efeito Indesejável. Antes do conserto: 20 aceitas, 1 parecer no banco — 19 julgamentos
+    humanos perdidos sem que ninguém soubesse. O invariante é o mesmo do M1: **quem foi
+    aceito está no banco**.
+    """
+    pecas = _pecas(url_postgres, esquema_migrado)
+    repositorio = pecas["repositorio"]
+    projeto = CriarProjetoARA(**pecas).rodar(dono=HORIZONTE, nome="Horizonte — ARA")
+
+    abertura = repositorio.obter_ara(HORIZONTE.inquilino_id, projeto.id)
+    alvo = abertura.adicionar_efeito(titulo=UDE_DA_PRIMEIRA, em=T0)
+    abertura.marcar_ude(alvo.id, em=T0)
+    repositorio.salvar_ara(abertura)
+
+    def escreve(i: int, barreira: threading.Barrier):
+        proprias = _pecas(url_postgres, esquema_migrado)
+        seu_repositorio = proprias["repositorio"]
+        ara = seu_repositorio.obter_ara(HORIZONTE.inquilino_id, projeto.id)
+        barreira.wait(timeout=60)  # todas leram antes de qualquer uma gravar
+        ara.registrar_parecer(
+            alvo.id, parecer_humano(f"leitura da facilitadora nº {i}"), em=T0
+        )
+        seu_repositorio.salvar_ara(ara)
+        return i
+
+    resultados = _em_paralelo(QUANTAS, escreve)
+    aceitas = {valor for estado, valor in resultados if estado == "ok"}
+    recusas = [erro for estado, erro in resultados if estado == "erro"]
+    assert all(isinstance(e, ConflitoDeVersao) for e in recusas), [
+        f"{type(e).__name__}: {e}" for e in recusas
+    ]
+    assert aceitas, "nenhuma escrita passou — a trava não pode travar todo mundo"
+
+    reaberta = repositorio.obter_ara(HORIZONTE.inquilino_id, projeto.id)
+    persistidos = reaberta.pareceres(alvo.id)
+    print(
+        f"concorrência M2 (parecer da ARA): {QUANTAS} escritas · aceitas {len(aceitas)} · "
+        f"recusadas {len(recusas)} · pareceres no banco {len(persistidos)}"
+    )
+    assert len(persistidos) == len(aceitas), (
+        f"{len(aceitas)} escrita(s) aceita(s) e {len(persistidos)} parecer(es) no banco: "
+        "julgamento humano aceito e perdido em silêncio"
+    )
+    assert len(aceitas) + len(recusas) == QUANTAS
 
 
 def test_a_nuvem_tem_a_mesma_trava_que_o_m1(url_postgres, esquema_migrado):

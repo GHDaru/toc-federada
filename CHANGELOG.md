@@ -5,6 +5,54 @@ Versionamento: [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Corrigido — a Árvore da Realidade Atual era o único agregado de ferramenta fora da trava otimista (2026-09-07)
+
+Achado por crítico hostil, com medida que não deixa dúvida:
+`apps/api/src/toc_api/dominio/ara.py` nunca chamava
+`Projeto._avancar`, onde a versão incrementa.
+
+```text
+$ for f in ara nuvem arf apr at snt focalizacao; do grep -c '_avancar' src/toc_api/dominio/$f.py; done
+ara 0 · nuvem 11 · arf 10 · apr 6 · at 2 · snt 5 · focalizacao 10
+```
+
+A trava do ADR 0010 tem **duas metades** e só uma estava medida: a do adaptador (`UPDATE …
+WHERE versao = :versao_lida`, com portão próprio) e a do domínio — **a versão só protege o
+que ela acompanha**. Marcar Efeito Indesejável (UDE), editar a ficha, registrar parecer,
+mudar o status para `validado`, examinar elo e formar conector E não avançavam versão
+nenhuma, então duas gravações que leram a mesma versão casavam as duas no `WHERE`, e a
+reconciliação apagava do banco o retrato de quem gravou primeiro — `delete(tabela_ude …
+no_id.notin_(marcados))`, com `ude_parecer.no_id` em `ON DELETE CASCADE`. Reproduzido
+primeiro, contra o PostgreSQL real:
+
+```text
+concorrência M2 (parecer da ARA): 20 escritas · aceitas 20 · recusadas 0 · pareceres no banco 1
+AssertionError: 20 escrita(s) aceita(s) e 1 parecer(es) no banco: julgamento humano aceito e perdido em silêncio
+Failed: DID NOT RAISE ConflitoDeVersao
+```
+
+- **Diagnóstico antes do conserto.** Não foi só ordem histórica. A Nuvem de Conflito também
+  é anterior à trava e **tem** o `_avancar`: a topologia dela é fixa (RN-01 da spec 007),
+  logo nenhuma delegação ao núcleo cria linha, e o teste de concorrência dela **teve** de
+  disputar uma mutação própria. A ARA tinha `adicionar_efeito`, e o teste escrito no ciclo
+  008 para provar que "a ARA tem a mesma trava que o M1" foi verde **pelo `_avancar` do
+  núcleo**, sem tocar em uma linha de semântica da ferramenta. A ARA é o único agregado de
+  ferramenta anterior à trava que tinha onde se esconder.
+- **Correção.** As oito mutações próprias da ARA passam a chamar `self.projeto._avancar(em)`.
+- **Portão que fecha a CLASSE**, não o caso: `scripts/check-versao-do-agregado.sh` tira o
+  **denominador do registro de raízes de ferramenta** (`registrar_raiz_de_ferramenta`) — a
+  lista que toda ferramenta é obrigada a preencher para o grafo dela funcionar — e reprova
+  a diferença entre "registrada" e "avança versão". Mede as duas direções: também reprova
+  `salvar_*` que grava sem `_gravar_*`, raiz registrada sem caminho de escrita, e caminho
+  de escrita novo para agregado fora do registro. Medida do inverso, executada: **7 de 7
+  raízes casadas com caminho de escrita condicionado**. Com 5 sabotagens próprias.
+- Decisão: `docs/adr/0016-versao-do-agregado-como-portao-derivado-do-registro.md`.
+- **Pendência declarada, medida e não resolvida**: a ARA é também a única raiz cujas
+  mutações próprias não chamam `Projeto._exigir_ativo` (`ara 0 · nuvem 12 · arf 4 · apr 2 ·
+  at 2 · snt 6 · focalizacao 11`) — marcar UDE num projeto **excluído** ainda é aceito.
+  Mesma família, ciclo próprio.
+
+
 ### Corrigido — caminhos que ninguém percorria inteiros: o embarque não alcançava o produto, e a cadeia exportada não voltava (2026-09-07)
 
 Varredura da MESMA classe de problema da regressão anterior: caminho que existe, em que

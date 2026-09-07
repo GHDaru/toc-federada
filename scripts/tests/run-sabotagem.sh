@@ -47,6 +47,7 @@ BASES=(
   "scripts/check-i18n.sh"             "i18n"
   "scripts/check-documentacao.sh"     "documentacao"
   "scripts/check-acao-de-catalogo.sh" "acao-de-catalogo"
+  "scripts/check-versao-do-agregado.sh" "versao-do-agregado"
 )
 
 # ── as sabotagens ───────────────────────────────────────────────────────────────
@@ -447,6 +448,38 @@ SABOTAGENS=(
   "scripts/check-acao-de-catalogo.sh" "acao-de-catalogo" "mao-mutadora-que-nao-aciona-caso-de-uso"
   "sed -i 's/no = self._adicionar_efeito.rodar(dono=principal, titulo=args\[\"texto\"\])/no = None/' apps/api/src/toc_api/infra/federacao/executor.py"
   "não aciona caso de uso nenhum"
+
+  # --- check-versao-do-agregado.sh (a metade de DOMÍNIO da trava do ADR 0010) ---
+  #
+  # As quatro cobrem as duas direções do mesmo defeito. A primeira é a Árvore da Realidade
+  # Atual em pessoa: mutação de estado próprio sem `_avancar`, que é como 20 pareceres
+  # concorrentes viravam 1 no banco sem conflito para ninguém. As três seguintes fecham o
+  # inverso — agregado que avança versão e grava sem condição, raiz registrada sem caminho
+  # de escrita, e o caso que mata a classe: caminho de escrita novo para um agregado que
+  # não entrou no registro.
+  "scripts/check-versao-do-agregado.sh" "versao-do-agregado" "mutacao-propria-sem-avanco-de-versao"
+  "sed -i '/self.projeto._avancar(em)/d' apps/api/src/toc_api/dominio/ferramenta.py"
+  "muta estado próprio e NÃO avança a versão"
+
+  "scripts/check-versao-do-agregado.sh" "versao-do-agregado" "raiz-registrada-sem-caminho-de-escrita"
+  "sed -i 's/agregado: ProjetoSintetico/agregado: Projeto/' apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py"
+  "está registrada e não tem \`salvar_*\` que a receba"
+
+  "scripts/check-versao-do-agregado.sh" "versao-do-agregado" "escrita-de-agregado-sem-a-trava"
+  "sed -i 's/self._gravar_projeto(s, agregado.projeto)/s.execute(agregado.projeto)/' apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py"
+  "sem passar por \`_gravar_*\`"
+
+  # O auxiliar privado é a única indulgência do portão, e esta sabotagem é o preço dela:
+  # `_arquivar` deixa de ser chamado por quem avança e passa a ser chamado por um método
+  # que só lê. Se a regra fosse "o chamador não deve nada" em vez de "o chamador avança",
+  # o auxiliar seria perdoado por um método que nunca moveu versão nenhuma.
+  "scripts/check-versao-do-agregado.sh" "versao-do-agregado" "auxiliar-privado-perdoado-por-chamador-que-nao-avanca"
+  "sed -i 's/^        self\._arquivar(titulo)$/        pass/' apps/api/src/toc_api/dominio/ferramenta.py && sed -i 's/^        return len(self\._marcados)$/        self._arquivar(\"orfao\")\n        return len(self._marcados)/' apps/api/src/toc_api/dominio/ferramenta.py"
+  "muta estado próprio e NÃO avança a versão"
+
+  "scripts/check-versao-do-agregado.sh" "versao-do-agregado" "agregado-novo-nascido-fora-do-registro"
+  "sed -i 's/^class RepositorioDeProjetosSQL:/class RepositorioDeProjetosSQL:\n    def salvar_terceiro(self, agregado: ProjetoTerceiro) -> None:\n        self._gravar_projeto(None, agregado.projeto)\n/' apps/api/src/toc_api/infra/persistencia/repositorio_projetos.py"
+  "não está registrada como raiz de ferramenta"
 )
 
 falhas=0

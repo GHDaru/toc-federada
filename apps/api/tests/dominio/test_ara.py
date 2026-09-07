@@ -364,3 +364,78 @@ def test_a_validacao_guardada_e_a_mesma_funcao_pura_do_dominio():
     ara.marcar_ude(no.id, em=T0)
     assert ara.validacao(no.id) == validar_formalmente(RUIM)
     assert ara.validacao(no.id).veredito_de("CD-5").veredito is Veredito.NAO_ATENDE
+
+
+# -- a metade de DOMÍNIO da trava otimista (ADR 0016) --------------------------------------
+#
+# A trava do ADR 0010 só protege o que a versão acompanha. Enquanto a semântica própria da
+# Árvore da Realidade Atual (ARA) não avançava a versão, duas gravações que leram a MESMA
+# versão casavam as duas no `WHERE versao = :versao_lida`, e a reconciliação apagava o
+# retrato de quem gravou primeiro — 20 pareceres concorrentes, 1 no banco, medido em
+# `tests/integracao/test_concorrencia_no_postgres.py`.
+#
+# Este teste é o par rápido daquele: cobre CADA mutação própria, uma a uma, sem banco. O
+# teste equivalente do núcleo (`test_toda_mutacao_avanca_a_versao_e_o_instante`, em
+# `test_projeto.py`) existia e passava, e não viu nada — porque olhava só para o M1
+# (Núcleo de Diagramas Lógicos). O portão que fecha a classe é
+# `scripts/check-versao-do-agregado.sh`.
+
+
+def test_toda_mutacao_propria_da_ara_avanca_a_versao_do_projeto():
+    """Uma por uma, na ordem em que a facilitadora as usa: nenhuma passa sem mover a versão."""
+    ara = nova_ara()
+    causa = ara.adicionar_efeito(titulo=BOM, em=T0)
+    segunda_causa = ara.adicionar_efeito(titulo="O prazo de resposta às famílias é de 12 dias.", em=T0)
+    efeito = ara.adicionar_efeito(titulo="A fila do balcão dobrou no início do semestre.", em=T0)
+    # Duas causas para o MESMO destino: é a forma que o conector E exige (RN-11).
+    elo = ara.ligar(causa.id, efeito.id, em=T0)
+    outro = ara.ligar(segunda_causa.id, efeito.id, em=T0)
+
+    def avancou(operacao) -> bool:
+        antes = ara.projeto.versao
+        operacao()
+        return ara.projeto.versao > antes
+
+    assert avancou(lambda: ara.marcar_ude(causa.id, em=T0)), "marcar_ude"
+    assert avancou(
+        lambda: ara.editar_ficha(causa.id, FichaDeUde(area_impactada="Secretaria"), em=T0)
+    ), "editar_ficha"
+    assert avancou(lambda: ara.registrar_parecer(causa.id, parecer_humano(), em=T1)), "registrar_parecer"
+    assert avancou(
+        lambda: ara.mudar_status(causa.id, StatusDeValidacao.VALIDADO, em=T1)
+    ), "mudar_status"
+    assert avancou(lambda: ara.desmarcar_ude(causa.id, em=T1)), "desmarcar_ude"
+    assert avancou(
+        lambda: ara.examinar_elo(elo.id, EstadoDoExame.SUFICIENTE, em=T1)
+    ), "examinar_elo"
+    conector = None
+
+    def forma():
+        nonlocal conector
+        conector = ara.formar_conector_e((elo.id, outro.id), em=T1)
+
+    assert avancou(forma), "formar_conector_e"
+    assert avancou(lambda: ara.desfazer_conector_e(conector.id, em=T1)), "desfazer_conector_e"
+
+
+def test_a_versao_lida_nao_anda_com_as_mutacoes_proprias_da_ara():
+    """É a imobilidade da versão LIDA que dá ao adaptador o número contra o qual condicionar."""
+    ara = nova_ara()
+    no = ara.adicionar_efeito(titulo=BOM, em=T0)
+    ara.projeto.confirmar_gravacao()
+    lida = ara.projeto.versao_lida
+
+    ara.marcar_ude(no.id, em=T0)
+    ara.registrar_parecer(no.id, parecer_humano(), em=T1)
+
+    assert ara.projeto.versao_lida == lida
+    assert ara.projeto.versao == lida + 2
+
+
+def test_gerar_analise_estrutural_nao_avanca_a_versao():
+    """Relatório é leitura: se `analisar` avançasse, abrir a tela sujaria o agregado."""
+    ara = nova_ara()
+    ara.adicionar_efeito(titulo=BOM, em=T0)
+    antes = ara.projeto.versao
+    ara.analisar(em=T1)
+    assert ara.projeto.versao == antes

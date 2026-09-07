@@ -2,7 +2,7 @@
   "project": {
     "name": "TOC Federada",
     "mark": "TF",
-    "subtitle": "8 de 8 módulos com código · 49526 linhas",
+    "subtitle": "8 de 8 módulos com código · 49548 linhas",
     "lang": "pt-BR",
     "theme_key": "tocfed-theme",
     "generated_from": "docs/roadmap.md · docs/produto/modulos.md · specs/ · docs/adr/"
@@ -18,7 +18,7 @@
       },
       {
         "title": "📐 Corpus de planejamento",
-        "content": "12 specs · 8 módulos (M1–M8) · 15 ADRs · 359 RF · 114 RI · 105 RNF · 71 regras de negócio · 61 integrações. Números contados pelo gerador, não declarados."
+        "content": "12 specs · 8 módulos (M1–M8) · 16 ADRs · 359 RF · 114 RI · 105 RNF · 71 regras de negócio · 61 integrações. Números contados pelo gerador, não declarados."
       },
       {
         "title": "🤝 Federação",
@@ -26,11 +26,11 @@
       },
       {
         "title": "🧱 O que já existe em código",
-        "content": "49526 linhas de produção em 181 arquivos (<code>apps/api</code> + <code>apps/web</code>), com 1566 casos de teste escritos em 133 arquivos, 144 rotas HTTP publicadas, 9 migrações Alembic sobre 36 tabelas e 8 dos 8 módulos com código. Contado pelo gerador nos arquivos; que a suíte passe é afirmação do <code>qa-report.md</code> do ciclo, com a saída colada."
+        "content": "49548 linhas de produção em 181 arquivos (<code>apps/api</code> + <code>apps/web</code>), com 1571 casos de teste escritos em 133 arquivos, 144 rotas HTTP publicadas, 9 migrações Alembic sobre 36 tabelas e 8 dos 8 módulos com código. Contado pelo gerador nos arquivos; que a suíte passe é afirmação do <code>qa-report.md</code> do ciclo, com a saída colada."
       },
       {
         "title": "⚖️ Estado honesto",
-        "content": "Nenhum ciclo foi <b>promovido</b>: o gate humano é indelegável e continua aberto em todos eles. O que existe é construção fechada do lado do agente, com 27 portões executáveis e 81 sabotagens que provam que os portões sabem reprovar, e 7 jornadas vivas com captura do build real (P6). O selo 🟡 PLANEJADO continua no requisito que ninguém mediu; 🟢 só com <code>arquivo:linha</code>."
+        "content": "Nenhum ciclo foi <b>promovido</b>: o gate humano é indelegável e continua aberto em todos eles. O que existe é construção fechada do lado do agente, com 28 portões executáveis e 87 sabotagens que provam que os portões sabem reprovar, e 7 jornadas vivas com captura do build real (P6). O selo 🟡 PLANEJADO continua no requisito que ninguém mediu; 🟢 só com <code>arquivo:linha</code>."
       }
     ],
     "callout": "<b>Barra:</b> honestidade de estado medida contra o corpus da irmã <b>gestaodeprioridades</b> (nenhuma contagem sem a saída colada — regra R1); clareza e densidade pela <b>régua Linear</b>."
@@ -474,6 +474,14 @@
       "description": "1. Toda ação do catálogo declara a ferramenta cuja raiz de agregado governa o projeto que ela toca. Campo novo `ferramenta` em `AcaoDoCatalogo` (o `ActionSpec` do §4.4 do Padrão APH). Invariante de domínio: ação `risk: confirm` sem `ferramenta` não entra no catálogo; o valor aceito é a genérica ou uma ferramenta cuja raiz se registrou em `registrar_raiz_de_ferramenta` — ferramenta que esquecer de ",
       "principios": "P2 (INEGOCIÁVEL) — a matéria é o catálogo `toc.*`, que é a",
       "path": "docs/adr/0015-acao-de-catalogo-pela-raiz-da-ferramenta.md"
+    },
+    {
+      "n": "0016",
+      "title": "A versão do agregado é a metade de domínio da trava, e o portão que a mede tira o denominador do registro de raízes",
+      "status": "Aceita",
+      "description": "1. Toda mutação de estado próprio de raiz de ferramenta avança a versão. As oito mutações próprias da ARA (`marcar_ude`, `desmarcar_ude`, `editar_ficha`, `registrar_parecer`, `mudar_status`, `examinar_elo`, `formar_conector_e`, `desfazer_conector_e`) chamam `self.projeto._avancar(em)`, como as das outras seis raízes.",
+      "principios": "P2 (INEGOCIÁVEL) — a mudança faz operações da ferramenta",
+      "path": "docs/adr/0016-versao-do-agregado-como-portao-derivado-do-registro.md"
     }
   ],
   "principles": [
@@ -531,7 +539,7 @@
     ],
     [
       "ADRs",
-      "15"
+      "16"
     ],
     [
       "Princípios do projeto (P1–P7)",
@@ -579,7 +587,7 @@
     ],
     [
       "Scripts de aptidão",
-      "34"
+      "35"
     ],
     [
       "Jornadas vivas",
@@ -595,7 +603,7 @@
     ],
     [
       "Linhas de código de produção",
-      "49526"
+      "49548"
     ],
     [
       "Arquivos de teste",
@@ -603,7 +611,7 @@
     ],
     [
       "Casos de teste escritos",
-      "1566"
+      "1571"
     ],
     [
       "Rotas HTTP publicadas",
@@ -619,17 +627,17 @@
     ],
     [
       "Portões executáveis (scripts/check-*.sh)",
-      "27"
+      "28"
     ],
     [
       "Sabotagens declaradas",
-      "81"
+      "87"
     ]
   ],
   "counts": {
     "specs": 12,
     "modules": 8,
-    "adrs": 15,
+    "adrs": 16,
     "rf": 359,
     "ri": 114,
     "rnf": 105,
@@ -639,19 +647,19 @@
     "lacunas": 58,
     "clarify": 55,
     "skills": 6,
-    "scripts": 34,
+    "scripts": 35,
     "journeys": 7,
     "cycles": 12,
     "principles": 7,
-    "linhas_producao": 49526,
+    "linhas_producao": 49548,
     "arquivos_producao": 181,
-    "casos_de_teste": 1566,
+    "casos_de_teste": 1571,
     "arquivos_de_teste": 133,
     "rotas": 144,
     "migracoes": 9,
     "tabelas": 36,
-    "portoes": 27,
-    "sabotagens": 81,
+    "portoes": 28,
+    "sabotagens": 87,
     "modulos_com_codigo": 8,
     "requisitos": 578
   },
@@ -785,7 +793,7 @@
       "shared": [],
       "code": {
         "arquivos": 14,
-        "linhas": 3470,
+        "linhas": 3492,
         "api": 8,
         "web": 6,
         "caminhos": [
@@ -10091,6 +10099,12 @@
       "path": "scripts/check-vazamento.sh"
     },
     {
+      "name": "check-versao-do-agregado.sh",
+      "description": "toda mutação de estado próprio do agregado avança a versão.",
+      "type": "Bash",
+      "path": "scripts/check-versao-do-agregado.sh"
+    },
+    {
       "name": "contar-aderencia-aph.py",
       "description": "",
       "type": "Python",
@@ -18297,17 +18311,17 @@
   "codebase": {
     "producao": {
       "arquivos": 181,
-      "linhas": 49526,
+      "linhas": 49548,
       "api_arquivos": 106,
-      "api_linhas": 34789,
+      "api_linhas": 34811,
       "web_arquivos": 75,
       "web_linhas": 14737
     },
     "testes": {
       "arquivos": 133,
       "apoio": 21,
-      "linhas": 38022,
-      "casos": 1566
+      "linhas": 38231,
+      "casos": 1571
     },
     "camadas_api": [
       {
@@ -18315,7 +18329,7 @@
         "papel": "puro: entidades, regras e portas",
         "prefixo": "apps/api/src/toc_api/dominio/",
         "arquivos": 38,
-        "linhas": 16387
+        "linhas": 16409
       },
       {
         "nome": "aplicação",
@@ -18397,8 +18411,8 @@
         "prefixo": "apps/api/tests/dominio/",
         "arquivos": 34,
         "apoio": 6,
-        "casos": 496,
-        "linhas": 9808
+        "casos": 499,
+        "linhas": 9883
       },
       {
         "nome": "aplicação",
@@ -18433,8 +18447,8 @@
         "prefixo": "apps/api/tests/integracao/",
         "arquivos": 22,
         "apoio": 2,
-        "casos": 136,
-        "linhas": 7180
+        "casos": 138,
+        "linhas": 7314
       },
       {
         "nome": "interface (vitest)",
@@ -18507,7 +18521,7 @@
       },
       "M2": {
         "arquivos": 14,
-        "linhas": 3470,
+        "linhas": 3492,
         "api": 8,
         "web": 6,
         "caminhos": [
@@ -19517,10 +19531,11 @@
       "check-specs.sh",
       "check-trava-da-proposta.sh",
       "check-trava-otimista.sh",
-      "check-vazamento.sh"
+      "check-vazamento.sh",
+      "check-versao-do-agregado.sh"
     ],
-    "sabotagens": 81,
-    "bases_de_sabotagem": 13,
+    "sabotagens": 87,
+    "bases_de_sabotagem": 14,
     "nota": "Contagens do código como ele está escrito: arquivos, linhas, casos de teste declarados, rotas por decorador, migrações e tabelas. O gerador NÃO roda a suíte — que os testes passem é afirmação do `qa-report.md` do ciclo, com a saída colada."
   }
 }
